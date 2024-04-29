@@ -5,6 +5,6 @@ Dalvik emulator written in Kotlin, highly inspired by [Katalina](https://github.
 - Basic .dex parsing support
 
 ## TODO
-- Emulate of instructions
+- Emulate instructions
 - Represent real / mocked (lazy) values
 - JNI callback
