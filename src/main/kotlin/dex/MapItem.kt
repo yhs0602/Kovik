@@ -28,5 +28,35 @@ data class MapItem(
         const val TYPE_ENCODED_ARRAY_ITEM = 0x2005
         const val TYPE_ANNOTATIONS_DIRECTORY_ITEM = 0x2006
         const val TYPE_HIDDENAPI_CLASS_DATA_ITEM = 0xf000
+
+        private val typeNameMap = mapOf(
+            TYPE_HEADER_ITEM to "TYPE_HEADER_ITEM",
+            TYPE_STRING_ID_ITEM to "TYPE_STRING_ID_ITEM",
+            TYPE_TYPE_ID_ITEM to "TYPE_TYPE_ID_ITEM",
+            TYPE_PROTO_ID_ITEM to "TYPE_PROTO_ID_ITEM",
+            TYPE_FIELD_ID_ITEM to "TYPE_FIELD_ID_ITEM",
+            TYPE_METHOD_ID_ITEM to "TYPE_METHOD_ID_ITEM",
+            TYPE_CLASS_DEF_ITEM to "TYPE_CLASS_DEF_ITEM",
+            TYPE_CALL_SITE_ID_ITEM to "TYPE_CALL_SITE_ID_ITEM",
+            TYPE_METHOD_HANDLE_ITEM to "TYPE_METHOD_HANDLE_ITEM",
+            TYPE_MAP_LIST to "TYPE_MAP_LIST",
+            TYPE_TYPE_LIST to "TYPE_TYPE_LIST",
+            TYPE_ANNOTATION_SET_REF_LIST to "TYPE_ANNOTATION_SET_REF_LIST",
+            TYPE_ANNOTATION_SET_ITEM to "TYPE_ANNOTATION_SET_ITEM",
+            TYPE_CLASS_DATA_ITEM to "TYPE_CLASS_DATA_ITEM",
+            TYPE_CODE_ITEM to "TYPE_CODE_ITEM",
+            TYPE_STRING_DATA_ITEM to "TYPE_STRING_DATA_ITEM",
+            TYPE_DEBUG_INFO_ITEM to "TYPE_DEBUG_INFO_ITEM",
+            TYPE_ANNOTATION_ITEM to "TYPE_ANNOTATION_ITEM",
+            TYPE_ENCODED_ARRAY_ITEM to "TYPE_ENCODED_ARRAY_ITEM",
+            TYPE_ANNOTATIONS_DIRECTORY_ITEM to "TYPE_ANNOTATIONS_DIRECTORY_ITEM",
+            TYPE_HIDDENAPI_CLASS_DATA_ITEM to "TYPE_HIDDENAPI_CLASS_DATA_ITEM"
+        )
+
+        fun getTypeName(type: Int): String = typeNameMap[type] ?: "Unknown type"
+    }
+
+    override fun toString(): String {
+        return "MapItem(type=${getTypeName(type)}, unused=$unused, size=$size, offset=$offset)"
     }
 }

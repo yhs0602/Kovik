@@ -145,6 +145,7 @@ data class DexFile(
     val methodHandles: List<MethodHandle>,
     val data: ByteArray, // Unsigned byte
     val linkData: ByteArray, // Unsigned byte
+    val mapList: List<MapItem>,
 ) {
 
     companion object {
@@ -276,6 +277,7 @@ data class DexFile(
                 methodHandles,
                 ByteArray(header.dataSize),
                 ByteArray(header.linkSize),
+                mapList
             )
         }
 
