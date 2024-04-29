@@ -1,6 +1,7 @@
 package com.yhs0602.dex
 
-import java.io.RandomAccessFile
+import com.yhs0602.EndianAwareRandomAccessFile
+
 
 data class Header(
     val magic: ByteArray,
@@ -28,15 +29,27 @@ data class Header(
     val dataOff: Int
 ) {
     companion object {
-        fun fromDataInputStream(randomAccessFile: RandomAccessFile): Header {
+        const val ENDIAN_CONSTANT = 0x12345678
+        const val REVERSE_ENDIAN_CONSTANT = 0x78563412
+
+        fun fromDataInputStream(randomAccessFile: EndianAwareRandomAccessFile): Header {
             val magic = ByteArray(8)
             randomAccessFile.read(magic)
             val checksum = randomAccessFile.readInt()
             val signature = ByteArray(20)
             randomAccessFile.read(signature)
-            val fileSize = randomAccessFile.readInt()
-            val headerSize = randomAccessFile.readInt()
+            var fileSize = randomAccessFile.readInt()
+            var headerSize = randomAccessFile.readInt()
             val endianTag = randomAccessFile.readInt()
+            if (endianTag == ENDIAN_CONSTANT) {
+                randomAccessFile.setLittleEndian(true)
+            } else if (endianTag == REVERSE_ENDIAN_CONSTANT) {
+                randomAccessFile.setLittleEndian(false)
+            }
+            randomAccessFile.seek(32)
+            fileSize = randomAccessFile.readInt()
+            headerSize = randomAccessFile.readInt()
+            randomAccessFile.readInt() // to skip endianTag
             val linkSize = randomAccessFile.readInt()
             val linkOff = randomAccessFile.readInt()
             val mapOff = randomAccessFile.readInt()

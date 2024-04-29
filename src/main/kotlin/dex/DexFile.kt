@@ -1,8 +1,8 @@
 package com.yhs0602.dex
 
-import java.io.RandomAccessFile
+import com.yhs0602.EndianAwareRandomAccessFile
 
-private fun RandomAccessFile.readUnsignedLeb128(): Int {
+private fun EndianAwareRandomAccessFile.readUnsignedLeb128(): Int {
     var result = 0
     var cur: Int
     var count = 0
@@ -14,14 +14,14 @@ private fun RandomAccessFile.readUnsignedLeb128(): Int {
     return result
 }
 
-private fun RandomAccessFile.readEncodedArray(): List<Any?> {
+private fun EndianAwareRandomAccessFile.readEncodedArray(): List<Any?> {
     val size = readUnsignedLeb128()
     return List(size) {
         readEncodedValue()
     }
 }
 
-private fun RandomAccessFile.readEncodedAnnotation(): Pair<Int, List<Pair<Int, Any?>>> {
+private fun EndianAwareRandomAccessFile.readEncodedAnnotation(): Pair<Int, List<Pair<Int, Any?>>> {
     val typeIdx = readUnsignedLeb128()
     val size = readUnsignedLeb128()
     return typeIdx to List(size) {
@@ -31,7 +31,7 @@ private fun RandomAccessFile.readEncodedAnnotation(): Pair<Int, List<Pair<Int, A
     }
 }
 
-private fun RandomAccessFile.readEncodedValue(): Any? {
+private fun EndianAwareRandomAccessFile.readEncodedValue(): Any? {
     val header = readUnsignedByte()
     val type = header and 0x1f
     val valueArg = header ushr 5
@@ -148,7 +148,7 @@ data class DexFile(
 ) {
 
     companion object {
-        fun fromFile(inputFile: RandomAccessFile): DexFile {
+        fun fromFile(inputFile: EndianAwareRandomAccessFile): DexFile {
             val header = Header.fromDataInputStream(inputFile)
             inputFile.seek(header.stringIdsOff.toLong() and 0xFFFFFFFF)
             val stringIds = List(header.stringIdsSize) {
