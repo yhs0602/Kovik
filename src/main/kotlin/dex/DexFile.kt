@@ -190,7 +190,20 @@ data class DexFile(
                 val shortyIdx = inputFile.readInt()
                 val returnTypeIdx = inputFile.readInt()
                 val parametersOff = inputFile.readInt()
-                ProtoId(strings[shortyIdx], typeIdItems[returnTypeIdx], parametersOff)
+                ProtoId(ShortyDescriptor(strings[shortyIdx]), typeIdItems[returnTypeIdx], parametersOff)
+            }
+            // Read proto parameters
+            protoIdItems.forEach {
+                if (it.parametersOff != 0) {
+                    inputFile.seek(it.parametersOff.toLong() and 0xFFFFFFFF)
+                    val size = inputFile.readInt()
+                    it.parameters = List(size) {
+                        val typeIdx = inputFile.readUnsignedShort()
+                        typeIdItems[typeIdx]
+                    }
+                } else {
+                    it.parameters = emptyList()
+                }
             }
             inputFile.seek(header.fieldIdsOff.toLong() and 0xFFFFFFFF)
             val fieldIdItems = List(header.fieldIdsSize) {

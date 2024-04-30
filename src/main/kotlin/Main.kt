@@ -1,6 +1,8 @@
 package com.yhs0602
 
 import com.yhs0602.dex.DexFile
+import com.yhs0602.vm.Frame
+import com.yhs0602.vm.VMThread
 import java.io.File
 
 fun main() {
@@ -64,4 +66,10 @@ fun main() {
     for (insn in code) {
         println(insn)
     }
+    val vm = VMThread(
+        dexes = parsedDexes
+    )
+    // Input parameters based on the method signature
+    val frame = Frame(codeItem.registersSize.toInt())
+    vm.executeMethod(codeItem, frame, codeItem.insSize.toInt())
 }
