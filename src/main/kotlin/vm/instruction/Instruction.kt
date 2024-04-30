@@ -251,62 +251,216 @@ sealed class Instruction(val insnLength: Int) {
     // TODO: implement constructors for each instruction
     abstract class _10x(val op: Int) : Instruction(1) // 00|op
     {
-        constructor(op: Int, code: CodeItem) : this(op)
+        constructor(pc: Int, code: CodeItem) : this(code.insns[pc].toInt() and 0xff)
     }
 
     abstract class _12x(val op: Int, val vA: Int, val vB: Int) : Instruction(1) // B|A|op
     {
-        constructor(op: Int, code: CodeItem) : this(op, op and 0x0f, (op shr 4) and 0x0f)
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0x0f,
+            (code.insns[pc].toInt() shr 12) and 0x0f
+        )
     }
 
     abstract class _11n(val op: Int, val vA: Int, val LB: Int) : Instruction(1) // B|A|op, B is a literal
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0x0f,
+            (code.insns[pc].toInt() shr 12) and 0x0f
+        )
+    }
+
     abstract class _11x(val op: Int, val vAA: Int) : Instruction(1) // AA|op
-    abstract class _10t(val op: Int, val offset: Int) : Instruction(1) // 00|op, offset
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff
+        )
+    }
+
+    abstract class _10t(val op: Int, val offset: Int) : Instruction(1) // AA|op, offset
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff
+        )
+    }
+
     abstract class _20t(val op: Int, val offset: Int) : Instruction(2) // 00|op AAAA
+    {
+        constructor(pc: Int, code: CodeItem) : this(code.insns[pc].toInt() and 0xff, code.insns[pc + 1].toInt())
+    }
+
     abstract class _20bc(val op: Int, val AA: Int, val KindBBBB: Int) : Instruction(2) // AA|op BBBB
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt()
+        )
+    }
+
     abstract class _22x(val op: Int, val vAA: Int, val vBBBB: Int) : Instruction(2) // AA|op BBBB
     {
-        constructor(op: Int, code: CodeItem) : this(
-            op,
-            code.insns[1].toInt(),
-            code.insns[2].toInt() or (code.insns[3].toInt() shl 8)
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[1].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt()
         )
     }
 
     abstract class _21t(val op: Int, val vAA: Int, val offset: Int) : Instruction(2) // AA|op, offset
-    abstract class _21s(val op: Int, val vAA: Int, val vB: Int, val LBBBB: Int) :
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt()
+        )
+    }
+
+    abstract class _21s(val op: Int, val vAA: Int, val LBBBB: Int) :
         Instruction(2) // AA|op BBBB, B is a literal
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt()
+        )
+    }
 
     abstract class _21h(val op: Int, val vAA: Int, val LBBBB: Int) : Instruction(2) // AA|op BBBB
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt()
+        )
+    }
+
     abstract class _21c(val op: Int, val vAA: Int, val KindBBBB: Int) : Instruction(2) // AA|op BBBB
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt()
+        )
+    }
+
     abstract class _23x(val op: Int, val vAA: Int, val vBB: Int, val vCC: Int) : Instruction(2) // AA|op CC|BB
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt() and 0xff,
+            (code.insns[pc + 1].toInt() shr 8) and 0xff
+        )
+    }
+
     abstract class _22b(val op: Int, val vAA: Int, val vBB: Int, val LCC: Int) :
         Instruction(2) // AA|op CC|BB, C is a literal
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt() and 0xff,
+            (code.insns[pc + 1].toInt() shr 8) and 0xff
+        )
+    }
 
     abstract class _22t(val op: Int, val vA: Int, val vB: Int, val offset: Int) : Instruction(2) // B|A|op CCCC
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xf,
+            (code.insns[pc].toInt() shr 12) and 0xf,
+            code.insns[pc + 1].toInt()
+        )
+    }
+
     abstract class _22s(val op: Int, val vA: Int, val vB: Int, val LCCCC: Int) :
         Instruction(2) // B|A|op CCCC, C is a literal
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xf,
+            (code.insns[pc].toInt() shr 12) and 0xf,
+            code.insns[pc + 1].toInt()
+        )
+    }
 
     abstract class _22c(val op: Int, val vA: Int, val vB: Int, val KindCCCC: Int) : Instruction(2) // B|A|op CCCC
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xf,
+            (code.insns[pc].toInt() shr 12) and 0xf,
+            code.insns[pc + 1].toInt()
+        )
+    }
+
     abstract class _22cs(val op: Int, val vA: Int, val vB: Int, val fieldoffCCCC: Int) :
         Instruction(2) // B|A|op CCCC, C is a literal
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xf,
+            (code.insns[pc].toInt() shr 12) and 0xf,
+            code.insns[pc + 1].toInt()
+        )
+    }
 
     abstract class _30t(val op: Int, val AAAAlo: Int, val AAAAhi: Int) : Instruction(3) // 00|op AAAAlo AAAAhi, goto/32
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            code.insns[pc + 1].toInt(),
+            code.insns[pc + 2].toInt()
+        )
+    }
+
     abstract class _32x(val op: Int, val vAAAA: Int, val vBBBB: Int) : Instruction(3) //00|op AAAA BBBB
     {
-        constructor(op: Int, code: CodeItem) : this(
-            op,
-            code.insns[1].toInt() or (code.insns[2].toInt() shl 8),
-            code.insns[3].toInt() or (code.insns[4].toInt() shl 8)
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            code.insns[pc + 1].toInt(),
+            code.insns[pc + 2].toInt()
         )
     }
 
     abstract class _31i(val op: Int, val vAA: Int, val BBBBlo: Int, val BBBBhi: Int) :
         Instruction(3) // AA|op BBBBlo BBBBhi, B is a literal
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt(),
+            code.insns[pc + 2].toInt()
+        )
+    }
 
-    abstract class _31t(val op: Int, val vAA: Int, val offset: Int) : Instruction(3) // AA|op BBBBlo BBBBhi, offset
-    abstract class _31c(val op: Int, val vAA: Int, val KindBBBB: Int) :
+    abstract class _31t(val op: Int, val vAA: Int, val BBBBlo: Int, BBBBhi: Int) :
+        Instruction(3) // AA|op BBBBlo BBBBhi, offset
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt(),
+            code.insns[pc + 2].toInt()
+        )
+    }
+
+    abstract class _31c(val op: Int, val vAA: Int, val KindBBBBlo: Int, val KindBBBBhi: Int) :
         Instruction(3) // AA|op BBBBlo BBBBhi, const-string/jumbo
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt(),
+            code.insns[pc + 2].toInt()
+        )
+    }
 
     abstract class _35c(
         val op: Int,
@@ -319,6 +473,18 @@ sealed class Instruction(val insnLength: Int) {
         val C: Int
     ) :
         Instruction(3) // A|G|op BBBB F|E|D|C
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 12) and 0xf,
+            (code.insns[pc].toInt() shr 8) and 0xf,
+            code.insns[pc + 1].toInt(),
+            (code.insns[pc + 2].toInt() shr 12) and 0xf,
+            (code.insns[pc + 2].toInt() shr 8) and 0xf,
+            (code.insns[pc + 2].toInt() shr 4) and 0xf,
+            code.insns[pc + 2].toInt() and 0xf
+        )
+    }
 
     abstract class _35ms(
         val op: Int,
@@ -331,6 +497,18 @@ sealed class Instruction(val insnLength: Int) {
         val C: Int
     ) :
         Instruction(3) // A|G|op BBBB F|E|D|C
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 12) and 0xf,
+            (code.insns[pc].toInt() shr 8) and 0xf,
+            code.insns[pc + 1].toInt(),
+            (code.insns[pc + 2].toInt() shr 12) and 0xf,
+            (code.insns[pc + 2].toInt() shr 8) and 0xf,
+            (code.insns[pc + 2].toInt() shr 4) and 0xf,
+            code.insns[pc + 2].toInt() and 0xf
+        )
+    }
 
     abstract class _35mi(
         val op: Int,
@@ -343,6 +521,18 @@ sealed class Instruction(val insnLength: Int) {
         val C: Int
     ) :
         Instruction(3) // A|G|op BBBB F|E|D|C
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 12) and 0xf,
+            (code.insns[pc].toInt() shr 8) and 0xf,
+            code.insns[pc + 1].toInt(),
+            (code.insns[pc + 2].toInt() shr 12) and 0xf,
+            (code.insns[pc + 2].toInt() shr 8) and 0xf,
+            (code.insns[pc + 2].toInt() shr 4) and 0xf,
+            code.insns[pc + 2].toInt() and 0xf
+        )
+    }
 
     abstract class _3rc(
         val op: Int,
@@ -351,6 +541,14 @@ sealed class Instruction(val insnLength: Int) {
         val CCCC: Int
     ) :
         Instruction(3) // AA|op BBBB CCCC
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt(),
+            code.insns[pc + 2].toInt()
+        )
+    }
 
     abstract class _3rms(
         val op: Int,
@@ -359,6 +557,14 @@ sealed class Instruction(val insnLength: Int) {
         val CCCC: Int
     ) :
         Instruction(3) // AA|op BBBB CCCC
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt(),
+            code.insns[pc + 2].toInt()
+        )
+    }
 
     abstract class _3rmi(
         val op: Int,
@@ -367,6 +573,14 @@ sealed class Instruction(val insnLength: Int) {
         val CCCC: Int
     ) :
         Instruction(3) // AA|op BBBB CCCC
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt(),
+            code.insns[pc + 2].toInt()
+        )
+    }
 
 
     abstract class _45cc(
@@ -381,6 +595,19 @@ sealed class Instruction(val insnLength: Int) {
         val HHHH: Int,
     ) :
         Instruction(4) // A|G|op BBBB F|E|D|C HHHH
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 12) and 0xf,
+            (code.insns[pc].toInt() shr 8) and 0xf,
+            code.insns[pc + 1].toInt(),
+            (code.insns[pc + 2].toInt() shr 12) and 0xf,
+            (code.insns[pc + 2].toInt() shr 8) and 0xf,
+            (code.insns[pc + 2].toInt() shr 4) and 0xf,
+            code.insns[pc + 2].toInt() and 0xf,
+            code.insns[pc + 2].toInt()
+        )
+    }
 
     abstract class _4rcc(
         val op: Int,
@@ -390,12 +617,33 @@ sealed class Instruction(val insnLength: Int) {
         val HHHH: Int,
     ) :
         Instruction(4) // AA|op BBBB CCCC HHHH
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt(),
+            code.insns[pc + 2].toInt(),
+            code.insns[pc + 3].toInt()
+        )
+    }
 
     abstract class _51l(
         val op: Int,
         val vAA: Int,
         val BBBBlo: Int,
-        val BBBBBBBBBBBBhi: Int
+        val BBBBhiii: Int,
+        val BBBBhii: Int,
+        val BBBBhi: Int
     ) :
         Instruction(5) // AA|op BBBBlo BBBB BBBB BBBBhi // const-wide
+    {
+        constructor(pc: Int, code: CodeItem) : this(
+            code.insns[pc].toInt() and 0xff,
+            (code.insns[pc].toInt() shr 8) and 0xff,
+            code.insns[pc + 1].toInt(),
+            code.insns[pc + 2].toInt(),
+            code.insns[pc + 3].toInt(),
+            code.insns[pc + 4].toInt()
+        )
+    }
 }
