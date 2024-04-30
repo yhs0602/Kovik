@@ -1,6 +1,7 @@
 package com.yhs0602.dex
 
 import com.yhs0602.EndianAwareRandomAccessFile
+import kotlin.math.abs
 
 private fun EndianAwareRandomAccessFile.readUnsignedLeb128(): Int {
     var result = 0
@@ -29,6 +30,19 @@ private fun EndianAwareRandomAccessFile.readEncodedAnnotation(): Pair<Int, List<
         val value = readEncodedValue()
         nameIdx to value
     }
+}
+
+private fun EndianAwareRandomAccessFile.readEncodedField(): EncodedField {
+    val fieldIdxDiff = readUnsignedLeb128()
+    val accessFlags = readUnsignedLeb128()
+    return EncodedField(fieldIdxDiff, AccessFlags(accessFlags))
+}
+
+private fun EndianAwareRandomAccessFile.readEncodedMethod(): EncodedMethod {
+    val methodIdxDiff = readUnsignedLeb128()
+    val accessFlags = readUnsignedLeb128()
+    val codeOff = readUnsignedLeb128()
+    return EncodedMethod(methodIdxDiff, AccessFlags(accessFlags), codeOff)
 }
 
 private fun EndianAwareRandomAccessFile.readEncodedValue(): Any? {
@@ -140,7 +154,7 @@ data class DexFile(
     val protoIds: List<ProtoId>,
     val fieldIds: List<FieldId>,
     val methodIds: List<MethodId>,
-    val classDefs: List<ClassDef>,
+    val classDefs: List<ParsedClass>,
     val callSiteIds: List<CallSiteId>,
     val methodHandles: List<MethodHandle>,
     val data: ByteArray, // Unsigned byte
@@ -149,6 +163,7 @@ data class DexFile(
 ) {
 
     companion object {
+        @OptIn(ExperimentalUnsignedTypes::class)
         fun fromFile(inputFile: EndianAwareRandomAccessFile): DexFile {
             val header = Header.fromDataInputStream(inputFile)
             inputFile.seek(header.stringIdsOff.toLong() and 0xFFFFFFFF)
@@ -213,7 +228,7 @@ data class DexFile(
                 }
                 ClassDef(
                     typeIdItems[classIdx],
-                    accessFlags,
+                    AccessFlags(accessFlags),
                     superClassTypeId,
                     interfacesOff,
                     sourceFile,
@@ -262,7 +277,101 @@ data class DexFile(
                     MethodHandle(methodHandleType, fieldOrMethodId)
                 }
             } ?: emptyList()
-            // TODO: class data items
+
+            // Now parse class data
+            val parsedClasses = mutableListOf<ParsedClass>()
+            classDefs.forEach {
+                if (it.classDataOff != 0) {
+                    inputFile.seek(it.classDataOff.toLong() and 0xFFFFFFFF)
+                    val staticFieldsSize = inputFile.readUnsignedLeb128()
+                    val instanceFieldsSize = inputFile.readUnsignedLeb128()
+                    val directMethodsSize = inputFile.readUnsignedLeb128()
+                    val virtualMethodsSize = inputFile.readUnsignedLeb128()
+                    val staticFields = List(staticFieldsSize) {
+                        inputFile.readEncodedField()
+                    }
+                    val instanceFields = List(instanceFieldsSize) {
+                        inputFile.readEncodedField()
+                    }
+                    val directMethods = List(directMethodsSize) {
+                        inputFile.readEncodedMethod()
+                    }
+                    val virtualMethods = List(virtualMethodsSize) {
+                        inputFile.readEncodedMethod()
+                    }
+                    // parse fields also
+                    // First normalize the fields
+                    if (staticFields.isNotEmpty()) {
+                        val lastField = staticFields.first()
+                        var lastFieldIdx = lastField.fieldIdxDiff
+                        lastField.fieldId = fieldIdItems[lastFieldIdx]
+                        for (i in 1 until staticFields.size) {
+                            val field = staticFields[i]
+                            lastFieldIdx += field.fieldIdxDiff
+                            field.fieldId = fieldIdItems[lastFieldIdx]
+                        }
+                    }
+                    if (instanceFields.isNotEmpty()) {
+                        val lastField = instanceFields.first()
+                        var lastFieldIdx = lastField.fieldIdxDiff
+                        lastField.fieldId = fieldIdItems[lastFieldIdx]
+                        for (i in 1 until instanceFields.size) {
+                            val field = instanceFields[i]
+                            lastFieldIdx += field.fieldIdxDiff
+                            field.fieldId = fieldIdItems[lastFieldIdx]
+                        }
+                    }
+                    // Normalize methods
+                    if (directMethods.isNotEmpty()) {
+                        val lastMethod = directMethods.first()
+                        var lastMethodIdx = lastMethod.methodIdxDiff
+                        lastMethod.methodId = methodIdItems[lastMethodIdx]
+                        for (i in 1 until directMethods.size) {
+                            val method = directMethods[i]
+                            lastMethodIdx += method.methodIdxDiff
+                            method.methodId = methodIdItems[lastMethodIdx]
+                        }
+                    }
+                    if (virtualMethods.isNotEmpty()) {
+                        val lastMethod = virtualMethods.first()
+                        var lastMethodIdx = lastMethod.methodIdxDiff
+                        lastMethod.methodId = methodIdItems[lastMethodIdx]
+                        for (i in 1 until virtualMethods.size) {
+                            val method = virtualMethods[i]
+                            lastMethodIdx += method.methodIdxDiff
+                            method.methodId = methodIdItems[lastMethodIdx]
+                        }
+                    }
+                    // parse code items
+                    directMethods.forEach { directMethod ->
+                        parseMethod(directMethod, inputFile)
+                    }
+                    virtualMethods.forEach { virtualMethod ->
+                        parseMethod(virtualMethod, inputFile)
+                    }
+
+                    parsedClasses.add(
+                        ParsedClass(
+                            it,
+                            ClassData(
+                                staticFields,
+                                instanceFields,
+                                directMethods,
+                                virtualMethods
+                            )
+                        )
+                    )
+                } else {
+                    parsedClasses.add(
+                        ParsedClass(
+                            it,
+                            null
+                        )
+                    )
+                }
+            }
+
+            // Now parse method code
 
 
             return DexFile(
@@ -272,13 +381,87 @@ data class DexFile(
                 protoIdItems,
                 fieldIdItems,
                 methodIdItems,
-                classDefs,
+                parsedClasses,
                 callSiteIdsList,
                 methodHandles,
                 ByteArray(header.dataSize),
                 ByteArray(header.linkSize),
                 mapList
             )
+        }
+
+        @OptIn(ExperimentalUnsignedTypes::class)
+        private fun parseMethod(directMethod: EncodedMethod, inputFile: EndianAwareRandomAccessFile) {
+            if (directMethod.codeOff != 0) {
+                inputFile.seek(directMethod.codeOff.toLong() and 0xFFFFFFFF)
+                val registersSize = inputFile.readUnsignedShort()
+                val insSize = inputFile.readUnsignedShort()
+                val outsSize = inputFile.readUnsignedShort()
+                val triesSize = inputFile.readUnsignedShort()
+                val debugInfoOff = inputFile.readInt()
+                val insnsSize = inputFile.readInt()
+                val insns = UShortArray(insnsSize) {
+                    inputFile.readUnsignedShort().toUShort()
+                }
+                val padding = if (insnsSize % 2 == 0) {
+                    emptyList()
+                } else {
+                    List(1) {
+                        inputFile.readUnsignedShort().toUShort()
+                    }
+                }
+                val tries = List(triesSize) {
+                    val startAddr = inputFile.readInt()
+                    val insnCount = inputFile.readUnsignedShort()
+                    val handlerOff = inputFile.readUnsignedShort()
+                    TryItem(
+                        (startAddr.toLong() and 0xFFFFFFFF).toUInt(),
+                        insnCount.toUShort(),
+                        handlerOff.toUShort()
+                    )
+                }
+                val handlers: List<EncodedCatchHandler>
+                if (triesSize > 0) {
+                    val size = inputFile.readUnsignedLeb128() // TODO: Signed
+                    handlers = List(size) {
+                        val count = inputFile.readUnsignedLeb128()
+                        val pairs = List(abs(count)) {
+                            EncodedTypeAddrPair(
+                                inputFile.readUnsignedLeb128(),
+                                inputFile.readUnsignedLeb128()
+                            )
+                        }
+                        if (count < 0) {
+                            EncodedCatchHandler(
+                                count,
+                                pairs,
+                                null
+                            )
+                        } else {
+                            val catchAllAddr = inputFile.readUnsignedLeb128()
+                            EncodedCatchHandler(
+                                count,
+                                pairs,
+                                catchAllAddr
+                            )
+                        }
+                    }
+                } else {
+                    handlers = emptyList()
+                }
+                directMethod.codeItem = CodeItem(
+                    registersSize.toUShort(),
+                    insSize.toUShort(),
+                    outsSize.toUShort(),
+                    triesSize.toUShort(),
+                    (debugInfoOff.toLong() and 0xFFFFFFFFL).toUInt(),
+                    (insnsSize.toLong() and 0xFFFFFFFFL).toUInt(),
+                    insns,
+                    padding,
+                    tries,
+                    handlers
+                )
+            }
         }
 
         const val NO_INDEX = 0xffffffff.toInt()

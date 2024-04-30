@@ -2,7 +2,7 @@ package com.yhs0602.dex
 
 data class ClassDef(
     val typeId: TypeId,
-    val accessFlags: Int,
+    val accessFlags: AccessFlags,
     val superClassTypeId: TypeId?,
     val interfacesOff: Int,
     val sourceFile: String?,

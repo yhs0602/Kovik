@@ -1,7 +1,6 @@
 package com.yhs0602
 
 import com.yhs0602.dex.DexFile
-import com.yhs0602.dex.MethodId
 import java.io.File
 
 fun main() {
@@ -34,25 +33,35 @@ fun main() {
     println("Classes====================")
     val classes = parsedDexes.flatMap { it.classDefs }
     for (clazz in classes) {
-        if (clazz.typeId.descriptor.startsWith("L$packageNameStr/")) {
+        if (clazz.classDef.typeId.descriptor.startsWith("L$packageNameStr/")) {
             println(clazz)
         }
     }
     println("Enter the class name you are interested in:")
     val className = readlnOrNull() ?: return
     val classNameStr = "L$packageNameStr/$className;"
-    val classDef = classes.find { it.typeId.descriptor == classNameStr } ?: return
+    val classDef = classes.find { it.classDef.typeId.descriptor == classNameStr } ?: return
     println("Methods====================")
-    val methods = parsedDexes.flatMap { it.methodIds }
-    val interestingMethods = mutableListOf<MethodId>()
+    val methods = classDef.classData?.run {
+        directMethods + virtualMethods
+    } ?: run {
+        println("No methods found")
+        return
+    }
     for (method in methods) {
-        if (method.typeId.descriptor.startsWith(classNameStr)) {
-            println(method)
-            interestingMethods.add(method)
-        }
+        println(method)
     }
     println("Enter the method name you are interested in:")
     val methodName = readlnOrNull() ?: return
-    val interstingMethod = interestingMethods.find { it.s == methodName } ?: return
-    // TODO: Find the code item
+    val method = methods.find { it.methodId.name == methodName } ?: return
+    println("Code====================")
+    val codeItem = method.codeItem ?: run {
+        println("No code found")
+        return
+    }
+    println(codeItem)
+    val code = codeItem.insns
+    for (insn in code) {
+        println(insn)
+    }
 }
