@@ -4,7 +4,6 @@ package com.yhs0602.vm.instruction
 
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.vm.Frame
-import com.yhs0602.vm.Nop
 
 sealed class Instruction(val insnLength: Int) {
     abstract fun execute(pc: Int, frame: Frame): Int
