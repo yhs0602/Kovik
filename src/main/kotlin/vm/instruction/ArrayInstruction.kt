@@ -126,88 +126,179 @@ class FillArrayData(pc: Int, val code: CodeItem) : Instruction._31t(pc, code) {
 }
 
 
-class Aget(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
+open class Aget(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val index = memory.registers[vCC]
+        val arrayRef = memory.registers[vBB]
+        if (arrayRef !is RegisterValue.ArrayRef) {
+            memory.exception = ExceptionValue("Aget: Not an array reference")
+            return pc + insnLength
+        }
+        if (index !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("Aget: Not an integer")
+            return pc + insnLength
+        }
+        if (index.value < 0 || index.value >= arrayRef.length) {
+            memory.exception = ExceptionValue("Aget: Index out of bounds")
+            return pc + insnLength
+        }
+        performGet(memory, arrayRef, index)
+        return pc + insnLength
+    }
+
+    open fun performGet(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        memory.registers[vAA] = arrayRef.values[index.value]
     }
 }
 
-class AgetWide(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+class AgetWide(pc: Int, code: CodeItem) : Aget(pc, code) {
+    override fun performGet(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        memory.registers[vAA] = arrayRef.values[index.value * 2]
+        memory.registers[vAA + 1] = arrayRef.values[index.value * 2 + 1]
     }
 }
 
-class AgetObject(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+class AgetObject(pc: Int, code: CodeItem) : Aget(pc, code) {
+    override fun performGet(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        val value = arrayRef.values[index.value]
+        if (value !is RegisterValue.ObjectRef) {
+            memory.exception = ExceptionValue("AgetObject: Not an object reference")
+            return
+        }
+        memory.registers[vAA] = value
     }
 }
 
-class AgetBoolean(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+class AgetBoolean(pc: Int, code: CodeItem) : Aget(pc, code) {
+    override fun performGet(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        val value = arrayRef.values[index.value]
+        if (value !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("AgetBoolean: Not an integer")
+            return
+        }
+        memory.registers[vAA] = RegisterValue.Int(if (value.value != 0) 1 else 0)
     }
 }
 
-class AgetByte(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+class AgetByte(pc: Int, code: CodeItem) : Aget(pc, code) {
+    override fun performGet(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        val value = arrayRef.values[index.value]
+        if (value !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("AgetByte: Not an integer")
+            return
+        }
+        memory.registers[vAA] = RegisterValue.Int(value.value.toByte().toInt())
+    }
+
+}
+
+class AgetChar(pc: Int, code: CodeItem) : Aget(pc, code) {
+    override fun performGet(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        val value = arrayRef.values[index.value]
+        if (value !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("AgetChar: Not an integer")
+            return
+        }
+        memory.registers[vAA] = RegisterValue.Int(value.value.toChar().toInt())
     }
 }
 
-class AgetChar(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+class AgetShort(pc: Int, code: CodeItem) : Aget(pc, code) {
+    override fun performGet(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        val value = arrayRef.values[index.value]
+        if (value !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("AgetShort: Not an integer")
+            return
+        }
+        memory.registers[vAA] = RegisterValue.Int(value.value.toShort().toInt())
     }
 }
 
-class AgetShort(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
+
+open class Aput(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val arrayRef = memory.registers[vBB]
+        val index = memory.registers[vCC]
+        if (arrayRef !is RegisterValue.ArrayRef) {
+            memory.exception = ExceptionValue("Aput: Not an array reference")
+            return pc + insnLength
+        }
+        if (index !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("Aput: Not an integer")
+            return pc + insnLength
+        }
+        if (index.value < 0 || index.value >= arrayRef.length) {
+            memory.exception = ExceptionValue("Aput: Index out of bounds")
+            return pc + insnLength
+        }
+        performPut(memory, arrayRef, index)
+        return pc + insnLength
+    }
+
+    open fun performPut(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        arrayRef.values[index.value] = memory.registers[vAA]
     }
 }
 
-
-class Aput(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+class AputWide(pc: Int, code: CodeItem) : Aput(pc, code) {
+    override fun performPut(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        arrayRef.values[index.value * 2] = memory.registers[vAA]
+        arrayRef.values[index.value * 2 + 1] = memory.registers[vAA + 1]
     }
 }
 
-class AputWide(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+class AputObject(pc: Int, code: CodeItem) : Aput(pc, code) {
+    override fun performPut(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        val value = memory.registers[vAA]
+        if (value !is RegisterValue.ObjectRef) {
+            memory.exception = ExceptionValue("AputObject: Not an object reference")
+            return
+        }
+        arrayRef.values[index.value] = value
     }
 }
 
-class AputObject(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+class AputBoolean(pc: Int, code: CodeItem) : Aput(pc, code) {
+    override fun performPut(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        val value = memory.registers[vAA]
+        if (value !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("AputBoolean: Not an integer")
+            return
+        }
+        arrayRef.values[index.value] = RegisterValue.Int(if (value.value != 0) 1 else 0)
     }
 }
 
-class AputBoolean(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+class AputByte(pc: Int, code: CodeItem) : Aput(pc, code) {
+    override fun performPut(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        val value = memory.registers[vAA]
+        if (value !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("AputByte: Not an integer")
+            return
+        }
+        arrayRef.values[index.value] = RegisterValue.Int(value.value.toByte().toInt())
     }
 }
 
-class AputByte(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+class AputChar(pc: Int, code: CodeItem) : Aput(pc, code) {
+    override fun performPut(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        val value = memory.registers[vAA]
+        if (value !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("AputChar: Not an integer")
+            return
+        }
+        arrayRef.values[index.value] = RegisterValue.Int(value.value.toChar().toInt())
     }
 }
 
-class AputChar(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
-    }
-}
-
-class AputShort(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+class AputShort(pc: Int, code: CodeItem) : Aput(pc, code) {
+    override fun performPut(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
+        val value = memory.registers[vAA]
+        if (value !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("AputShort: Not an integer")
+            return
+        }
+        arrayRef.values[index.value] = RegisterValue.Int(value.value.toShort().toInt())
     }
 }
 
