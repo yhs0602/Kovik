@@ -1,3 +1,6 @@
 package com.yhs0602.vm
 
-class ExceptionValue(s: String) : RegisterValue.ObjectRef(typeDescriptor = "Ljava/lang/Throwable;", value = s)
+import com.yhs0602.dex.TypeId
+
+class ExceptionValue(s: String) :
+    RegisterValue.ObjectRef(typeId = TypeId("Ljava/lang/Throwable;"), value = Instance(emptyList()))

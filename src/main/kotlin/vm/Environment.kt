@@ -2,6 +2,7 @@ package com.yhs0602.vm
 
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.DexFile
+import com.yhs0602.dex.ParsedClass
 import com.yhs0602.dex.TypeId
 
 // Class definitions, typeids, string constants, field ids, method ids, and method prototypes...
@@ -45,7 +46,7 @@ class Environment(
         if (isPrimitiveType(targetTypeDescriptor)) return false
 
         // Get the actual type of the object reference
-        val actualTypeDescriptor = objectRef.typeDescriptor
+        val actualTypeDescriptor = objectRef.typeId.descriptor
 
         // If the actual type is the same as the target type, return true
         if (actualTypeDescriptor == targetTypeDescriptor) return true
@@ -76,5 +77,22 @@ class Environment(
 //            currentTypeDescriptor = superTypes.firstOrNull() ?: break
 //        }
         return false
+    }
+
+    fun getClassDef(codeItem: CodeItem, typeId: TypeId): ParsedClass? {
+        val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
+        return dexFile.classDefs.find {
+            it.classDef.typeId == typeId
+        }
+    }
+
+    fun createInstance(clazz: ParsedClass): Instance {
+        val classDef = clazz.classDef
+        if (classDef.accessFlags.isAbstract)
+            throw Exception("Cannot create instance of abstract class")
+        val classData = clazz.classData ?: throw Exception("Class data not found")
+        return Instance(
+            fields = classData.instanceFields,
+        )
     }
 }

@@ -1,3 +1,3 @@
 package com.yhs0602.dex
 
-data class FieldId(val typeId: TypeId, val typeId1: TypeId, val s: String)
+data class FieldId(val classId: TypeId, val typeId: TypeId, val name: String)
