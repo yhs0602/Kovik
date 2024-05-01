@@ -4,4 +4,5 @@ package com.yhs0602.vm
 class Memory {
     var returnValue = listOf<RegisterValue>()
     var exception: ExceptionValue? = null
+    var returnAddress = 0
 }
