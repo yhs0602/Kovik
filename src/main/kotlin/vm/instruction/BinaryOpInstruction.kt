@@ -1,11 +1,10 @@
 package com.yhs0602.vm.instruction
 
 import com.yhs0602.dex.CodeItem
-import com.yhs0602.vm.Frame
 import com.yhs0602.vm.Memory
 
 class AddInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegister(vB)
         val valueB = frame.getRegister(vC)
@@ -15,7 +14,7 @@ class AddInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class SubInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegister(vB)
         val valueB = frame.getRegister(vC)
@@ -25,7 +24,7 @@ class SubInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class MulInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegister(vB)
         val valueB = frame.getRegister(vC)
@@ -35,7 +34,7 @@ class MulInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class DivInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegister(vB)
         val valueB = frame.getRegister(vC)
@@ -45,7 +44,7 @@ class DivInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class RemInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegister(vB)
         val valueB = frame.getRegister(vC)
@@ -55,7 +54,7 @@ class RemInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class AndInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegister(vB)
         val valueB = frame.getRegister(vC)
@@ -65,7 +64,7 @@ class AndInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class OrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegister(vB)
         val valueB = frame.getRegister(vC)
@@ -75,7 +74,7 @@ class OrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class XorInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegister(vB)
         val valueB = frame.getRegister(vC)
@@ -85,7 +84,7 @@ class XorInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class ShlInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegister(vB)
         val valueB = frame.getRegister(vC)
@@ -95,7 +94,7 @@ class ShlInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class ShrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegister(vB)
         val valueB = frame.getRegister(vC)
@@ -105,7 +104,7 @@ class ShrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class UshrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegister(vB)
         val valueB = frame.getRegister(vC)
@@ -115,7 +114,7 @@ class UshrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class AddLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegisterWide(vB)
         val valueB = frame.getRegisterWide(vC)
@@ -125,7 +124,7 @@ class AddLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class SubLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegisterWide(vB)
         val valueB = frame.getRegisterWide(vC)
@@ -135,7 +134,7 @@ class SubLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class MulLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegisterWide(vB)
         val valueB = frame.getRegisterWide(vC)
@@ -145,7 +144,7 @@ class MulLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class DivLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegisterWide(vB)
         val valueB = frame.getRegisterWide(vC)
@@ -155,7 +154,7 @@ class DivLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class RemLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegisterWide(vB)
         val valueB = frame.getRegisterWide(vC)
@@ -165,7 +164,7 @@ class RemLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class AndLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegisterWide(vB)
         val valueB = frame.getRegisterWide(vC)
@@ -175,7 +174,7 @@ class AndLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class OrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegisterWide(vB)
         val valueB = frame.getRegisterWide(vC)
@@ -185,7 +184,7 @@ class OrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class XorLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegisterWide(vB)
         val valueB = frame.getRegisterWide(vC)
@@ -195,7 +194,7 @@ class XorLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class ShlLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegisterWide(vB)
         val valueB = frame.getRegister(vC)
@@ -205,7 +204,7 @@ class ShlLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class ShrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegisterWide(vB)
         val valueB = frame.getRegister(vC)
@@ -215,7 +214,7 @@ class ShrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class UshrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getRegisterWide(vB)
         val valueB = frame.getRegister(vC)
@@ -225,7 +224,7 @@ class UshrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class AddFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getFRegister(vB)
         val valueB = frame.getFRegister(vC)
@@ -235,7 +234,7 @@ class AddFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class SubFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getFRegister(vB)
         val valueB = frame.getFRegister(vC)
@@ -245,7 +244,7 @@ class SubFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class MulFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getFRegister(vB)
         val valueB = frame.getFRegister(vC)
@@ -255,7 +254,7 @@ class MulFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class DivFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getFRegister(vB)
         val valueB = frame.getFRegister(vC)
@@ -265,7 +264,7 @@ class DivFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class RemFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getFRegister(vB)
         val valueB = frame.getFRegister(vC)
@@ -275,7 +274,7 @@ class RemFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class AddDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getDRegister(vB)
         val valueB = frame.getDRegister(vC)
@@ -285,7 +284,7 @@ class AddDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class SubDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getDRegister(vB)
         val valueB = frame.getDRegister(vC)
@@ -295,7 +294,7 @@ class SubDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class MulDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getDRegister(vB)
         val valueB = frame.getDRegister(vC)
@@ -305,7 +304,7 @@ class MulDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class DivDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getDRegister(vB)
         val valueB = frame.getDRegister(vC)
@@ -315,7 +314,7 @@ class DivDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class RemDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val (vA, vB, vC) = code.getABC()
         val valueA = frame.getDRegister(vB)
         val valueB = frame.getDRegister(vC)

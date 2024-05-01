@@ -1,4 +1,4 @@
 package com.yhs0602.vm
 
-class ExceptionValue : RegisterValue() {
+class ExceptionValue(s: String) : RegisterValue() {
 }

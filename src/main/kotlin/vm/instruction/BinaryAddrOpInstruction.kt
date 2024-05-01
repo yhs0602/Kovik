@@ -1,11 +1,10 @@
 package com.yhs0602.vm.instruction
 
 import com.yhs0602.dex.CodeItem
-import com.yhs0602.vm.Frame
 import com.yhs0602.vm.Memory
 
 class AddInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVReg(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVReg(code.vA, v1 + v2)
@@ -14,7 +13,7 @@ class AddInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class SubInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVReg(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVReg(code.vA, v1 - v2)
@@ -23,7 +22,7 @@ class SubInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class MulInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVReg(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVReg(code.vA, v1 * v2)
@@ -32,7 +31,7 @@ class MulInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class DivInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVReg(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVReg(code.vA, v1 / v2)
@@ -41,7 +40,7 @@ class DivInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class RemInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVReg(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVReg(code.vA, v1 % v2)
@@ -50,7 +49,7 @@ class RemInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class AndInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVReg(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVReg(code.vA, v1 and v2)
@@ -59,7 +58,7 @@ class AndInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class OrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVReg(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVReg(code.vA, v1 or v2)
@@ -68,7 +67,7 @@ class OrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class XorInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVReg(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVReg(code.vA, v1 xor v2)
@@ -77,7 +76,7 @@ class XorInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class ShlInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVReg(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVReg(code.vA, v1 shl v2)
@@ -86,7 +85,7 @@ class ShlInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class ShrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVReg(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVReg(code.vA, v1 shr v2)
@@ -95,7 +94,7 @@ class ShrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class UshrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVReg(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVReg(code.vA, v1 ushr v2)
@@ -104,7 +103,7 @@ class UshrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class AddLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegLong(code.vA)
         val v2 = frame.getVRegLong(code.vB)
         frame.setVRegLong(code.vA, v1 + v2)
@@ -113,7 +112,7 @@ class AddLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class SubLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegLong(code.vA)
         val v2 = frame.getVRegLong(code.vB)
         frame.setVRegLong(code.vA, v1 - v2)
@@ -122,7 +121,7 @@ class SubLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class MulLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegLong(code.vA)
         val v2 = frame.getVRegLong(code.vB)
         frame.setVRegLong(code.vA, v1 * v2)
@@ -131,7 +130,7 @@ class MulLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class DivLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegLong(code.vA)
         val v2 = frame.getVRegLong(code.vB)
         frame.setVRegLong(code.vA, v1 / v2)
@@ -140,7 +139,7 @@ class DivLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class RemLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegLong(code.vA)
         val v2 = frame.getVRegLong(code.vB)
         frame.setVRegLong(code.vA, v1 % v2)
@@ -149,7 +148,7 @@ class RemLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class AndLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegLong(code.vA)
         val v2 = frame.getVRegLong(code.vB)
         frame.setVRegLong(code.vA, v1 and v2)
@@ -158,7 +157,7 @@ class AndLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class OrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegLong(code.vA)
         val v2 = frame.getVRegLong(code.vB)
         frame.setVRegLong(code.vA, v1 or v2)
@@ -167,7 +166,7 @@ class OrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class XorLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegLong(code.vA)
         val v2 = frame.getVRegLong(code.vB)
         frame.setVRegLong(code.vA, v1 xor v2)
@@ -176,7 +175,7 @@ class XorLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class ShlLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegLong(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVRegLong(code.vA, v1 shl v2)
@@ -185,7 +184,7 @@ class ShlLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class ShrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegLong(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVRegLong(code.vA, v1 shr v2)
@@ -194,7 +193,7 @@ class ShrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class UshrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegLong(code.vA)
         val v2 = frame.getVReg(code.vB)
         frame.setVRegLong(code.vA, v1 ushr v2)
@@ -203,7 +202,7 @@ class UshrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class AddFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegFloat(code.vA)
         val v2 = frame.getVRegFloat(code.vB)
         frame.setVRegFloat(code.vA, v1 + v2)
@@ -212,7 +211,7 @@ class AddFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class SubFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegFloat(code.vA)
         val v2 = frame.getVRegFloat(code.vB)
         frame.setVRegFloat(code.vA, v1 - v2)
@@ -221,7 +220,7 @@ class SubFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class MulFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegFloat(code.vA)
         val v2 = frame.getVRegFloat(code.vB)
         frame.setVRegFloat(code.vA, v1 * v2)
@@ -230,7 +229,7 @@ class MulFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class DivFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegFloat(code.vA)
         val v2 = frame.getVRegFloat(code.vB)
         frame.setVRegFloat(code.vA, v1 / v2)
@@ -239,7 +238,7 @@ class DivFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class RemFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegFloat(code.vA)
         val v2 = frame.getVRegFloat(code.vB)
         frame.setVRegFloat(code.vA, v1 % v2)
@@ -248,7 +247,7 @@ class RemFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class AddDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegDouble(code.vA)
         val v2 = frame.getVRegDouble(code.vB)
         frame.setVRegDouble(code.vA, v1 + v2)
@@ -257,7 +256,7 @@ class AddDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class SubDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegDouble(code.vA)
         val v2 = frame.getVRegDouble(code.vB)
         frame.setVRegDouble(code.vA, v1 - v2)
@@ -266,7 +265,7 @@ class SubDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class MulDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegDouble(code.vA)
         val v2 = frame.getVRegDouble(code.vB)
         frame.setVRegDouble(code.vA, v1 * v2)
@@ -275,7 +274,7 @@ class MulDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class DivDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegDouble(code.vA)
         val v2 = frame.getVRegDouble(code.vB)
         frame.setVRegDouble(code.vA, v1 / v2)
@@ -284,7 +283,7 @@ class DivDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class RemDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory): Int {
         val v1 = frame.getVRegDouble(code.vA)
         val v2 = frame.getVRegDouble(code.vB)
         frame.setVRegDouble(code.vA, v1 % v2)
