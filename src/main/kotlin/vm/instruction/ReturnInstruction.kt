@@ -12,21 +12,21 @@ class ReturnVoid(pc: Int, code: CodeItem) : Instruction._10x(pc, code) {
 
 class Return(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        memory.returnValue = listOf(memory.registers[vAA])
+        memory.returnValue = arrayOf(memory.registers[vAA])
         return -1
     }
 }
 
 class ReturnWide(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        memory.returnValue = listOf(memory.registers[vAA], memory.registers[vAA + 1])
+        memory.returnValue = arrayOf(memory.registers[vAA], memory.registers[vAA + 1])
         return -1
     }
 }
 
 class ReturnObject(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        memory.returnValue = listOf(memory.registers[vAA])
+        memory.returnValue = arrayOf(memory.registers[vAA])
         return -1
     }
 }

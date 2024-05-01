@@ -2,7 +2,7 @@ package com.yhs0602
 
 import com.yhs0602.dex.DexFile
 import com.yhs0602.vm.Environment
-import com.yhs0602.vm.Memory
+import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.executeMethod
 import java.io.File
 
@@ -68,7 +68,9 @@ fun main() {
         println(insn)
     }
     // Input parameters based on the method signature
-    val memory = Memory(codeItem.registersSize.toInt())
+    val args = Array<RegisterValue>(codeItem.insSize.toInt()) {
+        RegisterValue.Int(0)
+    }
     val environment = Environment(parsedDexes)
-    executeMethod(codeItem, environment, memory, codeItem.insSize.toInt())
+    executeMethod(codeItem, environment, args, codeItem.insSize.toInt())
 }
