@@ -25,7 +25,7 @@ class VMThread(
         }
         while (pc < code.insns.size) {
             val instruction = Instruction.fromCode(pc, code)
-            pc = instruction.execute(pc, frame)
+            pc = instruction.execute(pc, frame,)
         }
 //            println("Executing instruction $insn")
 //            when (insn.toInt()) {

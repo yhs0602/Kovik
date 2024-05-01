@@ -4,9 +4,10 @@ package com.yhs0602.vm.instruction
 
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.vm.Frame
+import com.yhs0602.vm.Memory
 
 sealed class Instruction(val insnLength: Int) {
-    abstract fun execute(pc: Int, frame: Frame): Int
+    abstract fun execute(pc: Int, frame: Frame, memory: Memory): Int
 
     companion object {
         fun fromCode(pc: Int, code: CodeItem): Instruction {
@@ -243,7 +244,7 @@ sealed class Instruction(val insnLength: Int) {
     }
 
     data object _00x : Instruction(0) { // N/A
-        override fun execute(pc: Int, frame: Frame): Int {
+        override fun execute(pc: Int, frame: Frame, memory: Memory): Int {
             TODO("Not yet implemented")
         }
     }
