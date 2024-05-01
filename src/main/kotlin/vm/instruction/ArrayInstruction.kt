@@ -52,7 +52,7 @@ class FilledNewArray(pc: Int, val code: CodeItem) : Instruction._35c(pc, code) {
             length,
             array
         )
-        memory.returnValue = listOf(arrayRef)
+        memory.returnValue = arrayOf(arrayRef)
         return pc + insnLength
     }
 }
@@ -68,7 +68,7 @@ class FilledNewArrayRange(pc: Int, val code: CodeItem) : Instruction._3rc(pc, co
             length,
             array
         )
-        memory.returnValue = listOf(arrayRef)
+        memory.returnValue = arrayOf(arrayRef)
         return pc + insnLength
     }
 }

@@ -5,7 +5,6 @@ class Memory(
     val registerSize: Int
 ) {
     val registers = Array<RegisterValue>(registerSize) { RegisterValue.Int(0) }
-    var returnValue = listOf<RegisterValue>()
+    var returnValue = arrayOf<RegisterValue>()
     var exception: ExceptionValue? = null
-    var returnAddress = 0
 }

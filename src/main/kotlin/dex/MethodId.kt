@@ -1,6 +1,6 @@
 package com.yhs0602.dex
 
-data class MethodId(val typeId: TypeId, val protoId: ProtoId, val name: String) {
+data class MethodId(val classId: TypeId, val protoId: ProtoId, val name: String) {
     override fun toString(): String {
         // human readable prototype
         val returnType = protoId.returnType

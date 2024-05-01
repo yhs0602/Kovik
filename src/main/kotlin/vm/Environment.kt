@@ -1,9 +1,6 @@
 package com.yhs0602.vm
 
-import com.yhs0602.dex.CodeItem
-import com.yhs0602.dex.DexFile
-import com.yhs0602.dex.ParsedClass
-import com.yhs0602.dex.TypeId
+import com.yhs0602.dex.*
 
 // Class definitions, typeids, string constants, field ids, method ids, and method prototypes...
 class Environment(
@@ -107,5 +104,21 @@ class Environment(
     fun setStaticField(code: CodeItem, fieldId: Int, value: Array<RegisterValue>) {
         val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
         staticFields[dexFile to fieldId] = value
+    }
+
+    fun getMethod(code: CodeItem, kindBBBB: Int): EncodedMethod {
+        val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
+        val methodId = dexFile.methodIds[kindBBBB]
+        val classDef = dexFile.classDefs.find {
+            it.classDef.typeId == methodId.classId
+        } ?: error("Cannot find class def for method id $methodId")
+        val classData = classDef.classData ?: error("Cannot find class data for class def $classDef")
+        val method = classData.directMethods.find {
+            it.methodId == methodId
+        } ?: classData.virtualMethods.find {
+            it.methodId == methodId
+        } ?: error("Cannot find method for method id $methodId")
+        // method.codeItem
+        return method
     }
 }

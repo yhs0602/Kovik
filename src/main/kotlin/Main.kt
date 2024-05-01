@@ -3,7 +3,7 @@ package com.yhs0602
 import com.yhs0602.dex.DexFile
 import com.yhs0602.vm.Environment
 import com.yhs0602.vm.Memory
-import com.yhs0602.vm.VMThread
+import com.yhs0602.vm.executeMethod
 import java.io.File
 
 fun main() {
@@ -70,9 +70,5 @@ fun main() {
     // Input parameters based on the method signature
     val memory = Memory(codeItem.registersSize.toInt())
     val environment = Environment(parsedDexes)
-    val vm = VMThread(
-        dexes = parsedDexes,
-        memory = memory,
-    )
-    vm.executeMethod(codeItem, environment, memory, codeItem.insSize.toInt())
+    executeMethod(codeItem, environment, memory, codeItem.insSize.toInt())
 }
