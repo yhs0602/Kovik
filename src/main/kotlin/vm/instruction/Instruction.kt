@@ -441,7 +441,7 @@ sealed class Instruction(val insnLength: Int) {
         )
     }
 
-    abstract class _31t(val op: Int, val vAA: Int, val BBBBlo: Int, BBBBhi: Int) :
+    abstract class _31t(val op: Int, val vAA: Int, val BBBBlo: Int, val BBBBhi: Int) :
         Instruction(3) // AA|op BBBBlo BBBBhi, offset
     {
         constructor(pc: Int, code: CodeItem) : this(
