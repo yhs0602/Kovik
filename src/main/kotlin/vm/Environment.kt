@@ -27,6 +27,8 @@ class Environment(
     val typeIds = mutableMapOf<Pair<DexFile, Int>, TypeId>()
     val strings = mutableMapOf<Pair<DexFile, Int>, String>()
 
+    val staticFields = mutableMapOf<Pair<DexFile, Int>, Array<RegisterValue>>()
+
     fun getTypeId(codeItem: CodeItem, index: Int): TypeId {
         val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
         return typeIds.getOrPut(dexFile to index) {
@@ -94,5 +96,16 @@ class Environment(
         return Instance(
             fields = classData.instanceFields,
         )
+    }
+
+    fun getStaticField(code: CodeItem, fieldId: Int): Array<RegisterValue>? {
+        val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
+        val staticValue = staticFields[dexFile to fieldId] ?: return null
+        return staticValue
+    }
+
+    fun setStaticField(code: CodeItem, fieldId: Int, value: Array<RegisterValue>) {
+        val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
+        staticFields[dexFile to fieldId] = value
     }
 }
