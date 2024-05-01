@@ -1,6 +1,8 @@
 package com.yhs0602.vm
 
+import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.DexFile
+import com.yhs0602.dex.TypeId
 
 // Class definitions, typeids, string constants, field ids, method ids, and method prototypes...
 class Environment(
@@ -21,7 +23,58 @@ class Environment(
         }
     }.toMap()
 
-    fun getTypeId(index: String) {
+    val typeIds = mutableMapOf<Pair<DexFile, Int>, TypeId>()
+    val strings = mutableMapOf<Pair<DexFile, Int>, String>()
 
+    fun getTypeId(codeItem: CodeItem, index: Int): TypeId {
+        val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
+        return typeIds.getOrPut(dexFile to index) {
+            dexFile.typeIds[index]
+        }
+    }
+
+    fun getString(codeItem: CodeItem, index: Int): String {
+        val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
+        return strings.getOrPut(dexFile to index) {
+            dexFile.strings[index]
+        }
+    }
+
+    fun isInstanceOf(objectRef: RegisterValue.ObjectRef, targetTypeDescriptor: String): Boolean {
+        // If the target type is a primitive type, return false
+        if (isPrimitiveType(targetTypeDescriptor)) return false
+
+        // Get the actual type of the object reference
+        val actualTypeDescriptor = objectRef.typeDescriptor
+
+        // If the actual type is the same as the target type, return true
+        if (actualTypeDescriptor == targetTypeDescriptor) return true
+
+        // Check the super types of the actual type
+        return checkSuperTypes(actualTypeDescriptor, targetTypeDescriptor)
+    }
+
+    private fun isPrimitiveType(typeDescriptor: String): Boolean {
+        return typeDescriptor in setOf(
+            "I",
+            "B",
+            "C",
+            "D",
+            "F",
+            "J",
+            "S",
+            "Z"
+        ) // Integer, Byte, Char, Double, Float, Long, Short, Boolean
+    }
+
+    // Check the super types of the given type
+    private fun checkSuperTypes(typeDescriptor: String, targetTypeDescriptor: String): Boolean {
+        var currentTypeDescriptor = typeDescriptor
+//        while (currentTypeDescriptor in classHierarchy) {
+//            val superTypes = classHierarchy[currentTypeDescriptor] ?: break
+//            if (targetTypeDescriptor in superTypes) return true
+//            currentTypeDescriptor = superTypes.firstOrNull() ?: break
+//        }
+        return false
     }
 }

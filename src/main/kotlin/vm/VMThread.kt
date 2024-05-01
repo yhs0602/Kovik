@@ -10,30 +10,26 @@ import com.yhs0602.vm.instruction.Instruction
 @OptIn(ExperimentalUnsignedTypes::class)
 class VMThread(
     val dexes: List<DexFile>,
-    val memory: Memory = Memory()
+    val memory: Memory
 ) {
     var pc = 0
     val strings = dexes.associateWith {
         it.strings
     }
 
-    fun executeMethod(code: CodeItem, contextDexFile: DexFile, argument: Frame, argumentSize: Int) {
-        val frame = Frame(code.registersSize.toInt())
+    fun executeMethod(code: CodeItem, environment: Environment, argument: Memory, argumentSize: Int) {
+        val memory = Memory(code.registersSize.toInt())
         // Copy the argument registers to the frame registers
         for (i in 0 until argumentSize) {
-            frame.registers[i] = argument.registers[i]
+            memory.registers[i] = argument.registers[i]
         }
         while (pc < code.insns.size) {
             val instruction = Instruction.fromCode(pc, code)
-            pc = instruction.execute(pc, frame,,)
+            pc = instruction.execute(pc, memory, environment)
         }
 //            println("Executing instruction $insn")
 //            when (insn.toInt()) {
-//                0x00 -> { // nop 10x
-//                    println("nop")
-//                    pc += 1
-//                }
-//
+
 //                0x01 -> { // move vA, vB 12x
 //                    val vA = (operand1 and 0x0F) // 하위 4비트가 vA
 //                    val vB = (operand1 shr 4) // 상위 4비트가 vB

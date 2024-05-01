@@ -5,4 +5,5 @@ sealed class RegisterValue {
     data class StringRef(val index: kotlin.Int) : RegisterValue()
     data class ClassRef(val index: kotlin.Int) : RegisterValue()
     data class ArrayRef(val value: kotlin.Array<RegisterValue>) : RegisterValue()
+    data class ObjectRef(val typeDescriptor: String, val value: kotlin.Any) : RegisterValue()
 }
