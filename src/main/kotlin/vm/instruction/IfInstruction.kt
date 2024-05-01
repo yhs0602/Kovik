@@ -69,72 +69,196 @@ class SparseSwitch(pc: Int, val code: CodeItem) : Instruction._31t(pc, code) {
 
 class IfEq(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val regValue1 = memory.registers[vA]
+        val regValue2 = memory.registers[vB]
+        if (regValue1 == regValue2) {
+            return pc + offset
+        }
+        return pc + insnLength
     }
 }
 
 class IfNe(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val regValue1 = memory.registers[vA]
+        val regValue2 = memory.registers[vB]
+        if (regValue1 != regValue2) {
+            return pc + offset
+        }
+        return pc + insnLength
     }
 }
 
 class IfLt(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val regValue1 = memory.registers[vA]
+        val regValue2 = memory.registers[vB]
+        if (regValue1 !is RegisterValue.Int || regValue2 !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("IfLt: Not an integer")
+            return pc + insnLength
+        }
+        if (regValue1.value < regValue2.value) {
+            return pc + offset
+        }
+        return pc + insnLength
     }
 }
 
 class IfGe(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val regValue1 = memory.registers[vA]
+        val regValue2 = memory.registers[vB]
+        if (regValue1 !is RegisterValue.Int || regValue2 !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("IfGe: Not an integer")
+            return pc + insnLength
+        }
+        if (regValue1.value >= regValue2.value) {
+            return pc + offset
+        }
+        return pc + insnLength
     }
 }
 
 class IfGt(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val regValue1 = memory.registers[vA]
+        val regValue2 = memory.registers[vB]
+        if (regValue1 !is RegisterValue.Int || regValue2 !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("IfGt: Not an integer")
+            return pc + insnLength
+        }
+        if (regValue1.value > regValue2.value) {
+            return pc + offset
+        }
+        return pc + insnLength
     }
 }
 
 class IfLe(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val regValue1 = memory.registers[vA]
+        val regValue2 = memory.registers[vB]
+        if (regValue1 !is RegisterValue.Int || regValue2 !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("IfLe: Not an integer")
+            return pc + insnLength
+        }
+        if (regValue1.value <= regValue2.value) {
+            return pc + offset
+        }
+        return pc + insnLength
     }
 }
 
 class IfEqz(pc: Int, code: CodeItem) : Instruction._21t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        when (val regValue = memory.registers[vAA]) {
+            is RegisterValue.Int -> {
+                return if (regValue.value == 0) {
+                    pc + offset
+                } else {
+                    pc + insnLength
+                }
+            }
+
+            is RegisterValue.ObjectRef -> {
+                return if (regValue.value == null) {
+                    pc + offset
+                } else {
+                    pc + insnLength
+                }
+            }
+
+            else -> {
+                memory.exception = ExceptionValue("IfEqz: Not an integer or object reference")
+                return pc + insnLength
+            }
+        }
     }
 }
 
 class IfNez(pc: Int, code: CodeItem) : Instruction._21t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        when (val regValue = memory.registers[vAA]) {
+            is RegisterValue.Int -> {
+                return if (regValue.value != 0) {
+                    pc + offset
+                } else {
+                    pc + insnLength
+                }
+            }
+
+            is RegisterValue.ObjectRef -> {
+                return if (regValue.value != null) {
+                    pc + offset
+                } else {
+                    pc + insnLength
+                }
+            }
+
+            else -> {
+                memory.exception = ExceptionValue("IfNez: Not an integer or object reference")
+                return pc + insnLength
+            }
+        }
     }
 }
 
 class IfLtz(pc: Int, code: CodeItem) : Instruction._21t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val regValue = memory.registers[vAA]
+        if (regValue !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("IfLtz: Not an integer")
+            return pc + insnLength
+        }
+        return if (regValue.value < 0) {
+            pc + offset
+        } else {
+            pc + insnLength
+        }
     }
 }
 
 class IfGez(pc: Int, code: CodeItem) : Instruction._21t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val regValue = memory.registers[vAA]
+        if (regValue !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("IfGez: Not an integer")
+            return pc + insnLength
+        }
+        return if (regValue.value >= 0) {
+            pc + offset
+        } else {
+            pc + insnLength
+        }
     }
 }
 
 class IfGtz(pc: Int, code: CodeItem) : Instruction._21t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val regValue = memory.registers[vAA]
+        if (regValue !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("IfGtz: Not an integer")
+            return pc + insnLength
+        }
+        return if (regValue.value > 0) {
+            pc + offset
+        } else {
+            pc + insnLength
+        }
     }
 }
 
 class IfLez(pc: Int, code: CodeItem) : Instruction._21t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        return pc + 1
+        val regValue = memory.registers[vAA]
+        if (regValue !is RegisterValue.Int) {
+            memory.exception = ExceptionValue("IfLez: Not an integer")
+            return pc + insnLength
+        }
+        return if (regValue.value <= 0) {
+            pc + offset
+        } else {
+            pc + insnLength
+        }
     }
 }
