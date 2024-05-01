@@ -1,94 +1,95 @@
 package com.yhs0602.vm.instruction
 
 import com.yhs0602.dex.CodeItem
+import com.yhs0602.vm.Environment
 import com.yhs0602.vm.Memory
 
 class NewInstance(pc: Int, code: CodeItem) : Instruction._21c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class Iget(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IgetWide(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IgetObject(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IgetBoolean(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IgetByte(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IgetChar(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IgetShort(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class Iput(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IputWide(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IputObject(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IputBoolean(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IputByte(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IputChar(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
 
 class IputShort(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + 1
     }
 }
