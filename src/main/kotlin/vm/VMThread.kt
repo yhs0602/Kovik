@@ -9,7 +9,7 @@ fun executeMethod(
     code: CodeItem,
     environment: Environment,
     argument: Array<RegisterValue>,
-    argumentSize: Int
+    argumentSize: Int,
 ): Array<RegisterValue> {
     val memory = Memory(code.registersSize.toInt())
     // Copy the argument registers to the frame registers
@@ -19,6 +19,7 @@ fun executeMethod(
     }
     while (pc < code.insns.size) {
         val instruction = Instruction.fromCode(pc, code)
+        environment.callback(instruction, memory)
         pc = instruction.execute(pc, memory, environment)
         if (pc < 0) {
             // return instruction

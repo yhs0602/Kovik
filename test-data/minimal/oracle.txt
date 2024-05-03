@@ -1,0 +1,53 @@
+package com.example.sample
+
+class TargetMethods {
+    fun simpleMethod(a: Int, b: Int): Int {
+        return a + b
+    }
+
+    fun conditionalMethod(a: Int, b: Int): Int {
+        return if (a > b) {
+            a
+        } else {
+            b
+        }
+    }
+
+    fun loopMethod(count: Int): Int {
+        var sum = 0
+        for (i in 1..count) {
+            sum += i
+        }
+        return sum
+    }
+
+    fun arrayMethod(arr: IntArray): Int {
+        var sum = 0
+        for (num in arr) {
+            sum += num
+        }
+        return sum
+    }
+
+    fun instanceMethod(other: TargetMethods): Int {
+        return simpleMethod(3, other.conditionalMethod(5, 2))
+    }
+
+    fun doTest() {
+        println("Simple method: ${simpleMethod(2, 3)}") // Output: Simple method: 5
+        println(
+            "Conditional method: ${
+                conditionalMethod(
+                    5,
+                    3
+                )
+            }"
+        ) // Output: Conditional method: 5
+        println("Loop method: ${loopMethod(5)}") // Output: Loop method: 15
+        val myArray = intArrayOf(1, 2, 3, 4, 5)
+        println("Array method: ${arrayMethod(myArray)}") // Output: Array method: 15
+
+        val otherObject = TargetMethods()
+        println("Instance method: ${instanceMethod(otherObject)}") // Output: Instance method: 8
+    }
+}

@@ -1,6 +1,8 @@
 package com.yhs0602
 
 import com.yhs0602.dex.DexFile
+import com.yhs0602.mockedmethod.StringBuilderAppend
+import com.yhs0602.mockedmethod.StringBuilderInit
 import com.yhs0602.vm.Environment
 import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.executeMethod
@@ -10,7 +12,9 @@ fun main() {
     // Surprisingly, multidex is default nowadays
     println("Enter the path of the folder of dexes:")
     val path = readlnOrNull() ?: return
-    val dexes = File(path).listFiles() ?: return
+    val dexes = File(path).listFiles { _, name ->
+        name.endsWith(".dex")
+    } ?: return
     dexes.forEach {
         println(it.name)
     }
@@ -31,7 +35,7 @@ fun main() {
     }
     // Find entry point, and setup start environment
     println("Enter the package name to search:")
-    val packageName = readlnOrNull() ?: return
+    val packageName = "com.example.sample"// readlnOrNull() ?: return
     val packageNameStr = packageName.replace(".", "/")
     println("Classes====================")
     val classes = parsedDexes.flatMap { it.classDefs }
@@ -41,7 +45,7 @@ fun main() {
         }
     }
     println("Enter the class name you are interested in:")
-    val className = readlnOrNull() ?: return
+    val className = "TargetMethods" // readlnOrNull() ?: return
     val classNameStr = "L$packageNameStr/$className;"
     val classDef = classes.find { it.classDef.typeId.descriptor == classNameStr } ?: return
     println("Methods====================")
@@ -55,7 +59,7 @@ fun main() {
         println(method)
     }
     println("Enter the method name you are interested in:")
-    val methodName = readlnOrNull() ?: return
+    val methodName = "doTest" // readlnOrNull() ?: return
     val method = methods.find { it.methodId.name == methodName } ?: return
     println("Code====================")
     val codeItem = method.codeItem ?: run {
@@ -71,6 +75,18 @@ fun main() {
     val args = Array<RegisterValue>(codeItem.insSize.toInt()) {
         RegisterValue.Int(0)
     }
-    val environment = Environment(parsedDexes)
+    val mockedMethodList = listOf(
+        StringBuilderInit(),
+        StringBuilderAppend()
+    )
+    val mockedMethods = mockedMethodList.associateBy {
+        Triple(it.classId, it.parameters, it.name)
+    }
+    val environment = Environment(
+        parsedDexes,
+        mockedMethods,
+    ) { instruction, memory ->
+        println("After $instruction: ${memory.registers.toList()} exception=${memory.exception}") // Debug
+    }
     executeMethod(codeItem, environment, args, codeItem.insSize.toInt())
 }

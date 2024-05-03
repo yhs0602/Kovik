@@ -1,10 +1,16 @@
 package com.yhs0602.vm
 
-import com.yhs0602.dex.*
+import com.yhs0602.dex.CodeItem
+import com.yhs0602.dex.DexFile
+import com.yhs0602.dex.ParsedClass
+import com.yhs0602.dex.TypeId
+import com.yhs0602.vm.instruction.Instruction
 
 // Class definitions, typeids, string constants, field ids, method ids, and method prototypes...
 class Environment(
-    val dexFiles: List<DexFile>
+    val dexFiles: List<DexFile>,
+    val mockedMethods: Map<Triple<TypeId, List<TypeId>, String>, MockedMethod> = mapOf(),
+    val callback: (Instruction, Memory) -> Unit = { instruction: Instruction, memory: Memory -> }
 ) {
     val codeItemToDexFile = dexFiles.flatMap { dexFile ->
         dexFile.classDefs.asSequence().flatMap { classDef ->
@@ -90,7 +96,7 @@ class Environment(
         if (classDef.accessFlags.isAbstract)
             throw Exception("Cannot create instance of abstract class")
         val classData = clazz.classData ?: throw Exception("Class data not found")
-        return Instance(
+        return DictionaryBackedInstance(
             fields = classData.instanceFields,
         )
     }
@@ -106,12 +112,25 @@ class Environment(
         staticFields[dexFile to fieldId] = value
     }
 
-    fun getMethod(code: CodeItem, kindBBBB: Int): EncodedMethod {
+    fun getMethod(code: CodeItem, kindBBBB: Int): MethodWrapper {
         val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
         val methodId = dexFile.methodIds[kindBBBB]
         val classDef = dexFile.classDefs.find {
             it.classDef.typeId == methodId.classId
-        } ?: error("Cannot find class def for method id $methodId")
+        } ?: run {
+            // TODO: search in the parent classes
+            // Search in mocked
+            val triple = Triple(methodId.classId, methodId.protoId.parameters, methodId.name)
+            val mocked = mockedMethods[triple]
+            if (mocked != null) {
+                return MethodWrapper.Mocked(mocked)
+            }
+            // Dump the class def
+            dexFile.classDefs.forEach {
+                println(it)
+            }
+            throw Exception("Cannot find class def for method id $methodId, ${methodId.classId}")
+        }
         val classData = classDef.classData ?: error("Cannot find class data for class def $classDef")
         val method = classData.directMethods.find {
             it.methodId == methodId
@@ -119,6 +138,16 @@ class Environment(
             it.methodId == methodId
         } ?: error("Cannot find method for method id $methodId")
         // method.codeItem
-        return method
+        return MethodWrapper.Encoded(method)
+    }
+
+    fun executeMockedMethod(method: MockedMethod, registers: Array<RegisterValue>, c: Int): Array<RegisterValue> {
+        // marshal the arguments
+        val args = registers.copyOfRange(0, c)
+        // convert the arguments to the expected types
+        println("Executing mocked method $method with args ${args.joinToString()}; c=$c, registers=${registers.joinToString()}")
+        val returnValue = method.execute(args)
+        // convert the return value to the expected type
+        return arrayOf(returnValue)
     }
 }
