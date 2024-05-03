@@ -80,7 +80,10 @@ class MoveObject1616(pc: Int, code: CodeItem) : Instruction._32x(pc, code) {
 
 class MoveResult(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        memory.registers[vAA] = memory.returnValue[0]
+        // Copy memory return value to vAA...
+        for (i in 0 until memory.returnValue.size) {
+            memory.registers[vAA + i] = memory.returnValue[i]
+        }
         return pc + insnLength
     }
 
