@@ -18,10 +18,11 @@ fun executeMethod(
     val memory = Memory(code.registersSize.toInt())
     // Copy the argument registers to the frame registers
     var pc = 0
-    val argFirstIndex = code.registersSize.toInt() - argumentSize
+    val registersCount = code.registersSize.toInt()
     for (i in 0 until argumentSize) {
-        memory.registers[i + argFirstIndex] = argument[i]
+        memory.registers[registersCount - i - 1] = argument[i]
     }
+
     while (pc < code.insns.size) {
         val instruction = Instruction.fromCode(pc, code)
         environment.beforeInstruction(pc, instruction, memory)

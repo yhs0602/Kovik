@@ -158,6 +158,7 @@ class Environment(
             val triple = Triple(methodId.classId, methodId.protoId.parameters, methodId.name)
             val mocked = mockedMethods[triple]
             if (mocked != null) {
+                println("Requested: $methodId, found: $mocked, triple: $triple")
                 return MethodWrapper.Mocked(mocked)
             }
             // Dump the class def
@@ -185,7 +186,7 @@ class Environment(
         // marshal the arguments
         val args = registers.copyOfRange(0, c)
         // convert the arguments to the expected types
-        println("Executing mocked method $method with args ${args.joinToString()}")
+        println("Executing mocked method $method with args ${args.joinToString(",")}")
         return method.execute(args, this, code)
     }
 }
