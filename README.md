@@ -10,18 +10,25 @@ This example shows how to parse a .dex file and print out some information about
 package com.yhs0602
 
 import com.yhs0602.dex.DexFile
+import com.yhs0602.mockedclass.MockedStringBuilder
+import com.yhs0602.mockedmethod.*
+import com.yhs0602.vm.Environment
+import com.yhs0602.vm.RegisterValue
+import com.yhs0602.vm.executeMethod
 import java.io.File
 
 fun main() {
     // Surprisingly, multidex is default nowadays
     println("Enter the path of the folder of dexes:")
     val path = readlnOrNull() ?: return
-    val dexes = File(path).listFiles() ?: return
+    val dexes = File(path).listFiles { _, name ->
+        name.endsWith(".dex")
+    } ?: return
     dexes.forEach {
         println(it.name)
     }
     val parsedDexes = dexes.map {
-        DexFile.fromFile(EndianAwareRandomAccessFile(it, "r"))
+        DexFile.fromFile(it)
     }
     for (dex in parsedDexes) {
         println(dex.header)
@@ -37,7 +44,7 @@ fun main() {
     }
     // Find entry point, and setup start environment
     println("Enter the package name to search:")
-    val packageName = readlnOrNull() ?: return
+    val packageName = "com.example.sample"// readlnOrNull() ?: return
     val packageNameStr = packageName.replace(".", "/")
     println("Classes====================")
     val classes = parsedDexes.flatMap { it.classDefs }
@@ -47,7 +54,7 @@ fun main() {
         }
     }
     println("Enter the class name you are interested in:")
-    val className = readlnOrNull() ?: return
+    val className = "TargetMethods" // readlnOrNull() ?: return
     val classNameStr = "L$packageNameStr/$className;"
     val classDef = classes.find { it.classDef.typeId.descriptor == classNameStr } ?: return
     println("Methods====================")
@@ -61,7 +68,7 @@ fun main() {
         println(method)
     }
     println("Enter the method name you are interested in:")
-    val methodName = readlnOrNull() ?: return
+    val methodName = "doTest" // readlnOrNull() ?: return
     val method = methods.find { it.methodId.name == methodName } ?: return
     println("Code====================")
     val codeItem = method.codeItem ?: run {
@@ -73,6 +80,40 @@ fun main() {
     for (insn in code) {
         println(insn)
     }
+    // Input parameters based on the method signature
+    val args = Array<RegisterValue>(codeItem.insSize.toInt()) {
+        RegisterValue.Int(0)
+    }
+    val mockedMethodList = listOf(
+        StringBuilderInit(),
+        StringBuilderAppend(),
+        StringBuilderAppendI(),
+        StringBuilderToString(),
+        PrintLn(),
+        KotlinJvmInternalIntrinsicsCheckNotNullPointer(),
+        ObjectInit(),
+    )
+    val mockedClassesList = listOf(
+        MockedStringBuilder()
+    )
+    val mockedMethods = mockedMethodList.associateBy {
+        Triple(it.classId, it.parameters, it.name)
+    }
+    val mockedClasses = mockedClassesList.associateBy {
+        it.classId
+    }
+    val environment = Environment(
+        parsedDexes,
+        mockedMethods,
+        mockedClasses,
+        beforeInstruction = { pc, instruction, memory ->
+            println("Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
+        },
+        afterInstruction = { pc, instruction, memory ->
+            println("After $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
+        }
+    )
+    executeMethod(codeItem, environment, args, codeItem.insSize.toInt())
 }
 ```
 
@@ -86,4 +127,6 @@ fun main() {
 ## TODO
 
 - Mock non-intrinsic Objects better
+- Mock System static fields
+- Easier mocking of classes
 - JNI callback

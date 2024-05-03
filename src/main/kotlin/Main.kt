@@ -82,6 +82,7 @@ fun main() {
         StringBuilderToString(),
         PrintLn(),
         KotlinJvmInternalIntrinsicsCheckNotNullPointer(),
+        ObjectInit(),
     )
     val mockedClassesList = listOf(
         MockedStringBuilder()
