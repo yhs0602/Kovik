@@ -80,9 +80,10 @@ fun main() {
 
 - Basic .dex parsing support
 - Parse method body
+- Emulate instructions
+- Represent real / mocked (lazy) values
 
 ## TODO
 
-- Emulate instructions
-- Represent real / mocked (lazy) values
+- Mock non-intrinsic Objects better
 - JNI callback
