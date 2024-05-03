@@ -1,7 +1,9 @@
 package com.yhs0602
 
 import com.yhs0602.dex.DexFile
+import com.yhs0602.mockedclass.MockedStringBuilder
 import com.yhs0602.mockedmethod.StringBuilderAppend
+import com.yhs0602.mockedmethod.StringBuilderAppendI
 import com.yhs0602.mockedmethod.StringBuilderInit
 import com.yhs0602.vm.Environment
 import com.yhs0602.vm.RegisterValue
@@ -19,7 +21,7 @@ fun main() {
         println(it.name)
     }
     val parsedDexes = dexes.map {
-        DexFile.fromFile(EndianAwareRandomAccessFile(it, "r"))
+        DexFile.fromFile(it)
     }
     for (dex in parsedDexes) {
         println(dex.header)
@@ -77,14 +79,22 @@ fun main() {
     }
     val mockedMethodList = listOf(
         StringBuilderInit(),
-        StringBuilderAppend()
+        StringBuilderAppend(),
+        StringBuilderAppendI()
+    )
+    val mockedClassesList = listOf(
+        MockedStringBuilder()
     )
     val mockedMethods = mockedMethodList.associateBy {
         Triple(it.classId, it.parameters, it.name)
     }
+    val mockedClasses = mockedClassesList.associateBy {
+        it.classId
+    }
     val environment = Environment(
         parsedDexes,
         mockedMethods,
+        mockedClasses,
     ) { instruction, memory ->
         println("After $instruction: ${memory.registers.toList()} exception=${memory.exception}") // Debug
     }

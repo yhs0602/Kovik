@@ -2,7 +2,6 @@ package com.yhs0602.vm
 
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.DexFile
-import com.yhs0602.dex.ParsedClass
 import com.yhs0602.dex.TypeId
 import com.yhs0602.vm.instruction.Instruction
 
@@ -10,6 +9,7 @@ import com.yhs0602.vm.instruction.Instruction
 class Environment(
     val dexFiles: List<DexFile>,
     val mockedMethods: Map<Triple<TypeId, List<TypeId>, String>, MockedMethod> = mapOf(),
+    val mockedClasses: Map<TypeId, MockedClass> = mapOf(),
     val callback: (Instruction, Memory) -> Unit = { instruction: Instruction, memory: Memory -> }
 ) {
     val codeItemToDexFile = dexFiles.flatMap { dexFile ->
@@ -84,21 +84,53 @@ class Environment(
         return false
     }
 
-    fun getClassDef(codeItem: CodeItem, typeId: TypeId): ParsedClass? {
+    fun getClassDef(codeItem: CodeItem, typeId: TypeId): ClassRepresentation? {
         val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
-        return dexFile.classDefs.find {
+        println("Searching for class def with typeId $typeId")
+        val classDef = dexFile.classDefs.find {
             it.classDef.typeId == typeId
         }
+        if (classDef != null)
+            return ClassRepresentation.DexClassRepresentation(classDef.classDef, classDef.classData)
+        println("Class def not found in dex file ${dexFile.file.name}")
+        for (file in dexFiles) {
+            println("Searching in dex file ${file.file.name}")
+            val classDef = file.classDefs.find {
+                it.classDef.typeId == typeId
+            }
+            if (classDef != null)
+                return ClassRepresentation.DexClassRepresentation(classDef.classDef, classDef.classData)
+        }
+        println("Class def not found in any dex file")
+        // search for mocked classes
+        mockedClasses[typeId]?.let {
+            return ClassRepresentation.MockedClassRepresentation(it)
+        }
+        return null
     }
 
-    fun createInstance(clazz: ParsedClass): Instance {
-        val classDef = clazz.classDef
-        if (classDef.accessFlags.isAbstract)
-            throw Exception("Cannot create instance of abstract class")
-        val classData = clazz.classData ?: throw Exception("Class data not found")
-        return DictionaryBackedInstance(
-            fields = classData.instanceFields,
-        )
+    fun createInstance(clazz: ClassRepresentation): RegisterValue.ObjectRef {
+        when (clazz) {
+            is ClassRepresentation.DexClassRepresentation -> {
+                val classDef = clazz.classDef
+                if (classDef.accessFlags.isAbstract)
+                    throw Exception("Cannot create instance of abstract class")
+                val classData = clazz.classData ?: throw Exception("Class data not found")
+                return RegisterValue.ObjectRef(
+                    classDef.typeId,
+                    DictionaryBackedInstance(
+                        fields = classData.instanceFields,
+                    )
+                )
+            }
+
+            is ClassRepresentation.MockedClassRepresentation -> {
+                return RegisterValue.ObjectRef(
+                    clazz.mockedClass.classId,
+                    MockedInstance(clazz.mockedClass.createInstance())
+                )
+            }
+        }
     }
 
     fun getStaticField(code: CodeItem, fieldId: Int): Array<RegisterValue>? {
@@ -145,7 +177,7 @@ class Environment(
         // marshal the arguments
         val args = registers.copyOfRange(0, c)
         // convert the arguments to the expected types
-        println("Executing mocked method $method with args ${args.joinToString()}; c=$c, registers=${registers.joinToString()}")
+        println("Executing mocked method $method with args ${args.joinToString()}")
         val returnValue = method.execute(args)
         // convert the return value to the expected type
         return arrayOf(returnValue)

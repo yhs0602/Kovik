@@ -76,25 +76,99 @@ class MockedInstance(val value: Any) : Instance {
 
     override fun invokeMethod(name: String, args: List<RegisterValue>): RegisterValue {
         return try {
-            val method = clazz.methods.first { it.name == name }
-            val result = method.invoke(value, *args.map {
-                it
-            }.toTypedArray())
-            when (method.returnType) {
-                Int::class.java -> RegisterValue.Int(result as Int)
-                String::class.java -> RegisterValue.ObjectRef(TypeId("Ljava/lang/String;"), MockedInstance(result))
-                else -> throw IllegalArgumentException("Unsupported return type ${method.returnType}")
+            val method = clazz.methods.first {
+                compareMethodProto(it, name, args)
             }
+            // Drop first argument as it is the instance, if it is not static
+//            val args = if (!AccessFlags(method.modifiers).isStatic) args.drop(1) else args
+            println("Invoking $method ${method.parameterTypes.joinToString(" ") { it.name }} with args $args")
+            val argArr = args.map {
+                marshalArgument(it) as String
+            }.toTypedArray()
+            println("2. Invoking $name with args $argArr for object $value")
+            val result = method.invoke(value, *argArr)
+            val resultType = method.returnType
+            val unmarshalledResult = unmarshalArgument(result, resultType)
+            unmarshalledResult
         } catch (e: NoSuchElementException) {
             throw IllegalArgumentException("Method $name not found")
         }
     }
 }
 
+// TODO: Implement more strictly
+fun compareMethodProto(method: java.lang.reflect.Method, name: String, args: List<RegisterValue>): Boolean {
+    if (method.name != name)
+        return false
+    if (method.parameterCount != args.size)
+        return false
+    val methodParameterTypes = method.parameterTypes
+
+    var i = 0
+    while (i < args.size) {
+        val paramType = methodParameterTypes[i]
+
+        // 파라미터의 타입과 인자의 타입을 비교하여 일치하지 않으면 false를 반환
+        val (result, consumed) = compareArgumentType(args, i, paramType)
+        if (!result)
+            return false
+        i += consumed
+    }
+    return true
+}
+
+fun compareArgumentType(args: List<RegisterValue>, idx: Int, paramType: Class<*>): Pair<Boolean, Int> {
+    val arg = args[idx]
+    return when {
+        paramType == Int::class.java && arg is RegisterValue.Int -> true to 1
+        paramType == String::class.java && arg is RegisterValue.StringRef -> true to 1
+        paramType == Long::class.java && arg is RegisterValue.Int -> {
+            if (args.size <= idx + 1) {
+                false to 0
+            }
+            val nextArg = args[idx + 1]
+            if (nextArg is RegisterValue.Int) {
+                true to 2
+            } else {
+                false to 0
+            }
+        }
+
+        paramType == Float::class.java && arg is RegisterValue.Int -> true to 1
+        paramType == Double::class.java && arg is RegisterValue.Int -> {
+            if (args.size <= idx + 1) {
+                false to 0
+            }
+            val nextArg = args[idx + 1]
+            if (nextArg is RegisterValue.Int) {
+                true to 2
+            } else {
+                false to 0
+            }
+        }
+
+        paramType == Boolean::class.java && arg is RegisterValue.Int -> true to 1
+        paramType == Char::class.java && arg is RegisterValue.Int -> true to 1
+        paramType == Byte::class.java && arg is RegisterValue.Int -> true to 1
+        paramType == Short::class.java && arg is RegisterValue.Int -> true to 1
+        paramType.isArray && arg is RegisterValue.ArrayRef -> {
+            if (args.size <= idx + 1) {
+                false to 0
+            }
+            val componentType = paramType.componentType
+            val result = arg.values.all { compareArgumentType(listOf(it), 0, componentType).first }
+            result to arg.values.size
+        }
+
+        paramType == Object::class.java && arg is RegisterValue.ObjectRef -> true to 1
+        else -> false to 0
+    }
+}
+
 fun marshalArgument(registerValue: RegisterValue): Any? {
     return when (registerValue) {
         is RegisterValue.Int -> registerValue.value
-        is RegisterValue.StringRef -> "string"
+        is RegisterValue.StringRef -> java.lang.String("string")
         is RegisterValue.ClassRef -> {
             "class"
         }
@@ -104,11 +178,27 @@ fun marshalArgument(registerValue: RegisterValue): Any? {
         }
 
         is RegisterValue.ObjectRef -> {
-            when(registerValue.value) {
+            when (registerValue.value) {
                 is MockedInstance -> registerValue.value.value
                 is Instance -> registerValue.value
                 else -> null
             }
         }
+    }
+}
+
+
+fun unmarshalArgument(value: Any, returnType: Class<*>): RegisterValue {
+    return when (value) {
+        is Int -> RegisterValue.Int(value)
+        is String -> RegisterValue.ObjectRef(TypeId("Ljava/lang/String;"), MockedInstance(value))
+        is Array<*> -> {
+            val values = value.map {
+                unmarshalArgument(it!!, returnType.componentType!!)
+            }
+            RegisterValue.ArrayRef(TypeId(returnType.componentType!!.typeName), value.size, values.toTypedArray())
+        }
+
+        else -> RegisterValue.ObjectRef(TypeId(value::class.javaObjectType.typeName), MockedInstance(value))
     }
 }

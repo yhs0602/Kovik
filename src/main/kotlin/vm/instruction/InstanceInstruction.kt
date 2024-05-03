@@ -11,8 +11,7 @@ class NewInstance(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
             memory.exception = ExceptionValue("NewInstance: Class not found")
             return pc + insnLength
         }
-        val obj = environment.createInstance(parsedClass)
-        memory.registers[vAA] = RegisterValue.ObjectRef(parsedClass.classDef.typeId, obj)
+        memory.registers[vAA] = environment.createInstance(parsedClass)
         return pc + insnLength
     }
 }

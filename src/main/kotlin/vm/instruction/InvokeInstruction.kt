@@ -20,10 +20,16 @@ open class InvokeVirtual(pc: Int, val code: CodeItem) : Instruction._35c(pc, cod
                 }
                 val argRegList = arrayOf(C, D, E, F, G)
                 val args = Array(A) { memory.registers[argRegList[it]] }
-                memory.returnValue = executeMethod(codeItem, environment, args, C)
+                memory.returnValue = executeMethod(codeItem, environment, args, A)
                 return pc + insnLength
             }
         }
+    }
+
+    override fun toString(): String {
+        val argRegList = arrayOf(C, D, E, F, G)
+        val args = Array(A) { argRegList[it] }
+        return "InvokeVirtual ($A args: ${args.joinToString(",")})"
     }
 }
 

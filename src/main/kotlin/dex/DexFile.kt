@@ -1,6 +1,7 @@
 package com.yhs0602.dex
 
 import com.yhs0602.EndianAwareRandomAccessFile
+import java.io.File
 import kotlin.math.abs
 
 private fun EndianAwareRandomAccessFile.readUnsignedLeb128(): Int {
@@ -148,6 +149,7 @@ private fun EndianAwareRandomAccessFile.readEncodedValue(): Any? {
 }
 
 data class DexFile(
+    val file: File,
     val header: Header,
     val strings: List<String>,
     val typeIds: List<TypeId>,
@@ -163,8 +165,8 @@ data class DexFile(
 ) {
 
     companion object {
-        @OptIn(ExperimentalUnsignedTypes::class)
-        fun fromFile(inputFile: EndianAwareRandomAccessFile): DexFile {
+        fun fromFile(file: File): DexFile {
+            val inputFile = EndianAwareRandomAccessFile(file, "r")
             val header = Header.fromDataInputStream(inputFile)
             inputFile.seek(header.stringIdsOff.toLong() and 0xFFFFFFFF)
             val stringIds = List(header.stringIdsSize) {
@@ -388,6 +390,7 @@ data class DexFile(
 
 
             return DexFile(
+                file = file,
                 header,
                 strings,
                 typeIdItems,

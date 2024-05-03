@@ -10,6 +10,10 @@ class Const4(pc: Int, code: CodeItem) : Instruction._11n(pc, code) {
         memory.registers[vA] = RegisterValue.Int(LB)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "Const/4 reg[$vA] <- $LB"
+    }
 }
 
 class Const16(pc: Int, code: CodeItem) : Instruction._21s(pc, code) {

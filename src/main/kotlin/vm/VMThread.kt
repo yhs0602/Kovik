@@ -11,6 +11,8 @@ fun executeMethod(
     argument: Array<RegisterValue>,
     argumentSize: Int,
 ): Array<RegisterValue> {
+    println("Argument size = $argumentSize Register size = ${code.registersSize} ${code.insSize} ${code.outsSize}")
+
     val memory = Memory(code.registersSize.toInt())
     // Copy the argument registers to the frame registers
     var pc = 0
