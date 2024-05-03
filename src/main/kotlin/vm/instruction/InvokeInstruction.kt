@@ -8,7 +8,9 @@ open class InvokeVirtual(pc: Int, val code: CodeItem) : Instruction._35c(pc, cod
         val method = environment.getMethod(code, BBBB)
         when (method) {
             is MethodWrapper.Mocked -> {
-                memory.returnValue = environment.executeMockedMethod(method.mockedMethod, memory.registers, A)
+                val argRegList = arrayOf(C, D, E, F, G)
+                val args = Array(A) { memory.registers[argRegList[it]] }
+                memory.returnValue = environment.executeMockedMethod(code, method.mockedMethod, args, A)
                 return pc + insnLength
             }
 
@@ -66,7 +68,7 @@ open class InvokeVirtualRange(pc: Int, val code: CodeItem) : Instruction._3rc(pc
             }
 
             is MethodWrapper.Mocked -> {
-                memory.returnValue = environment.executeMockedMethod(method.mockedMethod, memory.registers, count)
+                memory.returnValue = environment.executeMockedMethod(code, method.mockedMethod, memory.registers, count)
                 return pc + insnLength
             }
         }

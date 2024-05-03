@@ -2,9 +2,7 @@ package com.yhs0602
 
 import com.yhs0602.dex.DexFile
 import com.yhs0602.mockedclass.MockedStringBuilder
-import com.yhs0602.mockedmethod.StringBuilderAppend
-import com.yhs0602.mockedmethod.StringBuilderAppendI
-import com.yhs0602.mockedmethod.StringBuilderInit
+import com.yhs0602.mockedmethod.*
 import com.yhs0602.vm.Environment
 import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.executeMethod
@@ -80,7 +78,10 @@ fun main() {
     val mockedMethodList = listOf(
         StringBuilderInit(),
         StringBuilderAppend(),
-        StringBuilderAppendI()
+        StringBuilderAppendI(),
+        StringBuilderToString(),
+        PrintLn(),
+        KotlinJvmInternalIntrinsicsCheckNotNullPointer(),
     )
     val mockedClassesList = listOf(
         MockedStringBuilder()
@@ -95,8 +96,12 @@ fun main() {
         parsedDexes,
         mockedMethods,
         mockedClasses,
-    ) { instruction, memory ->
-        println("After $instruction: ${memory.registers.toList()} exception=${memory.exception}") // Debug
-    }
+        beforeInstruction = { pc, instruction, memory ->
+            println("Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
+        },
+        afterInstruction = { pc, instruction, memory ->
+            println("After $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
+        }
+    )
     executeMethod(codeItem, environment, args, codeItem.insSize.toInt())
 }

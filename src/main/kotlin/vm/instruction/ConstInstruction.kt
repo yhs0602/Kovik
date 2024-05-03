@@ -75,6 +75,10 @@ class ConstString(pc: Int, code: CodeItem) : Instruction._21c(pc, code) {
         memory.registers[vAA] = RegisterValue.StringRef(KindBBBB)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "ConstString reg[$vAA] <- Strings[$KindBBBB]"
+    }
 }
 
 class ConstStringJumbo(pc: Int, code: CodeItem) : Instruction._31c(pc, code) {

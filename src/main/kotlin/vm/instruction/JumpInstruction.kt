@@ -17,9 +17,13 @@ class Throw(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
     }
 }
 
-class Goto(pc: Int, code: CodeItem) : Instruction._10t(pc, code) {
+class Goto(val pc: Int, code: CodeItem) : Instruction._10t(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         return pc + offset
+    }
+
+    override fun toString(): String {
+        return "goto ${pc + offset}"
     }
 }
 

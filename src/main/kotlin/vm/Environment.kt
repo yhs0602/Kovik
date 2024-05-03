@@ -10,7 +10,8 @@ class Environment(
     val dexFiles: List<DexFile>,
     val mockedMethods: Map<Triple<TypeId, List<TypeId>, String>, MockedMethod> = mapOf(),
     val mockedClasses: Map<TypeId, MockedClass> = mapOf(),
-    val callback: (Instruction, Memory) -> Unit = { instruction: Instruction, memory: Memory -> }
+    val beforeInstruction: (Int, Instruction, Memory) -> Unit = { pc: Int, instruction: Instruction, memory: Memory -> },
+    val afterInstruction: (Int, Instruction, Memory) -> Unit = { pc: Int, instruction: Instruction, memory: Memory -> }
 ) {
     val codeItemToDexFile = dexFiles.flatMap { dexFile ->
         dexFile.classDefs.asSequence().flatMap { classDef ->
@@ -92,9 +93,9 @@ class Environment(
         }
         if (classDef != null)
             return ClassRepresentation.DexClassRepresentation(classDef.classDef, classDef.classData)
-        println("Class def not found in dex file ${dexFile.file.name}")
+//        println("Class def not found in dex file ${dexFile.file.name}")
         for (file in dexFiles) {
-            println("Searching in dex file ${file.file.name}")
+//            println("Searching in dex file ${file.file.name}")
             val classDef = file.classDefs.find {
                 it.classDef.typeId == typeId
             }
@@ -135,6 +136,8 @@ class Environment(
 
     fun getStaticField(code: CodeItem, fieldId: Int): Array<RegisterValue>? {
         val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
+        val fieldIdObj = dexFile.fieldIds[fieldId]
+        println("Getting static field $fieldIdObj")
         val staticValue = staticFields[dexFile to fieldId] ?: return null
         return staticValue
     }
@@ -173,13 +176,16 @@ class Environment(
         return MethodWrapper.Encoded(method)
     }
 
-    fun executeMockedMethod(method: MockedMethod, registers: Array<RegisterValue>, c: Int): Array<RegisterValue> {
+    fun executeMockedMethod(
+        code: CodeItem,
+        method: MockedMethod,
+        registers: Array<RegisterValue>,
+        c: Int
+    ): Array<RegisterValue> {
         // marshal the arguments
         val args = registers.copyOfRange(0, c)
         // convert the arguments to the expected types
         println("Executing mocked method $method with args ${args.joinToString()}")
-        val returnValue = method.execute(args)
-        // convert the return value to the expected type
-        return arrayOf(returnValue)
+        return method.execute(args, this, code)
     }
 }

@@ -11,7 +11,9 @@ fun executeMethod(
     argument: Array<RegisterValue>,
     argumentSize: Int,
 ): Array<RegisterValue> {
-    println("Argument size = $argumentSize Register size = ${code.registersSize} ${code.insSize} ${code.outsSize}")
+    println("New function frame start")
+    println("Argument size = $argumentSize Register size = ${code.registersSize} insSize = ${code.insSize} outsSize=${code.outsSize}")
+    println("Argument = ${argument.contentToString()}")
 
     val memory = Memory(code.registersSize.toInt())
     // Copy the argument registers to the frame registers
@@ -21,8 +23,9 @@ fun executeMethod(
     }
     while (pc < code.insns.size) {
         val instruction = Instruction.fromCode(pc, code)
-        environment.callback(instruction, memory)
+        environment.beforeInstruction(pc, instruction, memory)
         pc = instruction.execute(pc, memory, environment)
+        environment.afterInstruction(pc, instruction, memory)
         if (pc < 0) {
             // return instruction
             break

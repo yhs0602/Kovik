@@ -117,6 +117,10 @@ class IfGe(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
         }
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "IfGe v$vA >= v$vB -> +$offset"
+    }
 }
 
 class IfGt(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {

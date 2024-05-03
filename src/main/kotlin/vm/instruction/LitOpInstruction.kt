@@ -129,6 +129,10 @@ class AddIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
         memory.registers[vAA] = RegisterValue.Int(value1.value + value2)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "AddIntLit8 v$vAA = v$vBB + $LCC"
+    }
 }
 
 class RsubIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {

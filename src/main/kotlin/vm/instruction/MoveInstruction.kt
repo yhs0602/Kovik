@@ -83,6 +83,10 @@ class MoveResult(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
         memory.registers[vAA] = memory.returnValue[0]
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "MoveResult v$vAA"
+    }
 }
 
 class MoveResultWide(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {

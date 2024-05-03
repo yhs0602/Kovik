@@ -21,6 +21,10 @@ class AddInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
         memory.registers[vA] = RegisterValue.Int(value1.value + value2.value)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "AddInt2Addr v$vA += v$vB"
+    }
 }
 
 class SubInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {

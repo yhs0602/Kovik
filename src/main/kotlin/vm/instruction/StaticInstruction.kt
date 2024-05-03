@@ -49,6 +49,10 @@ class SgetObject(pc: Int, code: CodeItem) : Sget(pc, code) {
         }
         memory.registers[vAA] = value[0]
     }
+
+    override fun toString(): String {
+        return "SgetObject reg[$vAA] <- $KindBBBB"
+    }
 }
 
 class SgetBoolean(pc: Int, code: CodeItem) : Sget(pc, code) {

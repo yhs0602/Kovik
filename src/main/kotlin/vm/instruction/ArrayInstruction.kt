@@ -20,6 +20,10 @@ class ArrayLength(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
         memory.registers[vA] = RegisterValue.Int(arrayRef.length)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "ArrayLength v$vA <- len(v$vB)"
+    }
 }
 
 class NewArray(pc: Int, val code: CodeItem) : Instruction._22c(pc, code) {
@@ -148,6 +152,10 @@ open class Aget(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 
     open fun performGet(memory: Memory, arrayRef: RegisterValue.ArrayRef, index: RegisterValue.Int) {
         memory.registers[vAA] = arrayRef.values[index.value]
+    }
+
+    override fun toString(): String {
+        return "Aget v$vAA <- v$vBB[v$vCC]"
     }
 }
 
