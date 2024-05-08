@@ -268,8 +268,8 @@ sealed class Instruction(val insnLength: Int) {
     {
         constructor(pc: Int, code: CodeItem) : this(
             code.insns[pc].toInt() and 0xff,
-            (code.insns[pc].toInt() shr 8) and 0x0f,
-            (code.insns[pc].toInt() shr 12) and 0x0f
+            ((code.insns[pc].toInt() shr 8) and 0x0f),
+            (((code.insns[pc].toInt() shr 12) and 0x0f) shl 28) shr 28 // Sign extend 4-bit value
         )
     }
 

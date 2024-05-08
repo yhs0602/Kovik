@@ -46,7 +46,7 @@ fun main() {
         }
     }
     println("Enter the class name you are interested in:")
-    val className = "WideTest" // readlnOrNull() ?: return TargetMethods StaticExample WideTest CallStatic
+    val className = "ObjectExampleKt" // readlnOrNull() ?: return TargetMethods StaticExample WideTest CallStatic testObjects
     val classNameStr = "L$packageNameStr/$className;"
     val classDef = classes.find { it.classDef.typeId.descriptor == classNameStr } ?: return
     println("Methods====================")
@@ -60,7 +60,7 @@ fun main() {
         println(method)
     }
     println("Enter the method name you are interested in:")
-    val methodName = "testLong" // readlnOrNull() ?: return
+    val methodName = "testObjects" // readlnOrNull() ?: return
     val method = methods.find { it.methodId.name == methodName } ?: return
     println("Code====================")
     val codeItem = method.codeItem ?: run {
@@ -82,6 +82,7 @@ fun main() {
         GeneralMockedClass(System::class.java),
         GeneralMockedClass(Intrinsics::class.java),
         GeneralMockedClass(Object::class.java),
+        GeneralMockedClass(Math::class.java),
     )
     val mockedMethodList = mockedClassesList.flatMap {
         it.getMethods()

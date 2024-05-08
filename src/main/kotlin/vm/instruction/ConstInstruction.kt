@@ -21,6 +21,10 @@ class Const16(pc: Int, code: CodeItem) : Instruction._21s(pc, code) {
         memory.registers[vAA] = RegisterValue.Int(LBBBB)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "Const/16 reg[$vAA] <- $LBBBB"
+    }
 }
 
 class Const32(pc: Int, code: CodeItem) : Instruction._31i(pc, code) {

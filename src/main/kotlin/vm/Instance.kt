@@ -25,7 +25,7 @@ class DictionaryBackedInstance(val fields: List<EncodedField>) : Instance {
     }
 
     override fun toString(): String {
-        return "DictionaryBackedInstance($fieldValues)"
+        return "DictionaryBackedInstance(${fieldValues.values.joinToString { it.contentToString() }})"
     }
 }
 
@@ -214,13 +214,13 @@ fun marshalArgument(
             if (arg.value is MockedInstance && arg.value.value is String) {
                 arg.value.value to 1
             } else {
-                null to 0
+                null to 1
             }
         }
 
         paramType == Long::class.java && arg is RegisterValue.Int -> {
             if (args.size <= idx + 1) {
-                null to 0
+                throw IllegalArgumentException("Long argument not found")
             }
             val nextArg = args[idx + 1]
             if (nextArg is RegisterValue.Int) {
@@ -228,7 +228,7 @@ fun marshalArgument(
                 val high = nextArg.value.toLong() and 0xFFFFFFFF
                 low or (high shl 32) to 2
             } else {
-                null to 0
+                throw IllegalArgumentException("Long argument not found; second argument is not an integer: $nextArg")
             }
         }
 
@@ -238,7 +238,7 @@ fun marshalArgument(
 
         paramType == Double::class.java && arg is RegisterValue.Int -> {
             if (args.size <= idx + 1) {
-                null to 0
+                throw IllegalArgumentException("Double argument not found")
             }
             val nextArg = args[idx + 1]
             if (nextArg is RegisterValue.Int) {
@@ -246,7 +246,7 @@ fun marshalArgument(
                 val high = nextArg.value.toLong()
                 Double.fromBits(low or (high shl 32)) to 2
             } else {
-                null to 0
+                throw IllegalArgumentException("Double argument not found; second argument is not an integer: $nextArg")
             }
         }
 
@@ -256,9 +256,9 @@ fun marshalArgument(
         paramType == Short::class.java && arg is RegisterValue.Int -> arg.value.toShort() to 1
         paramType.isArray && arg is RegisterValue.ArrayRef -> {
             // TODO: wide array
-            if (args.size <= idx + 1) {
-                null to 0
-            }
+//            if (args.size <= idx + 1) {
+//                throw IllegalArgumentException("Array argument not found; second argument is not an array: ${args[idx + 1]}")
+//            }
             val componentType = paramType.componentType
             val result = arg.values.map { marshalArgument(environment, code, listOf(it), 0, componentType) }
             result to arg.values.size
@@ -270,11 +270,12 @@ fun marshalArgument(
                     if (arg.value is MockedInstance) arg.value.value to 1
                     else arg.value to 1
                 }
-                else -> null to 0
+                is RegisterValue.StringRef -> environment.getString(code, arg.index) to 1
+                else -> null to 1
             }
         }
 
-        else -> null to 0
+        else -> null to 1
     }
 }
 

@@ -269,9 +269,36 @@ class Environment(
             it.methodId == methodId
         } ?: classData.virtualMethods.find {
             it.methodId == methodId
-        } ?: error("Cannot find method for method id $methodId")
+        }
+//        ?: error("Cannot find method for method id from" +
+//            " $classDef,  $methodId:")
+//            " ${classData.directMethods.joinToString { it.methodId.toString() }}" +
+//            " ${classData.virtualMethods.joinToString { it.methodId.toString() }}")
+        // There is in AccessTest, but not in InheritanceTest
+        // TODO: find in super classes
         // method.codeItem
-        return MethodWrapper.Encoded(method)
+        if (method == null) {
+            // try to find in superclasses
+            var superClass = classDef.classDef.superClassTypeId
+            do {
+                val superClassDef = dexFile.classDefs.find {
+                    it.classDef.typeId == superClass
+                } ?: break
+                val superClassData = superClassDef.classData ?: break
+                val superMethod = superClassData.directMethods.find {
+                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
+                } ?: superClassData.virtualMethods.find {
+                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
+                }
+                if (superMethod != null) {
+                    return MethodWrapper.Encoded(superMethod)
+                }
+                superClass = superClassDef.classDef.superClassTypeId
+            } while (superClass != null)
+            error("Cannot find method for method id $methodId")
+        } else {
+            return MethodWrapper.Encoded(method)
+        }
     }
 
     fun executeMockedMethod(

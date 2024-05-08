@@ -53,6 +53,10 @@ open class Iget(pc: Int, val code: CodeItem) : Instruction._22c(pc, code) {
         }
         memory.registers[vA] = value[0]
     }
+
+    override fun toString(): String {
+        return "Iget v$vA <- v$vB, $KindCCCC"
+    }
 }
 
 class IgetWide(pc: Int, code: CodeItem) : Iget(pc, code) {
@@ -185,6 +189,10 @@ open class Iput(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
     open fun performPut(memory: Memory, instance: Instance) {
         val value = memory.registers[vA]
         instance.setField(KindCCCC, arrayOf(value))
+    }
+
+    override fun toString(): String {
+        return "Iput v$vA -> v$vB, $KindCCCC"
     }
 }
 
