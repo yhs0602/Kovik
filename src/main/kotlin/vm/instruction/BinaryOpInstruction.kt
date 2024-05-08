@@ -21,6 +21,10 @@ class AddInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         memory.registers[vAA] = RegisterValue.Int(value1.value + value2.value)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "AddInt v$vAA <- v$vBB, v$vCC"
+    }
 }
 
 class SubInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {

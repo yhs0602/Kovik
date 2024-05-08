@@ -285,7 +285,7 @@ sealed class Instruction(val insnLength: Int) {
     {
         constructor(pc: Int, code: CodeItem) : this(
             code.insns[pc].toInt() and 0xff,
-            (code.insns[pc].toInt() shr 8) and 0xff
+            ((code.insns[pc].toInt() shr 8) and 0xff).toByte().toInt()
         )
     }
 

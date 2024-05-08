@@ -5,7 +5,6 @@ import com.yhs0602.dex.ClassDef
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.TypeId
 import java.lang.reflect.Constructor
-import kotlin.jvm.internal.Intrinsics
 
 interface MockedClass {
     val classId: TypeId
@@ -36,7 +35,7 @@ class GeneralMockedClass(
                 code: CodeItem,
                 isStatic: Boolean
             ): Array<RegisterValue> {
-                return invokeMethod(name, args, parameters, isStatic)
+                return invokeMethod(environment, code, name, args, parameters, isStatic)
             }
 
             override val classId: TypeId
@@ -58,7 +57,7 @@ class GeneralMockedClass(
                 code: CodeItem,
                 isStatic: Boolean
             ): Array<RegisterValue> {
-                return invokeMethod("<init>", args, parameters, false)
+                return invokeMethod(environment, code, "<init>", args, parameters, false)
             }
 
             override val classId: TypeId
@@ -74,6 +73,8 @@ class GeneralMockedClass(
 
     // Can only be called as a context of mocked class.
     fun invokeMethod(
+        environment: Environment,
+        code: CodeItem,
         name: String,
         args: Array<RegisterValue>,
         paramType: List<TypeId>,
@@ -81,9 +82,9 @@ class GeneralMockedClass(
     ): Array<RegisterValue> {
         return try {
             // Check if the method name is <init>
-            println("Invoking $name with args $args")
+//            println("Invoking $name with args $args")
             if (name == "<init>") {
-                println("Name is <init>")
+//                println("Name is <init>")
                 val registerValue = (args[0] as? RegisterValue.ObjectRef)?.value
                     ?: throw IllegalArgumentException("Instance not found")
                 when (registerValue) {
@@ -95,7 +96,7 @@ class GeneralMockedClass(
                             val droppedArgs = args.drop(1)
                             val instance = clazz.constructors.first {
                                 compareConstructorProto(it, droppedArgs, paramType)
-                            }.newInstance(*droppedArgs.map { marshalArgument(it) }.toTypedArray())
+                            }.newInstance(*droppedArgs.map { marshalArgument(environment, code, it) }.toTypedArray())
 
                             registerValue.value = instance
                         } catch (e: NoSuchElementException) {
@@ -130,21 +131,23 @@ class GeneralMockedClass(
             }
             // Drop first argument as it is the instance, if it is not static
 //            val args = if (!AccessFlags(method.modifiers).isStatic) args.drop(1) else args
-            println("Invoking $method ${method.parameterTypes.joinToString(" ") { it.name }} with args $adjustedArgs")
+//            println("Invoking $method ${method.parameterTypes.joinToString(" ") { it.name }} with args $adjustedArgs")
             val argArr = adjustedArgs.map {
-                marshalArgument(it)
+                marshalArgument(environment, code, it)
             }.toTypedArray()
-            val declaringClass = method.declaringClass
-//            if (!declaringClass.isInstance(instanceValue)) {
-//                throw IllegalArgumentException("The provided instance $instanceValue does not match the method's declaring class. $declaringClass")
-//            }
-            println("2. Invoking $name with args $argArr for object $instanceValue")
+            if (instanceValue != null) {
+                val declaringClass = method.declaringClass
+                if (!declaringClass.isInstance(instanceValue)) {
+                    throw IllegalArgumentException("The provided instance $instanceValue does not match the method's declaring class. $declaringClass")
+                }
+            }
+//            println("2. Invoking $name with args $argArr for object $instanceValue")
             val result = method.invoke(instanceValue, *argArr)
             val resultType = method.returnType
             val unmarshalledResult = unmarshalArgument(result, resultType)
             unmarshalledResult
         } catch (e: NoSuchElementException) {
-            throw IllegalArgumentException("Method $name not found", e)
+            throw IllegalArgumentException("Method $name not found: ${args.contentToString()} $paramType $isStatic", e)
         }
     }
 
@@ -159,23 +162,23 @@ class GeneralMockedClass(
 //            return false
 //        }
         if (method.parameterCount != paramTypes.size) {
-            println("Parameter count mismatch: ${method.parameterCount} != ${paramTypes.size}")
+//            println("Parameter count mismatch: ${method.parameterCount} != ${paramTypes.size}")
             return false
         }
-        println("Args: $args, paramTypes: $paramTypes")
+//        println("Args: $args, paramTypes: $paramTypes")
         val methodParameterTypes = method.parameterTypes
         var i = 0
         while (i < args.size) {
             val paramType = methodParameterTypes[i]
 
             if (!compareProtoType(paramTypes[i], paramType)) {
-                println("Parameter type mismatch: ${paramTypes[i]} != $paramType")
+//                println("Parameter type mismatch: ${paramTypes[i]} != $paramType")
                 return false
             }
             // 파라미터의 타입과 인자의 타입을 비교하여 일치하지 않으면 false를 반환
             val (result, consumed) = compareArgumentType(args, i, paramType)
             if (!result) {
-                println("Argument type mismatch: ${args[i]} != $paramType")
+//                println("Argument type mismatch: ${args[i]} != $paramType")
                 return false
             }
             i += consumed

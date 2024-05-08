@@ -18,9 +18,13 @@ fun executeMethod(
     val memory = Memory(code.registersSize.toInt())
     // Copy the argument registers to the frame registers
     var pc = 0
-    val registersCount = code.registersSize.toInt()
+//    val registersCount = code.registersSize.toInt()
+//    for (i in 0 until argumentSize) {
+//        memory.registers[registersCount - i - 1] = argument[i]
+//    }
+    val startOfArgumentRegisters = code.registersSize.toInt() - argumentSize
     for (i in 0 until argumentSize) {
-        memory.registers[registersCount - i - 1] = argument[i]
+        memory.registers[startOfArgumentRegisters + i] = argument[i]
     }
 
     while (pc < code.insns.size) {

@@ -23,7 +23,7 @@ class Goto(val pc: Int, code: CodeItem) : Instruction._10t(pc, code) {
     }
 
     override fun toString(): String {
-        return "goto ${pc + offset}"
+        return "goto $pc -> ${pc + offset}"
     }
 }
 

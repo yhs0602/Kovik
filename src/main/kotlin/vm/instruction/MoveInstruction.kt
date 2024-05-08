@@ -9,6 +9,10 @@ class Move8(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
         memory.registers[vA] = memory.registers[vB]
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "Move8 v$vA, v$vB"
+    }
 }
 
 class Move816(pc: Int, code: CodeItem) : Instruction._22x(pc, code) {

@@ -19,6 +19,10 @@ class Return(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
         memory.returnValue = arrayOf(memory.registers[vAA])
         return -1
     }
+
+    override fun toString(): String {
+        return "Return v$vAA"
+    }
 }
 
 class ReturnWide(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
@@ -26,11 +30,19 @@ class ReturnWide(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
         memory.returnValue = arrayOf(memory.registers[vAA], memory.registers[vAA + 1])
         return -1
     }
+
+    override fun toString(): String {
+        return "ReturnWide v$vAA"
+    }
 }
 
 class ReturnObject(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         memory.returnValue = arrayOf(memory.registers[vAA])
         return -1
+    }
+
+    override fun toString(): String {
+        return "ReturnObject v$vAA"
     }
 }

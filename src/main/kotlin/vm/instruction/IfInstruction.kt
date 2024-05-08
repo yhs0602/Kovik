@@ -76,6 +76,10 @@ class IfEq(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
         }
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "IfEq v$vA == v$vB, $offset"
+    }
 }
 
 class IfNe(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
@@ -136,6 +140,10 @@ class IfGt(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
         }
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "IfGt v$vA > v$vB -> +$offset"
+    }
 }
 
 class IfLe(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
@@ -150,6 +158,10 @@ class IfLe(pc: Int, code: CodeItem) : Instruction._22t(pc, code) {
             return pc + offset
         }
         return pc + insnLength
+    }
+
+    override fun toString(): String {
+        return "IfLe v$vA <= v$vB -> +$offset"
     }
 }
 

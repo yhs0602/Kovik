@@ -22,18 +22,18 @@ fun main() {
     val parsedDexes = dexes.map {
         DexFile.fromFile(it)
     }
-    for (dex in parsedDexes) {
-        println(dex.header)
-        println(dex.typeIds)
-        println(dex.protoIds)
-        println(dex.fieldIds)
-        println(dex.methodIds)
-        println(dex.classDefs)
-        println(dex.callSiteIds)
-        println(dex.methodHandles)
-//        println(dex.strings)
-        break
-    }
+//    for (dex in parsedDexes) {
+//        println(dex.header)
+//        println(dex.typeIds)
+//        println(dex.protoIds)
+//        println(dex.fieldIds)
+//        println(dex.methodIds)
+//        println(dex.classDefs)
+//        println(dex.callSiteIds)
+//        println(dex.methodHandles)
+////        println(dex.strings)
+//        break
+//    }
     // Find entry point, and setup start environment
     println("Enter the package name to search:")
     val packageName = "com.example.sample"// readlnOrNull() ?: return
@@ -46,7 +46,7 @@ fun main() {
         }
     }
     println("Enter the class name you are interested in:")
-    val className = "TargetMethods" // readlnOrNull() ?: return
+    val className = "TargetMethods" // readlnOrNull() ?: return TargetMethods StaticExample
     val classNameStr = "L$packageNameStr/$className;"
     val classDef = classes.find { it.classDef.typeId.descriptor == classNameStr } ?: return
     println("Methods====================")
@@ -83,19 +83,9 @@ fun main() {
         GeneralMockedClass(Intrinsics::class.java),
         GeneralMockedClass(Object::class.java),
     )
-//    Intrinsics.checkNotNullParameter()
     val mockedMethodList = mockedClassesList.flatMap {
         it.getMethods()
     }
-//        listOf(
-//        StringBuilderInit(),
-//        StringBuilderAppend(),
-//        StringBuilderAppendI(),
-//        StringBuilderToString(),
-//        PrintLn(),
-//        KotlinJvmInternalIntrinsicsCheckNotNullPointer(),
-//        ObjectInit(),
-//    )
 
     val mockedMethods = mockedMethodList.associateBy {
         Triple(it.classId, it.parameters, it.name)
@@ -108,7 +98,7 @@ fun main() {
         mockedMethods,
         mockedClasses,
         beforeInstruction = { pc, instruction, memory ->
-            println("Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
+//            println("Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
         },
         afterInstruction = { pc, instruction, memory ->
             println("After $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug

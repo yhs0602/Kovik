@@ -1,5 +1,6 @@
 package com.yhs0602.vm
 
+import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.EncodedField
 import com.yhs0602.dex.TypeId
 
@@ -72,12 +73,12 @@ fun compareMethodProto(
     paramTypes: List<TypeId>
 ): Boolean {
     if (method.name != name) {
-        println("Method name not matched: ${method.name} != $name")
+//        println("Method name not matched: ${method.name} != $name")
         return false
     }
     // Check instance method or static
     if (method.parameterCount != paramTypes.size) {
-        println("Parameter count not matched: ${method.parameterCount} != ${paramTypes.size}")
+//        println("Parameter count not matched: ${method.parameterCount} != ${paramTypes.size}")
         return false
     }
     val methodParameterTypes = method.parameterTypes
@@ -174,16 +175,19 @@ fun compareArgumentType(args: List<RegisterValue>, idx: Int, paramType: Class<*>
     }
 }
 
-fun marshalArgument(registerValue: RegisterValue): Any? {
+fun marshalArgument(environment: Environment, code: CodeItem, registerValue: RegisterValue): Any? {
     return when (registerValue) {
         is RegisterValue.Int -> registerValue.value
-        is RegisterValue.StringRef -> java.lang.String("string")
+        is RegisterValue.StringRef -> {
+            environment.getString(code, registerValue.index)
+        }
+
         is RegisterValue.ClassRef -> {
             "class"
         }
 
         is RegisterValue.ArrayRef -> {
-            registerValue.values.map { marshalArgument(it) }
+            registerValue.values.map { marshalArgument(environment, code, it) }
         }
 
         is RegisterValue.ObjectRef -> {

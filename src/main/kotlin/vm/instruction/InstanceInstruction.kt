@@ -18,6 +18,10 @@ class NewInstance(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
         memory.registers[vAA] = environment.createInstance(parsedClass)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "NewInstance v$vAA <- new $KindBBBB"
+    }
 }
 
 open class Iget(pc: Int, val code: CodeItem) : Instruction._22c(pc, code) {

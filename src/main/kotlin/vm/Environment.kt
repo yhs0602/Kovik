@@ -119,7 +119,7 @@ class Environment(
 
     fun getClassDef(codeItem: CodeItem, typeId: TypeId): ClassRepresentation? {
         val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
-        println("Searching for class def with typeId $typeId")
+//        println("Searching for class def with typeId $typeId")
         val classDef = dexFile.classDefs.find {
             it.classDef.typeId == typeId
         }
@@ -134,7 +134,7 @@ class Environment(
             if (classDef != null)
                 return ClassRepresentation.DexClassRepresentation(classDef.classDef, classDef.classData)
         }
-        println("Class def not found in any dex file, using mocked version")
+//        println("Class def not found in any dex file, using mocked version")
         // search for mocked classes
         mockedClasses[typeId]?.let {
             return ClassRepresentation.MockedClassRepresentation(it)
@@ -177,24 +177,24 @@ class Environment(
     fun getStaticField(code: CodeItem, fieldId: Int): Array<RegisterValue> {
         val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
         val fieldIdObj = dexFile.fieldIds[fieldId]
-        println("Getting static field $fieldIdObj")
+//        println("Getting static field $fieldIdObj")
         val staticValue = staticFields[dexFile to fieldId]
         if (staticValue == null) {
             // Mocked classes
             val mocked = mockedClasses[fieldIdObj.classId]
             if (mocked != null) {
-                println("Requested: $fieldIdObj, found: $mocked")
+//                println("Requested: $fieldIdObj, found: $mocked")
                 val declaredFields = mocked.clazz.declaredFields
                 declaredFields.find {
                      it.name == fieldIdObj.name
                 }?.let {
-                    println("Found field: ${it.name} ${it.type} ")
+//                    println("Found field: ${it.name} ${it.type} ")
                     return unmarshalArgument(mocked.clazz.getField(it.name).get(null), it.type)
                 }
-                println("Requested: $fieldIdObj, not found")
+//                println("Requested: $fieldIdObj, not found")
                 return arrayOf()
             } else {
-                println("Requested: $fieldIdObj, not found")
+//                println("Requested: $fieldIdObj, not found")
                 return arrayOf()
             }
         }
@@ -225,7 +225,6 @@ class Environment(
                 return MethodWrapper.Mocked(mocked)
             } else {
                 // (TypeId(descriptor=Ljava/lang/StringBuilder;), [TypeId(descriptor=Ljava/lang/String;)], append)
-
                 println("Requested: $methodId, not found, triple: $triple")
                 println("Mocked methods: ${mockedMethods.keys.joinToString { it.toString() }}")
             }
@@ -255,7 +254,7 @@ class Environment(
         // marshal the arguments
         val args = registers.copyOfRange(0, c)
         // convert the arguments to the expected types
-        println("Executing mocked method $method with args ${args.joinToString(",")}")
+//        println("Executing mocked method $method with args ${args.joinToString(",")}")
         return method.execute(args, this, code, isStatic)
     }
 
