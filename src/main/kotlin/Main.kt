@@ -81,7 +81,9 @@ fun main() {
         GeneralMockedClass(PrintStream::class.java),
         GeneralMockedClass(System::class.java),
         GeneralMockedClass(Intrinsics::class.java),
+        GeneralMockedClass(Object::class.java),
     )
+//    Intrinsics.checkNotNullParameter()
     val mockedMethodList = mockedClassesList.flatMap {
         it.getMethods()
     }

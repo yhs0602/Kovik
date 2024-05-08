@@ -71,23 +71,31 @@ fun compareMethodProto(
     args: List<RegisterValue>,
     paramTypes: List<TypeId>
 ): Boolean {
-    if (method.name != name)
+    if (method.name != name) {
+        println("Method name not matched: ${method.name} != $name")
         return false
+    }
     // Check instance method or static
-    if (method.parameterCount != paramTypes.size)
+    if (method.parameterCount != paramTypes.size) {
+        println("Parameter count not matched: ${method.parameterCount} != ${paramTypes.size}")
         return false
+    }
     val methodParameterTypes = method.parameterTypes
 
     var i = 0
     while (i < args.size) {
         val paramType = methodParameterTypes[i]
 
-        if (!compareProtoType(paramTypes[i], paramType))
+        if (!compareProtoType(paramTypes[i], paramType)) {
+            println("Parameter type not matched: ${paramTypes[i]} != $paramType")
             return false
+        }
         // 파라미터의 타입과 인자의 타입을 비교하여 일치하지 않으면 false를 반환
         val (result, consumed) = compareArgumentType(args, i, paramType)
-        if (!result)
+        if (!result) {
+            println("Argument type not matched: ${args[i]} != $paramType")
             return false
+        }
         i += consumed
     }
     return true
@@ -161,7 +169,7 @@ fun compareArgumentType(args: List<RegisterValue>, idx: Int, paramType: Class<*>
             result to arg.values.size
         }
 
-        paramType == Object::class.java && arg is RegisterValue.ObjectRef -> true to 1
+        paramType == Object::class.java -> true to 1
         else -> false to 0
     }
 }

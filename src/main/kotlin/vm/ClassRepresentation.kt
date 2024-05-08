@@ -5,6 +5,7 @@ import com.yhs0602.dex.ClassDef
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.TypeId
 import java.lang.reflect.Constructor
+import kotlin.jvm.internal.Intrinsics
 
 interface MockedClass {
     val classId: TypeId
@@ -44,6 +45,10 @@ class GeneralMockedClass(
                 get() = it.parameterTypes.map { TypeId(it.descriptorString()) }
             override val name: String
                 get() = it.name
+
+            override fun toString(): String {
+                return "MockedMethod(classId=$classId, parameters=$parameters, name=$name)"
+            }
         }
     } + clazz.constructors.map {
         object : MockedMethod {
@@ -99,7 +104,7 @@ class GeneralMockedClass(
                     }
 
                     is DictionaryBackedInstance -> {
-                        throw IllegalArgumentException("DictionaryBackedInstance is not supported")
+                        // It should
                     }
 
                     else -> {
@@ -130,16 +135,16 @@ class GeneralMockedClass(
                 marshalArgument(it)
             }.toTypedArray()
             val declaringClass = method.declaringClass
-            if (!declaringClass.isInstance(instanceValue)) {
-                throw IllegalArgumentException("The provided instance $instanceValue does not match the method's declaring class. $declaringClass")
-            }
+//            if (!declaringClass.isInstance(instanceValue)) {
+//                throw IllegalArgumentException("The provided instance $instanceValue does not match the method's declaring class. $declaringClass")
+//            }
             println("2. Invoking $name with args $argArr for object $instanceValue")
             val result = method.invoke(instanceValue, *argArr)
             val resultType = method.returnType
             val unmarshalledResult = unmarshalArgument(result, resultType)
             unmarshalledResult
         } catch (e: NoSuchElementException) {
-            throw IllegalArgumentException("Method $name not found")
+            throw IllegalArgumentException("Method $name not found", e)
         }
     }
 
