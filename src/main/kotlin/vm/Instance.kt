@@ -23,6 +23,10 @@ class DictionaryBackedInstance(val fields: List<EncodedField>) : Instance {
     override fun setField(idx: Int, value: Array<RegisterValue>) {
         fieldValues[idx] = value
     }
+
+    override fun toString(): String {
+        return "DictionaryBackedInstance($fieldValues)"
+    }
 }
 
 class MockedInstance(val clazz: Class<*>) : Instance {

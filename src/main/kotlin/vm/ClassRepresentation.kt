@@ -63,10 +63,13 @@ class GeneralMockedClass(
             override val classId: TypeId
                 get() = this@GeneralMockedClass.classId
             override val parameters: List<TypeId>
-                get() = it.parameterTypes.map { TypeId(it.name) }
+                get() = it.parameterTypes.map { TypeId(it.descriptorString()) }
             override val name: String
                 get() = "<init>"
 
+            override fun toString(): String {
+                return "MockedConstructor(classId=$classId, parameters=$parameters, name=$name)"
+            }
         }
     }
 

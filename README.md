@@ -125,10 +125,12 @@ fun main() {
 - Represent real / mocked (lazy) values
 - Mock System static fields
 - Easier mocking of classes
+- Call <clinit> for initialization of static fields
 
 ## TODO
 - Mock non-intrinsic Objects better
 - JNI callback
+- Optimization
 
 # Open Source
 - Read some code of [Katalina](https://github.com/huuck/Katalina)

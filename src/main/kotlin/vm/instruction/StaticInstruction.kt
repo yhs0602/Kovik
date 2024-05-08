@@ -146,6 +146,10 @@ class SputObject(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
         environment.setStaticField(code, KindBBBB, arrayOf(value))
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "SputObject $vAA -> $KindBBBB"
+    }
 }
 
 class SputBoolean(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
@@ -157,6 +161,10 @@ class SputBoolean(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
         }
         environment.setStaticField(code, KindBBBB, arrayOf(value))
         return pc + insnLength
+    }
+
+    override fun toString(): String {
+        return "SputBoolean $vAA -> $KindBBBB"
     }
 }
 
