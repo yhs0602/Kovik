@@ -171,8 +171,8 @@ class LongToDouble(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
         val longValue = (value1.value.toLong() shl 32) or (value2.value.toLong() and 0xFFFFFFFF)
         val doubleValue = longValue.toDouble()
         val bits = java.lang.Double.doubleToLongBits(doubleValue)
-        memory.registers[vA] = RegisterValue.Int((bits shr 32).toInt())
-        memory.registers[vA + 1] = RegisterValue.Int(bits.toInt())
+        memory.registers[vA] = RegisterValue.Int(bits.toInt())
+        memory.registers[vA + 1] = RegisterValue.Int((bits shr 32).toInt())
         return pc + insnLength
     }
 }
@@ -199,8 +199,8 @@ class FloatToLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
         }
         val floatValue = java.lang.Float.intBitsToFloat(value.value)
         val longValue = floatValue.toLong()
-        memory.registers[vA] = RegisterValue.Int((longValue shr 32).toInt())
-        memory.registers[vA + 1] = RegisterValue.Int(longValue.toInt())
+        memory.registers[vA] = RegisterValue.Int(longValue.toInt())
+        memory.registers[vA + 1] = RegisterValue.Int((longValue shr 32).toInt())
         return pc + insnLength
     }
 }
@@ -215,8 +215,8 @@ class FloatToDouble(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
         val floatValue = java.lang.Float.intBitsToFloat(value.value)
         val doubleValue = floatValue.toDouble()
         val bits = java.lang.Double.doubleToLongBits(doubleValue)
-        memory.registers[vA] = RegisterValue.Int((bits shr 32).toInt())
-        memory.registers[vA + 1] = RegisterValue.Int(bits.toInt())
+        memory.registers[vA] = RegisterValue.Int(bits.toInt())
+        memory.registers[vA + 1] = RegisterValue.Int((bits shr 32).toInt())
         return pc + insnLength
     }
 }
@@ -247,8 +247,8 @@ class DoubleToLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
         val doubleValue =
             java.lang.Double.longBitsToDouble((value1.value.toLong() shl 32) or (value2.value.toLong() and 0xFFFFFFFF))
         val longValue = doubleValue.toLong()
-        memory.registers[vA] = RegisterValue.Int((longValue shr 32).toInt())
-        memory.registers[vA + 1] = RegisterValue.Int(longValue.toInt())
+        memory.registers[vA] = RegisterValue.Int(longValue.toInt())
+        memory.registers[vA + 1] = RegisterValue.Int((longValue shr 32).toInt())
         return pc + insnLength
     }
 }

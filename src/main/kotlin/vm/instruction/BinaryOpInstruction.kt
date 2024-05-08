@@ -208,9 +208,9 @@ class UshrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class AddLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Int")
             return pc + insnLength
@@ -223,17 +223,21 @@ class AddLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val value2Long = value2.value.toLong() shl 32 or value22.value.toLong()
         val result = value1Long + value2Long
         memory.registers[vAA] = RegisterValue.Int((result shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(result.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(result.toInt())
         return pc + insnLength
+    }
+
+    override fun toString(): String {
+        return "AddLong v$vAA <- v$vBB + v$vCC"
     }
 }
 
 class SubLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Int")
             return pc + insnLength
@@ -246,7 +250,7 @@ class SubLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val value2Long = value2.value.toLong() shl 32 or value22.value.toLong()
         val result = value1Long - value2Long
         memory.registers[vAA] = RegisterValue.Int((result shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(result.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(result.toInt())
         return pc + insnLength
     }
 }
@@ -254,9 +258,9 @@ class SubLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class MulLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Int")
             return pc + insnLength
@@ -269,7 +273,7 @@ class MulLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val value2Long = value2.value.toLong() shl 32 or value22.value.toLong()
         val result = value1Long * value2Long
         memory.registers[vAA] = RegisterValue.Int((result shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(result.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(result.toInt())
         return pc + insnLength
     }
 }
@@ -277,9 +281,9 @@ class MulLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class DivLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Int")
             return pc + insnLength
@@ -296,7 +300,7 @@ class DivLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         }
         val result = value1Long / value2Long
         memory.registers[vAA] = RegisterValue.Int((result shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(result.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(result.toInt())
         return pc + insnLength
     }
 }
@@ -304,9 +308,9 @@ class DivLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class RemLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Int")
             return pc + insnLength
@@ -323,7 +327,7 @@ class RemLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         }
         val result = value1Long % value2Long
         memory.registers[vAA] = RegisterValue.Int((result shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(result.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(result.toInt())
         return pc + insnLength
     }
 }
@@ -331,9 +335,9 @@ class RemLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class AndLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Int")
             return pc + insnLength
@@ -346,7 +350,7 @@ class AndLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val value2Long = value2.value.toLong() shl 32 or value22.value.toLong()
         val result = value1Long and value2Long
         memory.registers[vAA] = RegisterValue.Int((result shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(result.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(result.toInt())
         return pc + insnLength
     }
 }
@@ -354,9 +358,9 @@ class AndLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class OrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Int")
             return pc + insnLength
@@ -369,7 +373,7 @@ class OrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val value2Long = value2.value.toLong() shl 32 or value22.value.toLong()
         val result = value1Long or value2Long
         memory.registers[vAA] = RegisterValue.Int((result shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(result.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(result.toInt())
         return pc + insnLength
     }
 }
@@ -377,9 +381,9 @@ class OrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class XorLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Int")
             return pc + insnLength
@@ -392,7 +396,7 @@ class XorLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val value2Long = value2.value.toLong() shl 32 or value22.value.toLong()
         val result = value1Long xor value2Long
         memory.registers[vAA] = RegisterValue.Int((result shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(result.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(result.toInt())
         return pc + insnLength
     }
 }
@@ -400,7 +404,7 @@ class XorLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class ShlLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Int")
@@ -413,7 +417,7 @@ class ShlLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val value1Long = value1.value.toLong() shl 32 or value11.value.toLong()
         val result = value1Long shl value2.value
         memory.registers[vAA] = RegisterValue.Int((result shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(result.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(result.toInt())
         return pc + insnLength
     }
 }
@@ -421,7 +425,7 @@ class ShlLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class ShrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Int")
@@ -434,7 +438,7 @@ class ShrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val value1Long = value1.value.toLong() shl 32 or value11.value.toLong()
         val result = value1Long shr value2.value
         memory.registers[vAA] = RegisterValue.Int((result shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(result.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(result.toInt())
         return pc + insnLength
     }
 }
@@ -442,7 +446,7 @@ class ShrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class UshrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Int")
@@ -455,7 +459,7 @@ class UshrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val value1Long = value1.value.toLong() shl 32 or value11.value.toLong()
         val result = value1Long ushr value2.value
         memory.registers[vAA] = RegisterValue.Int((result shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(result.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(result.toInt())
         return pc + insnLength
     }
 }
@@ -568,9 +572,9 @@ class RemFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class AddDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Double")
             return pc + insnLength
@@ -584,7 +588,7 @@ class AddDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val result = doubleValue1 + doubleValue2
         val resultBits = java.lang.Double.doubleToRawLongBits(result)
         memory.registers[vAA] = RegisterValue.Int((resultBits shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(resultBits.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(resultBits.toInt())
         return pc + insnLength
     }
 }
@@ -592,9 +596,9 @@ class AddDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class SubDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Double")
             return pc + insnLength
@@ -608,7 +612,7 @@ class SubDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val result = doubleValue1 - doubleValue2
         val resultBits = java.lang.Double.doubleToRawLongBits(result)
         memory.registers[vAA] = RegisterValue.Int((resultBits shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(resultBits.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(resultBits.toInt())
         return pc + insnLength
     }
 }
@@ -616,9 +620,9 @@ class SubDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class MulDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Double")
             return pc + insnLength
@@ -632,7 +636,7 @@ class MulDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val result = doubleValue1 * doubleValue2
         val resultBits = java.lang.Double.doubleToRawLongBits(result)
         memory.registers[vAA] = RegisterValue.Int((resultBits shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(resultBits.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(resultBits.toInt())
         return pc + insnLength
     }
 }
@@ -640,9 +644,9 @@ class MulDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class DivDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vBB is not Double")
             return pc + insnLength
@@ -660,7 +664,7 @@ class DivDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val result = doubleValue1 / doubleValue2
         val resultBits = java.lang.Double.doubleToRawLongBits(result)
         memory.registers[vAA] = RegisterValue.Int((resultBits shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(resultBits.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(resultBits.toInt())
         return pc + insnLength
     }
 }
@@ -668,9 +672,9 @@ class DivDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 class RemDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value1 = memory.registers[vBB]
-        val value11 = memory.returnValue[vBB + 1]
+        val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
-        val value22 = memory.returnValue[vCC + 1]
+        val value22 = memory.registers[vCC + 1]
 
         if (value1 !is RegisterValue.Int || value11 !is RegisterValue.Int) {
             memory.exception = ExceptionValue("Operands must be doubles")
@@ -692,7 +696,7 @@ class RemDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
         val result = doubleValue1 % doubleValue2 // Calculate remainder
         val resultBits = java.lang.Double.doubleToRawLongBits(result)
         memory.registers[vAA] = RegisterValue.Int((resultBits shr 32).toInt())
-        memory.returnValue[vAA + 1] = RegisterValue.Int(resultBits.toInt())
+        memory.registers[vAA + 1] = RegisterValue.Int(resultBits.toInt())
 
         return pc + insnLength
     }

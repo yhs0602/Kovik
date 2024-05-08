@@ -99,8 +99,9 @@ class GeneralMockedClass(
                             val droppedArgs = args.drop(1)
                             val instance = clazz.constructors.first {
                                 compareConstructorProto(it, droppedArgs, paramType)
-                            }.newInstance(*droppedArgs.map { marshalArgument(environment, code, it) }.toTypedArray())
-
+                            }.run {
+                                newInstance(*marshalArguments(environment, code, droppedArgs, parameterTypes))
+                            }
                             registerValue.value = instance
                         } catch (e: NoSuchElementException) {
                             throw IllegalArgumentException("Constructor not found")
@@ -134,17 +135,15 @@ class GeneralMockedClass(
             }
             // Drop first argument as it is the instance, if it is not static
 //            val args = if (!AccessFlags(method.modifiers).isStatic) args.drop(1) else args
-//            println("Invoking $method ${method.parameterTypes.joinToString(" ") { it.name }} with args $adjustedArgs")
-            val argArr = adjustedArgs.map {
-                marshalArgument(environment, code, it)
-            }.toTypedArray()
+            println("Invoking $method ${method.parameterTypes.joinToString(" ") { it.name }} with args $adjustedArgs")
+            val argArr = marshalArguments(environment, code, adjustedArgs, method.parameterTypes)
             if (instanceValue != null) {
                 val declaringClass = method.declaringClass
                 if (!declaringClass.isInstance(instanceValue)) {
                     throw IllegalArgumentException("The provided instance $instanceValue does not match the method's declaring class. $declaringClass")
                 }
             }
-//            println("2. Invoking $name with args $argArr for object $instanceValue")
+            println("2. Invoking $name with args ${argArr.contentToString()} for object $instanceValue")
             val result = method.invoke(instanceValue, *argArr)
             val resultType = method.returnType
             val unmarshalledResult = unmarshalArgument(result, resultType)

@@ -179,6 +179,105 @@ fun compareArgumentType(args: List<RegisterValue>, idx: Int, paramType: Class<*>
     }
 }
 
+// to handle wide values correctly, we need to see the whole argument list
+// Convert List of registervalues to array of Any?
+fun marshalArguments(
+    environment: Environment,
+    code: CodeItem,
+    args: List<RegisterValue>,
+    paramTypes: Array<Class<*>>
+): Array<Any?> {
+    val results = mutableListOf<Any?>()
+    var i = 0
+    while (i < args.size) {
+        val paramType = paramTypes[i]
+        val (result, consumed) = marshalArgument(environment, code, args, i, paramType)
+        results.add(result)
+        i += consumed
+    }
+    return results.toTypedArray()
+}
+
+// Returns the marshalled argument and the number of consumed arguments
+fun marshalArgument(
+    environment: Environment,
+    code: CodeItem,
+    args: List<RegisterValue>,
+    idx: Int,
+    paramType: Class<*>
+): Pair<Any?, Int> {
+    val arg = args[idx]
+    return when {
+        paramType == Int::class.java && arg is RegisterValue.Int -> arg.value to 1
+        paramType == String::class.java && arg is RegisterValue.StringRef -> environment.getString(code, arg.index) to 1
+        paramType == String::class.java && arg is RegisterValue.ObjectRef -> {
+            if (arg.value is MockedInstance && arg.value.value is String) {
+                arg.value.value to 1
+            } else {
+                null to 0
+            }
+        }
+
+        paramType == Long::class.java && arg is RegisterValue.Int -> {
+            if (args.size <= idx + 1) {
+                null to 0
+            }
+            val nextArg = args[idx + 1]
+            if (nextArg is RegisterValue.Int) {
+                val low = arg.value.toLong() and 0xFFFFFFFF
+                val high = nextArg.value.toLong() and 0xFFFFFFFF
+                low or (high shl 32) to 2
+            } else {
+                null to 0
+            }
+        }
+
+        paramType == Float::class.java && arg is RegisterValue.Int -> {
+            Float.fromBits(arg.value) to 1
+        }
+
+        paramType == Double::class.java && arg is RegisterValue.Int -> {
+            if (args.size <= idx + 1) {
+                null to 0
+            }
+            val nextArg = args[idx + 1]
+            if (nextArg is RegisterValue.Int) {
+                val low = arg.value.toLong()
+                val high = nextArg.value.toLong()
+                Double.fromBits(low or (high shl 32)) to 2
+            } else {
+                null to 0
+            }
+        }
+
+        paramType == Boolean::class.java && arg is RegisterValue.Int -> (arg.value != 0) to 1
+        paramType == Char::class.java && arg is RegisterValue.Int -> arg.value.toChar() to 1
+        paramType == Byte::class.java && arg is RegisterValue.Int -> arg.value.toByte() to 1
+        paramType == Short::class.java && arg is RegisterValue.Int -> arg.value.toShort() to 1
+        paramType.isArray && arg is RegisterValue.ArrayRef -> {
+            // TODO: wide array
+            if (args.size <= idx + 1) {
+                null to 0
+            }
+            val componentType = paramType.componentType
+            val result = arg.values.map { marshalArgument(environment, code, listOf(it), 0, componentType) }
+            result to arg.values.size
+        }
+
+        paramType == Object::class.java -> {
+            when (arg) {
+                is RegisterValue.ObjectRef -> {
+                    if (arg.value is MockedInstance) arg.value.value to 1
+                    else arg.value to 1
+                }
+                else -> null to 0
+            }
+        }
+
+        else -> null to 0
+    }
+}
+
 fun marshalArgument(environment: Environment, code: CodeItem, registerValue: RegisterValue): Any? {
     return when (registerValue) {
         is RegisterValue.Int -> registerValue.value

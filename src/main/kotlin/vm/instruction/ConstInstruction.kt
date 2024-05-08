@@ -43,6 +43,10 @@ class ConstWide16(pc: Int, code: CodeItem) : Instruction._21s(pc, code) {
         memory.registers[vAA + 1] = RegisterValue.Int(0)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "ConstWide/16 reg[$vAA] <- $LBBBB"
+    }
 }
 
 class ConstWide32(pc: Int, code: CodeItem) : Instruction._31i(pc, code) {
@@ -51,14 +55,21 @@ class ConstWide32(pc: Int, code: CodeItem) : Instruction._31i(pc, code) {
         memory.registers[vAA + 1] = RegisterValue.Int(0)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "ConstWide/32 reg[$vAA] <- ${BBBBhi shl 16 or BBBBlo}"
+    }
 }
 
 class ConstWide64(pc: Int, code: CodeItem) : Instruction._51l(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        // FIXME
-        memory.registers[vAA] = RegisterValue.Int(BBBBhi shl 16 or BBBBlo)
-        memory.registers[vAA + 1] = RegisterValue.Int(BBBBhii shl 16 or BBBBhiii)
+        memory.registers[vAA] = RegisterValue.Int(BBBBhiii shl 16 or BBBBlo)
+        memory.registers[vAA + 1] = RegisterValue.Int(BBBBhi shl 16 or BBBBhii)
         return pc + insnLength
+    }
+
+    override fun toString(): String {
+        return "ConstWide/64 reg[$vAA] <- bbbbhiii = $BBBBhiii bbbbhii = $BBBBhii bbbblo = $BBBBlo bbbbhi = $BBBBhi"
     }
 }
 
