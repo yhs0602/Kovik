@@ -9,12 +9,12 @@ import com.yhs0602.vm.RegisterValue
 
 class StringBuilderInit : MockedMethod {
 
-    override fun execute(args: Array<RegisterValue>, environment: Environment, code: CodeItem): Array<RegisterValue> {
+    override fun execute(args: Array<RegisterValue>, environment: Environment, code: CodeItem, isStatic: Boolean): Array<RegisterValue> {
         return arrayOf(
-            RegisterValue.ObjectRef(
-                typeId = TypeId("Ljava/lang/StringBuilder;"),
-                value = MockedInstance(StringBuilder()),
-            )
+//            RegisterValue.ObjectRef(
+//                typeId = TypeId("Ljava/lang/StringBuilder;"),
+//                value = MockedInstance(StringBuilder()),
+//            )
         )
     }
 

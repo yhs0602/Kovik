@@ -9,4 +9,7 @@ data class ClassDef(
     val annotationsOff: Int,
     val classDataOff: Int,
     val staticValuesOff: Int
-)
+) {
+    lateinit var flattendInterfaces: List<TypeId>
+    lateinit var interfaces: List<TypeId>
+}

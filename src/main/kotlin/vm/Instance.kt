@@ -8,7 +8,6 @@ interface Instance {
 
     fun setField(idx: Int, value: Array<RegisterValue>)
 
-    fun invokeMethod(name: String, args: List<RegisterValue>, paramType: List<TypeId>): RegisterValue
 }
 
 class DictionaryBackedInstance(val fields: List<EncodedField>) : Instance {
@@ -23,32 +22,16 @@ class DictionaryBackedInstance(val fields: List<EncodedField>) : Instance {
     override fun setField(idx: Int, value: Array<RegisterValue>) {
         fieldValues[idx] = value
     }
-
-    override fun invokeMethod(name: String, args: List<RegisterValue>, paramType: List<TypeId>): RegisterValue {
-        return when (name) {
-            "toString" -> RegisterValue.StringRef(0)
-            else -> throw IllegalArgumentException("Method $name not found")
-        }
-    }
 }
 
-class MockedInstance(val value: Any) : Instance {
-    private val clazz = value.javaClass
+class MockedInstance(val clazz: Class<*>) : Instance {
+    lateinit var value: Any
 
     override fun getField(idx: Int): Array<RegisterValue> {
         return try {
             val field = clazz.fields[idx]
             val fieldValue = field.get(value)
-            when (field.type) {
-                Int::class.java -> arrayOf(RegisterValue.Int(fieldValue as Int))
-                String::class.java -> arrayOf(RegisterValue.StringRef(0))
-                Long::class.java -> {
-                    val longValue = fieldValue as Long
-                    arrayOf(RegisterValue.Int(longValue.toInt()), RegisterValue.Int((longValue shr 32).toInt()))
-                }
-
-                else -> throw IllegalArgumentException("Unsupported field type ${field.type}")
-            }
+            unmarshalArgument(fieldValue, field.type)
         } catch (e: IndexOutOfBoundsException) {
             throw IllegalArgumentException("Field $idx not found")
         }
@@ -74,27 +57,6 @@ class MockedInstance(val value: Any) : Instance {
         }
     }
 
-    override fun invokeMethod(name: String, args: List<RegisterValue>, paramType: List<TypeId>): RegisterValue {
-        return try {
-            val method = clazz.methods.first {
-                compareMethodProto(it, name, args, paramType)
-            }
-            // Drop first argument as it is the instance, if it is not static
-//            val args = if (!AccessFlags(method.modifiers).isStatic) args.drop(1) else args
-            println("Invoking $method ${method.parameterTypes.joinToString(" ") { it.name }} with args $args")
-            val argArr = args.map {
-                marshalArgument(it)
-            }.toTypedArray()
-            println("2. Invoking $name with args $argArr for object $value")
-            val result = method.invoke(value, *argArr)
-            val resultType = method.returnType
-            val unmarshalledResult = unmarshalArgument(result, resultType)
-            unmarshalledResult
-        } catch (e: NoSuchElementException) {
-            throw IllegalArgumentException("Method $name not found")
-        }
-    }
-
     override fun toString(): String {
         return "MockedInstance($value)"
     }
@@ -109,6 +71,7 @@ fun compareMethodProto(
 ): Boolean {
     if (method.name != name)
         return false
+    // Check instance method or static
     if (method.parameterCount != paramTypes.size)
         return false
     val methodParameterTypes = method.parameterTypes
@@ -224,17 +187,42 @@ fun marshalArgument(registerValue: RegisterValue): Any? {
 }
 
 
-fun unmarshalArgument(value: Any, returnType: Class<*>): RegisterValue {
+fun unmarshalArgument(value: Any, returnType: Class<*>): Array<RegisterValue> {
     return when (value) {
-        is Int -> RegisterValue.Int(value)
-        is String -> RegisterValue.ObjectRef(TypeId("Ljava/lang/String;"), MockedInstance(value))
-        is Array<*> -> {
-            val values = value.map {
-                unmarshalArgument(it!!, returnType.componentType!!)
-            }
-            RegisterValue.ArrayRef(TypeId(returnType.componentType!!.typeName), value.size, values.toTypedArray())
+        is Int -> arrayOf(RegisterValue.Int(value))
+        is Long -> {
+            val low = value.toInt()
+            val high = (value shr 32).toInt()
+            arrayOf(RegisterValue.Int(low), RegisterValue.Int(high))
         }
 
-        else -> RegisterValue.ObjectRef(TypeId(value::class.javaObjectType.typeName), MockedInstance(value))
+        is String -> arrayOf(
+            RegisterValue.ObjectRef(
+                TypeId("Ljava/lang/String;"),
+                MockedInstance(String::class.java).apply {
+                    this.value = value
+                })
+        )
+
+        is Array<*> -> {
+            val values = value.flatMap {
+                unmarshalArgument(it!!, returnType.componentType!!).toList()
+            }
+            arrayOf(
+                RegisterValue.ArrayRef(
+                    TypeId(returnType.componentType!!.typeName),
+                    value.size,
+                    values.toTypedArray()
+                )
+            )
+        }
+
+        else -> arrayOf(
+            RegisterValue.ObjectRef(
+                TypeId(value::class.javaObjectType.typeName),
+                MockedInstance(value::class.javaObjectType).apply {
+                    this.value = value
+                })
+        )
     }
 }

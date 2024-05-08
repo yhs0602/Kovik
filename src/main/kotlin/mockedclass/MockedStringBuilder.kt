@@ -5,10 +5,14 @@ import com.yhs0602.vm.MockedClass
 
 class MockedStringBuilder : MockedClass {
 
-    override fun createInstance(): Any {
+    fun createInstance(): Any {
         return StringBuilder()
     }
 
     override val classId: TypeId
         get() = TypeId("Ljava/lang/StringBuilder;")
+
+    override fun initializeClass() {
+        // Do nothing
+    }
 }

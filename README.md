@@ -130,3 +130,7 @@ fun main() {
 - Mock System static fields
 - Easier mocking of classes
 - JNI callback
+
+# Open Source
+- Read some code of [Katalina](https://github.com/huuck/Katalina)
+- Read some code of [Android Open Source Project](https://android.googlesource.com/platform/dalvik.git/+/android-4.2.2_r1) after commit abba8ab 

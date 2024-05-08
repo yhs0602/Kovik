@@ -3,6 +3,10 @@ package com.yhs0602.vm.instruction
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.vm.*
 
+// It does not create backing instance actually;
+// It is impossible to do so in simulation
+// The backing field should be filled when the constructor is called.
+// See InvokeDirect implementation
 class NewInstance(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val typeId = environment.getTypeId(code, KindBBBB)

@@ -9,19 +9,24 @@ sealed class RegisterValue {
             return "Int($value)"
         }
     }
+
     data class StringRef(val index: kotlin.Int) : RegisterValue() {
         fun toStringObject(code: CodeItem, environment: Environment): ObjectRef {
             val stringValue = environment.getString(code, index)
-            return ObjectRef(TypeId("Ljava/lang/String;"), MockedInstance(stringValue))
+            return ObjectRef(
+                TypeId("Ljava/lang/String;"),
+                MockedInstance(String::class.java).apply { value = stringValue })
         }
     }
 
     data class ClassRef(val index: kotlin.Int) : RegisterValue()
-    data class ArrayRef(val typeId: TypeId, val length: kotlin.Int, val values: Array<RegisterValue>) : RegisterValue() {
+    data class ArrayRef(val typeId: TypeId, val length: kotlin.Int, val values: Array<RegisterValue>) :
+        RegisterValue() {
         override fun toString(): String {
             return "ArrayRef(typeId=${typeId.descriptor}, length=$length, values=${values.contentToString()})"
         }
     }
+
     open class ObjectRef(val typeId: TypeId, val value: Instance?) : RegisterValue() {
         override fun toString(): String {
             return "ObjectRef(typeId=$typeId, value=$value)"

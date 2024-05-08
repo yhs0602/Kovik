@@ -9,7 +9,7 @@ import com.yhs0602.vm.instruction.Instruction
 class Environment(
     val dexFiles: List<DexFile>,
     val mockedMethods: Map<Triple<TypeId, List<TypeId>, String>, MockedMethod> = mapOf(),
-    val mockedClasses: Map<TypeId, MockedClass> = mapOf(),
+    val mockedClasses: Map<TypeId, GeneralMockedClass> = mapOf(),
     val beforeInstruction: (Int, Instruction, Memory) -> Unit = { pc: Int, instruction: Instruction, memory: Memory -> },
     val afterInstruction: (Int, Instruction, Memory) -> Unit = { pc: Int, instruction: Instruction, memory: Memory -> }
 ) {
@@ -47,7 +47,10 @@ class Environment(
         }
     }
 
-    fun isInstanceOf(objectRef: RegisterValue.ObjectRef, targetTypeDescriptor: String): Boolean {
+    // If targetType is interface
+    // If object is array
+    // If object is subclass of targetType
+    fun isInstanceOf(codeItem: CodeItem, objectRef: RegisterValue.ObjectRef, targetTypeDescriptor: String): Boolean {
         // If the target type is a primitive type, return false
         if (isPrimitiveType(targetTypeDescriptor)) return false
 
@@ -57,8 +60,10 @@ class Environment(
         // If the actual type is the same as the target type, return true
         if (actualTypeDescriptor == targetTypeDescriptor) return true
 
+        // Check the interface
+
         // Check the super types of the actual type
-        return checkSuperTypes(actualTypeDescriptor, targetTypeDescriptor)
+        return checkSuperTypes(codeItem, actualTypeDescriptor, targetTypeDescriptor)
     }
 
     private fun isPrimitiveType(typeDescriptor: String): Boolean {
@@ -75,13 +80,40 @@ class Environment(
     }
 
     // Check the super types of the given type
-    private fun checkSuperTypes(typeDescriptor: String, targetTypeDescriptor: String): Boolean {
-        var currentTypeDescriptor = typeDescriptor
-//        while (currentTypeDescriptor in classHierarchy) {
-//            val superTypes = classHierarchy[currentTypeDescriptor] ?: break
-//            if (targetTypeDescriptor in superTypes) return true
-//            currentTypeDescriptor = superTypes.firstOrNull() ?: break
-//        }
+    private fun checkSuperTypes(codeItem: CodeItem, typeDescriptor: String, targetTypeDescriptor: String): Boolean {
+        var currentType: TypeId? = TypeId(typeDescriptor)
+
+        // Get the class def of the class of typeDescriptor
+        val classDef = getClassDef(codeItem, TypeId(typeDescriptor)) ?: return false
+        // Check interfaces first
+        when (classDef) {
+            is ClassRepresentation.DexClassRepresentation -> {
+                classDef.classDef.flattendInterfaces.forEach {
+                    if (it.descriptor == targetTypeDescriptor) {
+                        return true
+                    }
+                }
+            }
+
+            is ClassRepresentation.MockedClassRepresentation -> {
+                TODO()
+            }
+        }
+        do {
+            // Get the super class of the class
+            if (currentType?.descriptor == targetTypeDescriptor) {
+                return true
+            }
+            when (classDef) {
+                is ClassRepresentation.DexClassRepresentation -> {
+                    currentType = classDef.classDef.superClassTypeId
+                }
+
+                is ClassRepresentation.MockedClassRepresentation -> {
+                    currentType = classDef.mockedClass.classId
+                }
+            }
+        } while (currentType != null)
         return false
     }
 
@@ -102,12 +134,15 @@ class Environment(
             if (classDef != null)
                 return ClassRepresentation.DexClassRepresentation(classDef.classDef, classDef.classData)
         }
-        println("Class def not found in any dex file")
+        println("Class def not found in any dex file, using mocked version")
         // search for mocked classes
         mockedClasses[typeId]?.let {
             return ClassRepresentation.MockedClassRepresentation(it)
         }
-        return null
+        throw Exception("Cannot find class def for type id $typeId: mockedClasses: ${mockedClasses.entries.joinToString { 
+            "${it.key} -> ${it.value}"
+        }}")
+//        return null
     }
 
     fun createInstance(clazz: ClassRepresentation): RegisterValue.ObjectRef {
@@ -128,7 +163,7 @@ class Environment(
             is ClassRepresentation.MockedClassRepresentation -> {
                 return RegisterValue.ObjectRef(
                     clazz.mockedClass.classId,
-                    MockedInstance(clazz.mockedClass.createInstance())
+                    MockedInstance(clazz.mockedClass.clazz)
                 )
             }
         }
@@ -154,7 +189,11 @@ class Environment(
             it.classDef.typeId == methodId.classId
         } ?: run {
             // TODO: search in the parent classes
-            // Search in mocked
+            // TODO: Use mocked class, instead of mocked methods
+            // However, we should cache the mocked method anyway, becuase the methodId is actually used in the code
+            // In case of invoke-direct, just call the method
+            // However in case of invoke-interface, we should find the appropriate method id
+            // Search in mocked methods
             val triple = Triple(methodId.classId, methodId.protoId.parameters, methodId.name)
             val mocked = mockedMethods[triple]
             if (mocked != null) {
@@ -181,12 +220,14 @@ class Environment(
         code: CodeItem,
         method: MockedMethod,
         registers: Array<RegisterValue>,
-        c: Int
+        c: Int,
+        isStatic: Boolean
     ): Array<RegisterValue> {
         // marshal the arguments
         val args = registers.copyOfRange(0, c)
         // convert the arguments to the expected types
         println("Executing mocked method $method with args ${args.joinToString(",")}")
-        return method.execute(args, this, code)
+        return method.execute(args, this, code, isStatic)
     }
+
 }

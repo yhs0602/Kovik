@@ -4,6 +4,7 @@ import com.yhs0602.dex.DexFile
 import com.yhs0602.mockedclass.MockedStringBuilder
 import com.yhs0602.mockedmethod.*
 import com.yhs0602.vm.Environment
+import com.yhs0602.vm.GeneralMockedClass
 import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.executeMethod
 import java.io.File
@@ -85,7 +86,7 @@ fun main() {
         ObjectInit(),
     )
     val mockedClassesList = listOf(
-        MockedStringBuilder()
+        GeneralMockedClass(StringBuilder::class.java),
     )
     val mockedMethods = mockedMethodList.associateBy {
         Triple(it.classId, it.parameters, it.name)

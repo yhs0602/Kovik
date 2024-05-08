@@ -7,7 +7,7 @@ import com.yhs0602.vm.MockedMethod
 import com.yhs0602.vm.RegisterValue
 
 class KotlinJvmInternalIntrinsicsCheckNotNullPointer : MockedMethod {
-    override fun execute(args: Array<RegisterValue>, environment: Environment, code: CodeItem): Array<RegisterValue> {
+    override fun execute(args: Array<RegisterValue>, environment: Environment, code: CodeItem, isStatic: Boolean): Array<RegisterValue> {
         val value = args[0]
         if (value is RegisterValue.ObjectRef) {
             if (value.value == null) {

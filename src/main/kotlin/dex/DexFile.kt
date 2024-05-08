@@ -198,11 +198,7 @@ data class DexFile(
             protoIdItems.forEach {
                 if (it.parametersOff != 0) {
                     inputFile.seek(it.parametersOff.toLong() and 0xFFFFFFFF)
-                    val size = inputFile.readInt()
-                    it.parameters = List(size) {
-                        val typeIdx = inputFile.readUnsignedShort()
-                        typeIdItems[typeIdx]
-                    }
+                    it.parameters = parseTypeList(inputFile, typeIdItems)
                 } else {
                     it.parameters = emptyList()
                 }
@@ -251,6 +247,27 @@ data class DexFile(
                     classDataOff,
                     staticValuesOff
                 )
+            }
+            // Parse interfaces
+            for (classDef in classDefs) {
+                if (classDef.interfacesOff != 0) {
+                    inputFile.seek(classDef.interfacesOff.toLong() and 0xFFFFFFFF)
+                    // Parse type_list
+                    classDef.interfaces = parseTypeList(inputFile, typeIdItems)
+                } else {
+                    classDef.interfaces = emptyList()
+                }
+            }
+            // Flatten interfaces
+            classDefs.forEach {
+                // find its superclass and its interfaces
+                val flattenedInterfaces = mutableListOf<TypeId>()
+                var currentClassDef: ClassDef? = it
+                do {
+                    flattenedInterfaces.addAll(currentClassDef!!.interfaces)
+                    currentClassDef = classDefs.find { it.typeId == currentClassDef!!.superClassTypeId }
+                } while (currentClassDef != null)
+                it.flattendInterfaces = flattenedInterfaces
             }
             inputFile.seek(header.mapOff.toLong() and 0xFFFFFFFF)
             val mapListSize = inputFile.readInt()
@@ -404,6 +421,17 @@ data class DexFile(
                 ByteArray(header.linkSize),
                 mapList
             )
+        }
+
+        private fun parseTypeList(
+            inputFile: EndianAwareRandomAccessFile,
+            typeIdItems: List<TypeId>
+        ): List<TypeId> {
+            val size = inputFile.readInt()
+            return List(size) {
+                val typeIdx = inputFile.readUnsignedShort()
+                typeIdItems[typeIdx]
+            }
         }
 
         @OptIn(ExperimentalUnsignedTypes::class)
