@@ -199,6 +199,11 @@ class Environment(
             if (mocked != null) {
                 println("Requested: $methodId, found: $mocked, triple: $triple")
                 return MethodWrapper.Mocked(mocked)
+            } else {
+                // (TypeId(descriptor=Ljava/lang/StringBuilder;), [TypeId(descriptor=Ljava/lang/String;)], append)
+
+                println("Requested: $methodId, not found, triple: $triple")
+                println("Mocked methods: ${mockedMethods.keys.joinToString { it.toString() }}")
             }
             // Dump the class def
             dexFile.classDefs.forEach {

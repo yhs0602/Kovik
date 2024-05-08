@@ -1,13 +1,12 @@
 package com.yhs0602
 
 import com.yhs0602.dex.DexFile
-import com.yhs0602.mockedclass.MockedStringBuilder
-import com.yhs0602.mockedmethod.*
 import com.yhs0602.vm.Environment
 import com.yhs0602.vm.GeneralMockedClass
 import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.executeMethod
 import java.io.File
+import java.io.PrintStream
 
 fun main() {
     // Surprisingly, multidex is default nowadays
@@ -76,18 +75,23 @@ fun main() {
     val args = Array<RegisterValue>(codeItem.insSize.toInt()) {
         RegisterValue.Int(0)
     }
-    val mockedMethodList = listOf(
-        StringBuilderInit(),
-        StringBuilderAppend(),
-        StringBuilderAppendI(),
-        StringBuilderToString(),
-        PrintLn(),
-        KotlinJvmInternalIntrinsicsCheckNotNullPointer(),
-        ObjectInit(),
-    )
     val mockedClassesList = listOf(
         GeneralMockedClass(StringBuilder::class.java),
+        GeneralMockedClass(PrintStream::class.java),
     )
+    val mockedMethodList = mockedClassesList.flatMap {
+        it.getMethods()
+    }
+//        listOf(
+//        StringBuilderInit(),
+//        StringBuilderAppend(),
+//        StringBuilderAppendI(),
+//        StringBuilderToString(),
+//        PrintLn(),
+//        KotlinJvmInternalIntrinsicsCheckNotNullPointer(),
+//        ObjectInit(),
+//    )
+
     val mockedMethods = mockedMethodList.associateBy {
         Triple(it.classId, it.parameters, it.name)
     }

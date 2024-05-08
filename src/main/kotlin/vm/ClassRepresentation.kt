@@ -18,7 +18,7 @@ class GeneralMockedClass(
     val clazz: Class<*>
 ) : MockedClass {
     override val classId: TypeId
-        get() = TypeId("L" + clazz.name.replace(".", "/"))
+        get() = TypeId(clazz.descriptorString())
 
     override fun initializeClass() {
         // Invoke <clinit> method
@@ -39,13 +39,33 @@ class GeneralMockedClass(
             }
 
             override val classId: TypeId
-                get() = TypeId(clazz.name.replace(".", "/"))
+                get() = this@GeneralMockedClass.classId
             override val parameters: List<TypeId>
-                get() = it.parameterTypes.map { TypeId(it.name) }
+                get() = it.parameterTypes.map { TypeId(it.descriptorString()) }
             override val name: String
                 get() = it.name
         }
+    } + clazz.constructors.map {
+        object : MockedMethod {
+            override fun execute(
+                args: Array<RegisterValue>,
+                environment: Environment,
+                code: CodeItem,
+                isStatic: Boolean
+            ): Array<RegisterValue> {
+                return invokeMethod("<init>", args, parameters, false)
+            }
+
+            override val classId: TypeId
+                get() = this@GeneralMockedClass.classId
+            override val parameters: List<TypeId>
+                get() = it.parameterTypes.map { TypeId(it.name) }
+            override val name: String
+                get() = "<init>"
+
+        }
     }
+
 
     // Can only be called as a context of mocked class.
     fun invokeMethod(
@@ -56,7 +76,9 @@ class GeneralMockedClass(
     ): Array<RegisterValue> {
         return try {
             // Check if the method name is <init>
+            println("Invoking $name with args $args")
             if (name == "<init>") {
+                println("Name is <init>")
                 val registerValue = (args[0] as? RegisterValue.ObjectRef)?.value
                     ?: throw IllegalArgumentException("Instance not found")
                 when (registerValue) {
@@ -64,10 +86,16 @@ class GeneralMockedClass(
                         // There is no actual backing instance,
                         // Use the class's createInstance method
                         // create the instance
-                        val instance = clazz.constructors.first {
-                            compareConstructorProto(it, name, args.toList(), paramType)
-                        }.newInstance(*args.map { marshalArgument(it) }.toTypedArray())
-                        registerValue.value = instance
+                        try {
+                            val droppedArgs = args.drop(1)
+                            val instance = clazz.constructors.first {
+                                compareConstructorProto(it, droppedArgs, paramType)
+                            }.newInstance(*droppedArgs.map { marshalArgument(it) }.toTypedArray())
+
+                            registerValue.value = instance
+                        } catch (e: NoSuchElementException) {
+                            throw IllegalArgumentException("Constructor not found")
+                        }
                     }
 
                     is DictionaryBackedInstance -> {
@@ -97,8 +125,8 @@ class GeneralMockedClass(
             }
             // Drop first argument as it is the instance, if it is not static
 //            val args = if (!AccessFlags(method.modifiers).isStatic) args.drop(1) else args
-            println("Invoking $method ${method.parameterTypes.joinToString(" ") { it.name }} with args $args")
-            val argArr = args.map {
+            println("Invoking $method ${method.parameterTypes.joinToString(" ") { it.name }} with args $adjustedArgs")
+            val argArr = adjustedArgs.map {
                 marshalArgument(it)
             }.toTypedArray()
             println("2. Invoking $name with args $argArr for object $instanceValue")
@@ -112,13 +140,38 @@ class GeneralMockedClass(
     }
 
     private fun compareConstructorProto(
-        it: Constructor<*>?,
-        name: String,
-        toList: List<RegisterValue>,
-        paramType: List<TypeId>
+        method: Constructor<*>,
+        args: List<RegisterValue>,
+        paramTypes: List<TypeId>
     ): Boolean {
-        // compare method name
-        TODO("Not yet implemented")
+        // compare method name: it should be the class name
+//        if (method.name != "<init>") {
+//            println("Method name mismatch: ${method.name} != <init>")
+//            return false
+//        }
+        if (method.parameterCount != paramTypes.size) {
+            println("Parameter count mismatch: ${method.parameterCount} != ${paramTypes.size}")
+            return false
+        }
+        println("Args: $args, paramTypes: $paramTypes")
+        val methodParameterTypes = method.parameterTypes
+        var i = 0
+        while (i < args.size) {
+            val paramType = methodParameterTypes[i]
+
+            if (!compareProtoType(paramTypes[i], paramType)) {
+                println("Parameter type mismatch: ${paramTypes[i]} != $paramType")
+                return false
+            }
+            // 파라미터의 타입과 인자의 타입을 비교하여 일치하지 않으면 false를 반환
+            val (result, consumed) = compareArgumentType(args, i, paramType)
+            if (!result) {
+                println("Argument type mismatch: ${args[i]} != $paramType")
+                return false
+            }
+            i += consumed
+        }
+        return true
     }
 
     override fun toString(): String {
