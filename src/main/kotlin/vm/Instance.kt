@@ -189,8 +189,9 @@ fun marshalArgument(registerValue: RegisterValue): Any? {
 }
 
 
-fun unmarshalArgument(value: Any, returnType: Class<*>): Array<RegisterValue> {
+fun unmarshalArgument(value: Any?, returnType: Class<*>): Array<RegisterValue> {
     return when (value) {
+        null -> arrayOf()
         is Int -> arrayOf(RegisterValue.Int(value))
         is Long -> {
             val low = value.toInt()

@@ -139,9 +139,13 @@ class Environment(
         mockedClasses[typeId]?.let {
             return ClassRepresentation.MockedClassRepresentation(it)
         }
-        throw Exception("Cannot find class def for type id $typeId: mockedClasses: ${mockedClasses.entries.joinToString { 
-            "${it.key} -> ${it.value}"
-        }}")
+        throw Exception(
+            "Cannot find class def for type id $typeId: mockedClasses: ${
+                mockedClasses.entries.joinToString {
+                    "${it.key} -> ${it.value}"
+                }
+            }"
+        )
 //        return null
     }
 
@@ -169,11 +173,31 @@ class Environment(
         }
     }
 
-    fun getStaticField(code: CodeItem, fieldId: Int): Array<RegisterValue>? {
+    // TODO: Handle Mocking
+    fun getStaticField(code: CodeItem, fieldId: Int): Array<RegisterValue> {
         val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
         val fieldIdObj = dexFile.fieldIds[fieldId]
         println("Getting static field $fieldIdObj")
-        val staticValue = staticFields[dexFile to fieldId] ?: return null
+        val staticValue = staticFields[dexFile to fieldId]
+        if (staticValue == null) {
+            // Mocked classes
+            val mocked = mockedClasses[fieldIdObj.classId]
+            if (mocked != null) {
+                println("Requested: $fieldIdObj, found: $mocked")
+                val declaredFields = mocked.clazz.declaredFields
+                declaredFields.find {
+                     it.name == fieldIdObj.name
+                }?.let {
+                    println("Found field: ${it.name} ${it.type} ")
+                    return unmarshalArgument(mocked.clazz.getField(it.name).get(null), it.type)
+                }
+                println("Requested: $fieldIdObj, not found")
+                return arrayOf()
+            } else {
+                println("Requested: $fieldIdObj, not found")
+                return arrayOf()
+            }
+        }
         return staticValue
     }
 

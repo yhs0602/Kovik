@@ -7,6 +7,7 @@ import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.executeMethod
 import java.io.File
 import java.io.PrintStream
+import kotlin.jvm.internal.Intrinsics
 
 fun main() {
     // Surprisingly, multidex is default nowadays
@@ -78,6 +79,8 @@ fun main() {
     val mockedClassesList = listOf(
         GeneralMockedClass(StringBuilder::class.java),
         GeneralMockedClass(PrintStream::class.java),
+        GeneralMockedClass(System::class.java),
+        GeneralMockedClass(Intrinsics::class.java),
     )
     val mockedMethodList = mockedClassesList.flatMap {
         it.getMethods()

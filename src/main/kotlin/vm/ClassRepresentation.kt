@@ -114,9 +114,9 @@ class GeneralMockedClass(
                 instanceValue = null
                 adjustedArgs = args.toList()
             } else {
-                val instnace = (args[0] as? RegisterValue.ObjectRef)?.value
-                instanceValue = if (instnace is MockedInstance) instnace.value else {
-                    throw IllegalArgumentException("Instance not found")
+                val instance = (args[0] as? RegisterValue.ObjectRef)?.value
+                instanceValue = if (instance is MockedInstance) instance.value else {
+                    throw IllegalArgumentException("Instance not found: instance: $instance, args: $args")
                 }
                 adjustedArgs = args.drop(1)
             }
@@ -129,6 +129,10 @@ class GeneralMockedClass(
             val argArr = adjustedArgs.map {
                 marshalArgument(it)
             }.toTypedArray()
+            val declaringClass = method.declaringClass
+            if (!declaringClass.isInstance(instanceValue)) {
+                throw IllegalArgumentException("The provided instance $instanceValue does not match the method's declaring class. $declaringClass")
+            }
             println("2. Invoking $name with args $argArr for object $instanceValue")
             val result = method.invoke(instanceValue, *argArr)
             val resultType = method.returnType
