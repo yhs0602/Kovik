@@ -24,6 +24,10 @@ open class Sget(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
         }
         memory.registers[vAA] = value[0]
     }
+
+    override fun toString(): String {
+        return "Sget reg[$vAA] <- $KindBBBB"
+    }
 }
 
 class SgetWide(pc: Int, code: CodeItem) : Sget(pc, code) {
@@ -116,6 +120,10 @@ class Sput(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
         val value = memory.registers[vAA]
         environment.setStaticField(code, KindBBBB, arrayOf(value))
         return pc + insnLength
+    }
+
+    override fun toString(): String {
+        return "Sput $vAA -> $KindBBBB"
     }
 }
 

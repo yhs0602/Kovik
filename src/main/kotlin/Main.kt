@@ -46,7 +46,7 @@ fun main() {
         }
     }
     println("Enter the class name you are interested in:")
-    val className = "TargetMethods" // readlnOrNull() ?: return TargetMethods StaticExample
+    val className = "StaticExample" // readlnOrNull() ?: return TargetMethods StaticExample
     val classNameStr = "L$packageNameStr/$className;"
     val classDef = classes.find { it.classDef.typeId.descriptor == classNameStr } ?: return
     println("Methods====================")
@@ -67,7 +67,7 @@ fun main() {
         println("No code found")
         return
     }
-    println(codeItem)
+//    println(codeItem)
     val code = codeItem.insns
     for (insn in code) {
         println(insn)
@@ -98,7 +98,7 @@ fun main() {
         mockedMethods,
         mockedClasses,
         beforeInstruction = { pc, instruction, memory ->
-//            println("Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
+            println("Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
         },
         afterInstruction = { pc, instruction, memory ->
             println("After $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug

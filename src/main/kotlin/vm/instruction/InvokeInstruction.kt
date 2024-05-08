@@ -37,10 +37,20 @@ open class InvokeVirtual(pc: Int, val code: CodeItem) : Instruction._35c(pc, cod
 
 class InvokeSuper(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
     // TODO
+    override fun toString(): String {
+        val argRegList = arrayOf(C, D, E, F, G)
+        val args = Array(A) { argRegList[it] }
+        return "InvokeSuper ($A args: ${args.joinToString(",")})"
+    }
 }
 
 class InvokeDirect(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
     // TODO
+    override fun toString(): String {
+        val argRegList = arrayOf(C, D, E, F, G)
+        val args = Array(A) { argRegList[it] }
+        return "InvokeDirect ($A args: ${args.joinToString(",")})"
+    }
 }
 
 class InvokeStatic(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
@@ -71,7 +81,7 @@ class InvokeStatic(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
     override fun toString(): String {
         val argRegList = arrayOf(C, D, E, F, G)
         val args = Array(A) { argRegList[it] }
-        return "InvokeVirtual ($A args: ${args.joinToString(",")})"
+        return "InvokeStatic ($A args: ${args.joinToString(",")})"
     }
 }
 
