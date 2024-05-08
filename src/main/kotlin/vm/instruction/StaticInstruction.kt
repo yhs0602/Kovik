@@ -9,8 +9,8 @@ import com.yhs0602.vm.RegisterValue
 open class Sget(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
         val value = environment.getStaticField(code, KindBBBB)
-        if (value == null) {
-            memory.exception = ExceptionValue("Sget: Field not found")
+        if (value.isEmpty()) {
+            memory.exception = ExceptionValue("Sget: Field $KindBBBB not found")
             return pc + insnLength
         }
         performGet(value, memory)
@@ -44,7 +44,7 @@ class SgetWide(pc: Int, code: CodeItem) : Sget(pc, code) {
 class SgetObject(pc: Int, code: CodeItem) : Sget(pc, code) {
     override fun performGet(value: Array<RegisterValue>, memory: Memory) {
         if (value.size != 1) {
-            memory.exception = ExceptionValue("SgetObject: Field size is not 1")
+            memory.exception = ExceptionValue("SgetObject: Field size is not 1: ${value.size}")
             return
         }
         if (value[0] !is RegisterValue.ObjectRef) {

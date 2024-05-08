@@ -2,6 +2,7 @@ package com.yhs0602.vm
 
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.DexFile
+import com.yhs0602.dex.ParsedClass
 import com.yhs0602.dex.TypeId
 import com.yhs0602.vm.instruction.Instruction
 
@@ -31,7 +32,8 @@ class Environment(
     val typeIds = mutableMapOf<Pair<DexFile, Int>, TypeId>()
     val strings = mutableMapOf<Pair<DexFile, Int>, String>()
 
-    val staticFields = mutableMapOf<Pair<DexFile, Int>, Array<RegisterValue>>()
+    val staticFields = mutableMapOf<Pair<TypeId, Int>, Array<RegisterValue>>()
+    val initializedClasses: MutableSet<TypeId> = mutableSetOf()
 
     fun getTypeId(codeItem: CodeItem, index: Int): TypeId {
         val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
@@ -117,22 +119,26 @@ class Environment(
         return false
     }
 
-    fun getClassDef(codeItem: CodeItem, typeId: TypeId): ClassRepresentation? {
+    fun getClassDef(codeItem: CodeItem, typeId: TypeId): ClassRepresentation {
         val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
 //        println("Searching for class def with typeId $typeId")
         val classDef = dexFile.classDefs.find {
             it.classDef.typeId == typeId
         }
-        if (classDef != null)
+        if (classDef != null) {
+            checkStaticInit(typeId, classDef)
             return ClassRepresentation.DexClassRepresentation(classDef.classDef, classDef.classData)
+        }
 //        println("Class def not found in dex file ${dexFile.file.name}")
         for (file in dexFiles) {
 //            println("Searching in dex file ${file.file.name}")
             val classDef = file.classDefs.find {
                 it.classDef.typeId == typeId
             }
-            if (classDef != null)
+            if (classDef != null) {
+                checkStaticInit(typeId, classDef)
                 return ClassRepresentation.DexClassRepresentation(classDef.classDef, classDef.classData)
+            }
         }
 //        println("Class def not found in any dex file, using mocked version")
         // search for mocked classes
@@ -147,6 +153,23 @@ class Environment(
             }"
         )
 //        return null
+    }
+
+    private fun checkStaticInit(typeId: TypeId, classDef: ParsedClass) {
+        if (typeId !in initializedClasses) {
+            // call clinit
+            val classData = classDef.classData ?: error("Class data not found")
+            val clinit = classData.directMethods.find {
+                it.methodId.name == "<clinit>"
+            }
+            if (clinit != null) {
+                val clInitCodeItem = clinit.codeItem ?: error("Code item not found")
+                executeMethod(clInitCodeItem, this, arrayOf(), 0)
+            } else {
+                println("clinit not found for class ${classDef.classDef.typeId.descriptor}; searched: ${classData.directMethods.joinToString { it.methodId.name }}")
+            }
+            initializedClasses.add(typeId)
+        }
     }
 
     fun createInstance(clazz: ClassRepresentation): RegisterValue.ObjectRef {
@@ -173,20 +196,21 @@ class Environment(
         }
     }
 
-    // TODO: Handle Mocking
+    // TODO: Call clinit first
     fun getStaticField(code: CodeItem, fieldId: Int): Array<RegisterValue> {
         val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
         val fieldIdObj = dexFile.fieldIds[fieldId]
+        // Check if the class is mocked or not
+        val staticValue = staticFields[fieldIdObj.classId to fieldId]
 //        println("Getting static field $fieldIdObj")
-        val staticValue = staticFields[dexFile to fieldId]
-        if (staticValue == null) {
+        if (staticValue == null) { // Mocked or non-existent field
             // Mocked classes
             val mocked = mockedClasses[fieldIdObj.classId]
             if (mocked != null) {
 //                println("Requested: $fieldIdObj, found: $mocked")
                 val declaredFields = mocked.clazz.declaredFields
                 declaredFields.find {
-                     it.name == fieldIdObj.name
+                    it.name == fieldIdObj.name
                 }?.let {
 //                    println("Found field: ${it.name} ${it.type} ")
                     return unmarshalArgument(mocked.clazz.getField(it.name).get(null), it.type)
@@ -195,7 +219,12 @@ class Environment(
                 return arrayOf()
             } else {
 //                println("Requested: $fieldIdObj, not found")
-                return arrayOf()
+                checkStaticInit(fieldIdObj.classId, dexFile.classDefs.find {
+                    it.classDef.typeId == fieldIdObj.classId
+                } ?: error("Cannot find class def for field id $fieldIdObj"))
+                return staticFields.getOrPut(fieldIdObj.classId to fieldId) {
+                    arrayOf(RegisterValue.Int(0)) // Default value of the static field is 0!
+                }
             }
         }
         return staticValue
@@ -203,7 +232,8 @@ class Environment(
 
     fun setStaticField(code: CodeItem, fieldId: Int, value: Array<RegisterValue>) {
         val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
-        staticFields[dexFile to fieldId] = value
+        val fieldIdObj = dexFile.fieldIds[fieldId]
+        staticFields[fieldIdObj.classId to fieldId] = value
     }
 
     fun getMethod(code: CodeItem, kindBBBB: Int): MethodWrapper {

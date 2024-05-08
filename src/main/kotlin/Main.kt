@@ -46,7 +46,7 @@ fun main() {
         }
     }
     println("Enter the class name you are interested in:")
-    val className = "StaticExample" // readlnOrNull() ?: return TargetMethods StaticExample
+    val className = "CallStatic" // readlnOrNull() ?: return TargetMethods StaticExample
     val classNameStr = "L$packageNameStr/$className;"
     val classDef = classes.find { it.classDef.typeId.descriptor == classNameStr } ?: return
     println("Methods====================")
@@ -60,7 +60,7 @@ fun main() {
         println(method)
     }
     println("Enter the method name you are interested in:")
-    val methodName = "doTest" // readlnOrNull() ?: return
+    val methodName = "test" // readlnOrNull() ?: return
     val method = methods.find { it.methodId.name == methodName } ?: return
     println("Code====================")
     val codeItem = method.codeItem ?: run {
