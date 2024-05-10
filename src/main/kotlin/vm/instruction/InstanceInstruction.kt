@@ -178,11 +178,11 @@ open class Iput(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
             memory.exception = ExceptionValue("Iput: object reference is null")
             return pc + insnLength
         }
-        performPut(memory, instance)
+        performPut(memory, instance, environment)
         return pc + insnLength
     }
 
-    open fun performPut(memory: Memory, instance: Instance) {
+    open fun performPut(memory: Memory, instance: Instance, environment: Environment) {
         val value = memory.registers[vA]
         instance.setField(KindCCCC, arrayOf(value))
     }
@@ -193,26 +193,39 @@ open class Iput(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
 }
 
 class IputWide(pc: Int, code: CodeItem) : Iput(pc, code) {
-    override fun performPut(memory: Memory, instance: Instance) {
+    override fun performPut(memory: Memory, instance: Instance, environment: Environment) {
         val value = memory.registers[vA]
         val value2 = memory.registers[vA + 1]
         instance.setField(KindCCCC, arrayOf(value, value2))
     }
 }
 
-class IputObject(pc: Int, code: CodeItem) : Iput(pc, code) {
-    override fun performPut(memory: Memory, instance: Instance) {
+class IputObject(pc: Int, val code: CodeItem) : Iput(pc, code) {
+    override fun performPut(memory: Memory, instance: Instance, environment: Environment) {
         val value = memory.registers[vA]
-        if (value !is RegisterValue.ObjectRef) {
-            memory.exception = ExceptionValue("IputObject: vA is not an object reference")
-            return
+        when (value) {
+            is RegisterValue.ObjectRef -> {
+                instance.setField(KindCCCC, arrayOf(value))
+            }
+
+            is RegisterValue.StringRef -> {
+                instance.setField(KindCCCC, arrayOf(value.toStringObject(code, environment)))
+            }
+
+            else -> {
+                memory.exception = ExceptionValue("IputObject: v$vA is not an object reference")
+                return
+            }
         }
-        instance.setField(KindCCCC, arrayOf(value))
+    }
+
+    override fun toString(): String {
+        return "IputObject v$vA -> v$vB, $KindCCCC"
     }
 }
 
 class IputBoolean(pc: Int, code: CodeItem) : Iput(pc, code) {
-    override fun performPut(memory: Memory, instance: Instance) {
+    override fun performPut(memory: Memory, instance: Instance, environment: Environment) {
         val value = memory.registers[vA]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("IputBoolean: vA is not an integer")
@@ -223,7 +236,7 @@ class IputBoolean(pc: Int, code: CodeItem) : Iput(pc, code) {
 }
 
 class IputByte(pc: Int, code: CodeItem) : Iput(pc, code) {
-    override fun performPut(memory: Memory, instance: Instance) {
+    override fun performPut(memory: Memory, instance: Instance, environment: Environment) {
         val value = memory.registers[vA]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("IputByte: vA is not an integer")
@@ -234,7 +247,7 @@ class IputByte(pc: Int, code: CodeItem) : Iput(pc, code) {
 }
 
 class IputChar(pc: Int, code: CodeItem) : Iput(pc, code) {
-    override fun performPut(memory: Memory, instance: Instance) {
+    override fun performPut(memory: Memory, instance: Instance, environment: Environment) {
         val value = memory.registers[vA]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("IputChar: vA is not an integer")
@@ -245,7 +258,7 @@ class IputChar(pc: Int, code: CodeItem) : Iput(pc, code) {
 }
 
 class IputShort(pc: Int, code: CodeItem) : Iput(pc, code) {
-    override fun performPut(memory: Memory, instance: Instance) {
+    override fun performPut(memory: Memory, instance: Instance, environment: Environment) {
         val value = memory.registers[vA]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("IputShort: vA is not an integer")

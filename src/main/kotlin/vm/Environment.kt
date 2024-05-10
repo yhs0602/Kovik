@@ -1,9 +1,6 @@
 package com.yhs0602.vm
 
-import com.yhs0602.dex.CodeItem
-import com.yhs0602.dex.DexFile
-import com.yhs0602.dex.ParsedClass
-import com.yhs0602.dex.TypeId
+import com.yhs0602.dex.*
 import com.yhs0602.vm.instruction.Instruction
 
 // Class definitions, typeids, string constants, field ids, method ids, and method prototypes...
@@ -11,11 +8,9 @@ class Environment(
     val dexFiles: List<DexFile>,
     val mockedMethods: Map<Triple<TypeId, List<TypeId>, String>, MockedMethod> = mapOf(),
     val mockedClasses: Map<TypeId, GeneralMockedClass> = mapOf(),
-    val beforeInstruction: (Int, Instruction, Memory, Int) -> Unit = {
-        pc: Int, instruction: Instruction, memory: Memory, depth: Int ->
+    val beforeInstruction: (Int, Instruction, Memory, Int) -> Unit = { pc: Int, instruction: Instruction, memory: Memory, depth: Int ->
     },
-    val afterInstruction: (Int, Instruction, Memory,  Int) -> Unit = {
-        pc: Int, instruction: Instruction, memory: Memory, depth: Int ->
+    val afterInstruction: (Int, Instruction, Memory, Int) -> Unit = { pc: Int, instruction: Instruction, memory: Memory, depth: Int ->
     }
 ) {
     private val codeItemToDexFile = dexFiles.flatMap { dexFile ->
@@ -56,7 +51,12 @@ class Environment(
     // If targetType is interface
     // If object is array
     // If object is subclass of targetType
-    fun isInstanceOf(codeItem: CodeItem, objectRef: RegisterValue.ObjectRef, targetTypeDescriptor: String, depth: Int): Boolean {
+    fun isInstanceOf(
+        codeItem: CodeItem,
+        objectRef: RegisterValue.ObjectRef,
+        targetTypeDescriptor: String,
+        depth: Int
+    ): Boolean {
         // If the target type is a primitive type, return false
         if (isPrimitiveType(targetTypeDescriptor)) return false
 
@@ -86,7 +86,12 @@ class Environment(
     }
 
     // Check the super types of the given type
-    private fun checkSuperTypes(codeItem: CodeItem, typeDescriptor: String, targetTypeDescriptor: String, depth: Int): Boolean {
+    private fun checkSuperTypes(
+        codeItem: CodeItem,
+        typeDescriptor: String,
+        targetTypeDescriptor: String,
+        depth: Int
+    ): Boolean {
         var currentType: TypeId? = TypeId(typeDescriptor)
 
         // Get the class def of the class of typeDescriptor
@@ -188,6 +193,7 @@ class Environment(
                     classDef.typeId,
                     DictionaryBackedInstance(
                         fields = classData.instanceFields,
+                        dexClassRepresentation = clazz
                     )
                 )
             }
@@ -288,27 +294,23 @@ class Environment(
         // method.codeItem
         if (method == null) {
             // try to find in superclasses
-            var superClass = classDef.classDef.superClassTypeId
-            do {
-                val superClassDef = dexFile.classDefs.find {
-                    it.classDef.typeId == superClass
-                } ?: break
-                val superClassData = superClassDef.classData ?: break
+            return iterateSuperClass(classDef, dexFile) { superClassData ->
                 val superMethod = superClassData.directMethods.find {
                     it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
                 } ?: superClassData.virtualMethods.find {
                     it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
                 }
                 if (superMethod != null) {
-                    return MethodWrapper.Encoded(superMethod)
+                    MethodWrapper.Encoded(superMethod)
+                } else {
+                    null
                 }
-                superClass = superClassDef.classDef.superClassTypeId
-            } while (superClass != null)
-            error("Cannot find method for method id $methodId")
+            } ?: error("Cannot find method for method id $methodId")
         } else {
             return MethodWrapper.Encoded(method)
         }
     }
+
 
     fun executeMockedMethod(
         code: CodeItem,
@@ -324,4 +326,23 @@ class Environment(
         return method.execute(args, this, code, isStatic)
     }
 
+}
+
+fun <R> iterateSuperClass(
+    classDef: ParsedClass,
+    dexFile: DexFile,
+    iterator: (ClassData) -> R?
+): R? {
+    var superClass = classDef.classDef.superClassTypeId
+    do {
+        val superClassDef = dexFile.classDefs.find {
+            it.classDef.typeId == superClass
+        } ?: break
+        val superClassData = superClassDef.classData ?: break
+        iterator(superClassData)?.let {
+            return@iterateSuperClass it
+        }
+        superClass = superClassDef.classDef.superClassTypeId
+    } while (superClass != null)
+    return null
 }

@@ -17,7 +17,10 @@ sealed class Instance {
     abstract fun setField(idx: Int, value: Array<RegisterValue>)
 }
 
-class DictionaryBackedInstance(val fields: List<EncodedField>) : Instance() {
+class DictionaryBackedInstance(
+    val fields: List<EncodedField>,
+    val dexClassRepresentation: ClassRepresentation.DexClassRepresentation
+) : Instance() {
     private val fieldValues: MutableMap<Int, Array<RegisterValue>> = List(fields.size) { idx ->
         idx to arrayOf<RegisterValue>(RegisterValue.Int(0))
     }.toMap().toMutableMap()
@@ -28,7 +31,19 @@ class DictionaryBackedInstance(val fields: List<EncodedField>) : Instance() {
         private set
 
     override fun getField(idx: Int): Array<RegisterValue>? {
-        return fieldValues[idx]
+        // first check the local fields
+        // then check the super class fields
+        val localFieldValue = fieldValues[idx]
+        if (localFieldValue != null) {
+            return localFieldValue
+        }
+//        iterateSuperClass(dexClassRepresentation, dexFile) {
+//            val superInstance = backingSuperInstance
+//            if (superInstance is Instance) {
+//                return superInstance.getField(idx)
+//            }
+//        }
+        return null
     }
 
     override fun setField(idx: Int, value: Array<RegisterValue>) {
@@ -311,6 +326,7 @@ fun marshalArgument(
                                 // super class is Object or Dex defined class
                                 null to 1
                             }
+
                             paramType.isAssignableFrom(backingSuperInstanceClass) -> {
                                 // It means that the required type is a superclass of the backing super instance class
                                 // We need to create a proxy object
@@ -327,6 +343,7 @@ fun marshalArgument(
                                 // TODO: cache this instance (so that?) the constructor is only called once
                                 objenesis.newInstance(enhancer.createClass()) to 1
                             }
+
                             else -> {
                                 // It means that the required type is not a superclass of the backing super instance class
                                 throw IllegalArgumentException("Incompatible types: $paramType and ${theInstance.backingSuperInstanceClass}")
@@ -337,9 +354,11 @@ fun marshalArgument(
                     null -> null to 1
                 }
             }
+
             is RegisterValue.StringRef -> {
                 environment.getString(code, arg.index) to 1
             }
+
             else -> throw IllegalArgumentException("Cannot marshal object reference: $arg")
         }
     }
