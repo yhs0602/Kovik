@@ -3,18 +3,27 @@ package com.yhs0602.vm
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.EncodedField
 import com.yhs0602.dex.TypeId
+import net.sf.cglib.proxy.Enhancer
+import net.sf.cglib.proxy.MethodInterceptor
+import net.sf.cglib.proxy.MethodProxy
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
 
-interface Instance {
-    fun getField(idx: Int): Array<RegisterValue>?
+sealed class Instance {
+    abstract fun getField(idx: Int): Array<RegisterValue>?
 
-    fun setField(idx: Int, value: Array<RegisterValue>)
-
+    abstract fun setField(idx: Int, value: Array<RegisterValue>)
 }
 
-class DictionaryBackedInstance(val fields: List<EncodedField>) : Instance {
+class DictionaryBackedInstance(val fields: List<EncodedField>) : Instance() {
     private val fieldValues: MutableMap<Int, Array<RegisterValue>> = List(fields.size) { idx ->
         idx to arrayOf<RegisterValue>(RegisterValue.Int(0))
     }.toMap().toMutableMap()
+
+    var backingSuperInstance: Any? = null
+        private set
+    var backingSuperInstanceClass: Class<*>? = null
+        private set
 
     override fun getField(idx: Int): Array<RegisterValue>? {
         return fieldValues[idx]
@@ -27,9 +36,13 @@ class DictionaryBackedInstance(val fields: List<EncodedField>) : Instance {
     override fun toString(): String {
         return "DictionaryBackedInstance(${fieldValues.values.joinToString { it.contentToString() }})"
     }
+
+    fun MethodInterceptor() {
+
+    }
 }
 
-class MockedInstance(val clazz: Class<*>) : Instance {
+class MockedInstance(val clazz: Class<*>) : Instance() {
     lateinit var value: Any
 
     override fun getField(idx: Int): Array<RegisterValue> {
@@ -264,18 +277,98 @@ fun marshalArgument(
             result to arg.values.size
         }
 
-        paramType == Object::class.java -> {
+        paramType.isInterface -> {
             when (arg) {
                 is RegisterValue.ObjectRef -> {
-                    if (arg.value is MockedInstance) arg.value.value to 1
-                    else arg.value to 1
+                    if (arg.value is MockedInstance) {
+                        arg.value.value to 1
+                    } else {
+                        Proxy.newProxyInstance(
+                            paramType.classLoader,
+                            arrayOf(paramType)
+                        ) { obj, method, proxyArgs ->
+                            println("Proxy call to method: ${method.name} with args: ${args.joinToString()}")
+                            // TODO: emulate the method and return the marshalled result
+                            // 1. Unmarshal arguments
+                            // 2. Find the method
+                            // 3. Execute the method
+                            // 4. Marshal the result
+                            // 5. Return the result
+                            null
+                        } to 1
+                    }
                 }
+
                 is RegisterValue.StringRef -> environment.getString(code, arg.index) to 1
-                else -> null to 1
+                else -> throw IllegalArgumentException("Invalid type for interface proxy creation.")
             }
         }
 
-        else -> null to 1
+        else -> when (arg) {
+            is RegisterValue.ObjectRef -> {
+                when (val theInstance = arg.value) {
+                    is MockedInstance -> { // instance of the external class is passed directly
+                        theInstance.value to 1
+                    }
+
+                    is DictionaryBackedInstance -> {
+                        // Dex defined class instance is passed to the method of external class.
+                        // We should handle the cases where the required type is finer than Object.
+                        // Valid cases:
+                        // foo(A a) <- A: This is not the case here, because it is handled in MockedInstance case.
+                        // foo(A a) <- B where B extends A. This can happen.
+                        // foo(Object a) <- A where A is the Dex defined class.
+                        // This case is suspicious, because it is likely that the method can use reflection or
+                        // other methods to access the fields of the object.
+                        // Also, we may have to mock getClass, hashCode, equals, toString, notify, notifyAll, wait, finalize
+                        // I think it will be safer to create a proxy object also for this case.
+                        // Checking whether the class is assignable from the required type:
+                        // If there is not backing super instance class, it means the direct superclass of the class
+                        // is either another Dex defined class or Object.
+                        val backingSuperInstanceClass = theInstance.backingSuperInstanceClass
+                        if (backingSuperInstanceClass == null) {
+                            // super class is Object or Dex defined class
+                            null to 1
+                        } else {
+                            if (paramType.isAssignableFrom(backingSuperInstanceClass)) {
+                                // It means that the required type is a superclass of the backing super instance class
+                                // We need to create a proxy object
+                                println("Creating proxy object for ${theInstance.backingSuperInstanceClass}")
+                                val enhancer = Enhancer()
+                                enhancer.setSuperclass(theInstance.backingSuperInstanceClass)
+                                enhancer.setCallback(
+                                    MyMethodInterceptor(
+                                        environment,
+                                        code
+                                    )
+                                )
+                                enhancer.create() to 1
+                            } else {
+                                // It means that the required type is not a superclass of the backing super instance class
+                                throw IllegalArgumentException("Incompatible types: $paramType and ${theInstance.backingSuperInstanceClass}")
+                            }
+                        }
+                    }
+
+                    null -> null to 1
+                }
+            }
+
+            else -> throw IllegalArgumentException("Cannot marshal object reference: $arg")
+        }
+    }
+}
+
+class MyMethodInterceptor(
+    private val environment: Environment,
+    private val code: CodeItem
+) : MethodInterceptor {
+    override fun intercept(p0: Any?, p1: Method?, p2: Array<out Any>?, p3: MethodProxy?): Any {
+        // p0 is the proxy object
+        // p1 is the method
+        // p2 is the arguments
+        // p3 is the method proxy
+        TODO("Not yet implemented")
     }
 }
 

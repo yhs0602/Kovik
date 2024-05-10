@@ -119,3 +119,42 @@ Cases of instance mocks:
             }
         }
     ```
+
+### DictionaryBackedInstance
+
+It is a custom class to manage the state of `dex` class instances independently from Java's inherent object model.
+
+```kotlin
+class DictionaryBackedInstance(val fields: List<EncodedField>) : Instance {
+   private val fieldValues: MutableMap<Int, Array<RegisterValue>> = List(fields.size) { idx ->
+           idx to arrayOf<RegisterValue>(RegisterValue.Int(0))
+   }.toMap().toMutableMap()
+   
+   private val superClassInstnace: Any? = null
+
+   override fun getField(idx: Int): Array<RegisterValue>? {
+      return fieldValues[idx]
+   }
+
+   override fun setField(idx: Int, value: Array<RegisterValue>) {
+      fieldValues[idx] = value
+   }
+
+   override fun toString(): String {
+      return "DictionaryBackedInstance(${fieldValues.values.joinToString { it.contentToString() }})"
+   }
+}
+```
+## Delegating Inheritance Relationships
+We transform inheritance relationships into delegation by dynamically creating proxies and linking superclass constructors to maintain compatibility and functionality.
+
+## Using CGLib for Overriding Class Methods
+We utilize `CGLib` to dynamically generate proxy classes that extend `File` and override methods defined in dex classes like `A`.
+
+```kotlin
+val enhancer = Enhancer()
+enhancer.setSuperclass(clazz)
+enhancer.setCallback(MyMethodInterceptor(backing instance of clazz in A))
+val clazzObject = clazz.cast(enhancer.create()) // create proxy
+```
+## Implementing MethodInterceptor
