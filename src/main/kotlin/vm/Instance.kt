@@ -6,6 +6,8 @@ import com.yhs0602.dex.TypeId
 import net.sf.cglib.proxy.Enhancer
 import net.sf.cglib.proxy.MethodInterceptor
 import net.sf.cglib.proxy.MethodProxy
+import org.objenesis.Objenesis
+import org.objenesis.ObjenesisStd
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 
@@ -277,32 +279,10 @@ fun marshalArgument(
             result to arg.values.size
         }
 
-        paramType.isInterface -> {
-            when (arg) {
-                is RegisterValue.ObjectRef -> {
-                    if (arg.value is MockedInstance) {
-                        arg.value.value to 1
-                    } else {
-                        Proxy.newProxyInstance(
-                            paramType.classLoader,
-                            arrayOf(paramType)
-                        ) { obj, method, proxyArgs ->
-                            println("Proxy call to method: ${method.name} with args: ${args.joinToString()}")
-                            // TODO: emulate the method and return the marshalled result
-                            // 1. Unmarshal arguments
-                            // 2. Find the method
-                            // 3. Execute the method
-                            // 4. Marshal the result
-                            // 5. Return the result
-                            null
-                        } to 1
-                    }
-                }
-
-                is RegisterValue.StringRef -> environment.getString(code, arg.index) to 1
-                else -> throw IllegalArgumentException("Invalid type for interface proxy creation.")
-            }
-        }
+        // unify the handling of Object and interface using CGLib and Objenesis
+//        paramType.isInterface -> {
+//            handleInterface(arg, paramType, args, environment, code)
+//        }
 
         else -> when (arg) {
             is RegisterValue.ObjectRef -> {
@@ -326,11 +306,12 @@ fun marshalArgument(
                         // If there is not backing super instance class, it means the direct superclass of the class
                         // is either another Dex defined class or Object.
                         val backingSuperInstanceClass = theInstance.backingSuperInstanceClass
-                        if (backingSuperInstanceClass == null) {
-                            // super class is Object or Dex defined class
-                            null to 1
-                        } else {
-                            if (paramType.isAssignableFrom(backingSuperInstanceClass)) {
+                        when {
+                            backingSuperInstanceClass == null -> {
+                                // super class is Object or Dex defined class
+                                null to 1
+                            }
+                            paramType.isAssignableFrom(backingSuperInstanceClass) -> {
                                 // It means that the required type is a superclass of the backing super instance class
                                 // We need to create a proxy object
                                 println("Creating proxy object for ${theInstance.backingSuperInstanceClass}")
@@ -342,8 +323,11 @@ fun marshalArgument(
                                         code
                                     )
                                 )
-                                enhancer.create() to 1
-                            } else {
+                                val objenesis: Objenesis = ObjenesisStd()
+                                // TODO: cache this instance (so that?) the constructor is only called once
+                                objenesis.newInstance(enhancer.createClass()) to 1
+                            }
+                            else -> {
                                 // It means that the required type is not a superclass of the backing super instance class
                                 throw IllegalArgumentException("Incompatible types: $paramType and ${theInstance.backingSuperInstanceClass}")
                             }
@@ -359,16 +343,48 @@ fun marshalArgument(
     }
 }
 
+private fun handleInterface(
+    arg: RegisterValue,
+    paramType: Class<*>,
+    args: List<RegisterValue>,
+    environment: Environment,
+    code: CodeItem
+) = when (arg) {
+    is RegisterValue.ObjectRef -> {
+        if (arg.value is MockedInstance) {
+            arg.value.value to 1
+        } else {
+            Proxy.newProxyInstance(
+                paramType.classLoader,
+                arrayOf(paramType)
+            ) { obj, method, proxyArgs ->
+                println("Proxy call to method: ${method.name} with args: ${args.joinToString()}")
+                // TODO: emulate the method and return the marshalled result
+                // 1. Unmarshal arguments
+                // 2. Find the method
+                // 3. Execute the method
+                // 4. Marshal the result
+                // 5. Return the result
+                null
+            } to 1
+        }
+    }
+
+    is RegisterValue.StringRef -> environment.getString(code, arg.index) to 1
+    else -> throw IllegalArgumentException("Invalid type for interface proxy creation.")
+}
+
 class MyMethodInterceptor(
     private val environment: Environment,
     private val code: CodeItem
 ) : MethodInterceptor {
-    override fun intercept(p0: Any?, p1: Method?, p2: Array<out Any>?, p3: MethodProxy?): Any {
-        // p0 is the proxy object
-        // p1 is the method
-        // p2 is the arguments
-        // p3 is the method proxy
+    override fun intercept(obj: Any?, method: Method?, args: Array<out Any>?, proxy: MethodProxy?): Any {
+        // obj is the proxy object
+        // method is the method
+        // args is the arguments
+        // proxy is the method proxy
         TODO("Not yet implemented")
+        // check if the method is overridden
     }
 }
 

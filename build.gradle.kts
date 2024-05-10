@@ -10,6 +10,8 @@ repositories {
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/org.objenesis/objenesis
+    implementation("org.objenesis:objenesis:3.4")
     implementation("cglib:cglib:3.3.0")
     testImplementation(kotlin("test"))
 }
