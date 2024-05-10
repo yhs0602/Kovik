@@ -1,7 +1,9 @@
 package com.example.sample
 
 import java.io.File
+import java.util.Arrays
 import kotlin.math.abs
+
 
 class Point(val x: Int, val y: Int) {
     constructor(x: Int) : this(x, x)
@@ -18,7 +20,8 @@ class Point(val x: Int, val y: Int) {
 open class AccessTest(
     val name: String,
     private val age: Int,
-    protected val id: Int
+    protected val id: Int,
+    var variable: Int = 0
 ) {
     fun printAge() {
         println("Age: $age")
@@ -47,7 +50,7 @@ class InheritanceTest(
     }
 }
 
-open class OverridingTest {
+open class OverridingTest(var myProp: Int = 0) {
     open fun printMessage() {
         println("This is the parent class")
     }
@@ -56,6 +59,7 @@ open class OverridingTest {
 class ChildOverridingTest : OverridingTest() {
     override fun printMessage() {
         println("This is the child class")
+        myProp = 5
     }
 }
 
@@ -80,7 +84,7 @@ class MockedSuperTest(
         return true
     }
 
-    val myProp2 = 5
+    private val myProp2 = 5
     override fun compareTo(other: File): Int {
         return myProp2
     }
@@ -98,6 +102,22 @@ class OverloadedTest {
 
     fun printMessage(message: String) {
         println("This is the parent class with message: $message")
+    }
+}
+
+class A : Comparable<A> {
+    companion object {
+        fun sortSelf() {
+            val As = arrayOfNulls<A>(3)
+            As[0] = A()
+            As[1] = A()
+            As[2] = A()
+            Arrays.sort(As)
+        }
+    }
+
+    override fun compareTo(other: A): Int {
+        return 0
     }
 }
 
@@ -128,9 +148,14 @@ fun testObjects() {
     // Output:
     // This is the parent class
     // This is the child class
+    OverloadedTest().printMessage()
+    // Output: This is the parent class
+    OverloadedTest().printMessage("Hello")
+    // Output: This is the parent class with message: Hello
 
     val mockedSuperTest = MockedSuperTest("path", 10)
     println(mockedSuperTest.exists()) // Output: true
     println(mockedSuperTest.compareTo(File("path"))) // Output: 5
     println(mockedSuperTest.toString()) // Output: path, 10
+    A.sortSelf()
 }
