@@ -30,6 +30,17 @@ class DictionaryBackedInstance(
     var backingSuperInstanceClass: Class<*>? = null
         private set
 
+    init {
+        dexClassRepresentation.classDef.superClassTypeId?.descriptor?.let {
+            try {
+                backingSuperInstanceClass = Class.forName(it.replace('/', '.').removePrefix("L").removeSuffix(";"))
+            } catch (e: ClassNotFoundException) {
+                println("Super class not found: $it")
+                backingSuperInstanceClass = null
+            }
+        }
+    }
+
     override fun getField(idx: Int): Array<RegisterValue>? {
         // first check the local fields
         // then check the super class fields
@@ -301,6 +312,7 @@ fun marshalArgument(
 
         else -> when (arg) {
             is RegisterValue.ObjectRef -> {
+                println("Marshalling object reference: $arg")
                 when (val theInstance = arg.value) {
                     is MockedInstance -> { // instance of the external class is passed directly
                         theInstance.value to 1
@@ -320,6 +332,7 @@ fun marshalArgument(
                         // Checking whether the class is assignable from the required type:
                         // If there is not backing super instance class, it means the direct superclass of the class
                         // is either another Dex defined class or Object.
+                        println("Marshalling dictionary backed reference: $arg")
                         val backingSuperInstanceClass = theInstance.backingSuperInstanceClass
                         when {
                             backingSuperInstanceClass == null -> {
@@ -341,7 +354,8 @@ fun marshalArgument(
                                 )
                                 val objenesis: Objenesis = ObjenesisStd()
                                 // TODO: cache this instance (so that?) the constructor is only called once
-                                objenesis.newInstance(enhancer.createClass()) to 1
+                                // objenesis.newInstance(enhancer.createClass()) to 1
+                                enhancer.create() to 1
                             }
 
                             else -> {

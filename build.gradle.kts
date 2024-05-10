@@ -9,6 +9,14 @@ repositories {
     mavenCentral()
 }
 
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.ow2.asm") {
+            useVersion("9.5")
+        }
+    }
+}
+
 dependencies {
     // https://mvnrepository.com/artifact/org.objenesis/objenesis
     implementation("org.objenesis:objenesis:3.4")

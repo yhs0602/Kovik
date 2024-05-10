@@ -126,7 +126,10 @@ class GeneralMockedClass(
             } else {
                 val instance = (args[0] as? RegisterValue.ObjectRef)?.value
                 instanceValue = if (instance is MockedInstance) instance.value else {
-                    throw IllegalArgumentException("Instance not found: instance: $instance, args: $args")
+                    // We have to marshal the instance
+                    val (marshalledInstance, _) = marshalArgument(environment, code, args.toList(), 0, clazz)
+                    marshalledInstance
+//                    throw IllegalArgumentException("Instance not found: instance: $instance, args: $args")
                 }
                 adjustedArgs = args.drop(1)
             }
