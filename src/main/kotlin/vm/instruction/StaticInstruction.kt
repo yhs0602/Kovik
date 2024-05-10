@@ -7,8 +7,8 @@ import com.yhs0602.vm.Memory
 import com.yhs0602.vm.RegisterValue
 
 open class Sget(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
-        val value = environment.getStaticField(code, KindBBBB)
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
+        val value = environment.getStaticField(code, KindBBBB, depth)
         if (value.isEmpty()) {
             memory.exception = ExceptionValue("Sget: Field $KindBBBB not found")
             return pc + insnLength
@@ -116,19 +116,19 @@ class SgetShort(pc: Int, code: CodeItem) : Sget(pc, code) {
 }
 
 class Sput(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vAA]
         environment.setStaticField(code, KindBBBB, arrayOf(value))
         return pc + insnLength
     }
 
     override fun toString(): String {
-        return "Sput $vAA -> $KindBBBB"
+        return "Sput v$vAA -> $KindBBBB"
     }
 }
 
 class SputWide(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vAA]
         val value2 = memory.registers[vAA + 1]
         environment.setStaticField(code, KindBBBB, arrayOf(value1, value2))
@@ -137,7 +137,7 @@ class SputWide(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
 }
 
 class SputObject(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vAA]
         if (value !is RegisterValue.ObjectRef) {
             memory.exception = ExceptionValue("SputObject: Value is not an object reference")
@@ -153,7 +153,7 @@ class SputObject(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
 }
 
 class SputBoolean(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vAA]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("SputBoolean: Value is not an integer")
@@ -169,7 +169,7 @@ class SputBoolean(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
 }
 
 class SputByte(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vAA]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("SputByte: Value is not an integer")
@@ -181,7 +181,7 @@ class SputByte(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
 }
 
 class SputChar(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vAA]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("SputChar: Value is not an integer")
@@ -193,7 +193,7 @@ class SputChar(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
 }
 
 class SputShort(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vAA]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("SputShort: Value is not an integer")

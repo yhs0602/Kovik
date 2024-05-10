@@ -4,7 +4,7 @@ import com.yhs0602.vm.Environment
 import com.yhs0602.vm.Memory
 
 object Nop : Instruction._10x(0x00) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         return pc + 1
     }
 

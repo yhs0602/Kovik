@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class ArrayLength(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val arrayRef = memory.registers[vB]
         if (arrayRef !is RegisterValue.ArrayRef) {
             memory.exception = ExceptionValue("ArrayLength: Not an array reference")
@@ -27,7 +27,7 @@ class ArrayLength(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class NewArray(pc: Int, val code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val length = memory.registers[vB]
         if (length !is RegisterValue.Int) {
             memory.exception = ExceptionValue("NewArray: Not an integer")
@@ -46,7 +46,7 @@ class NewArray(pc: Int, val code: CodeItem) : Instruction._22c(pc, code) {
 
 // This instruction is for creating higher-dimensional arrays.
 class FilledNewArray(pc: Int, val code: CodeItem) : Instruction._35c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val length = A
         val typeId = environment.getTypeId(code, BBBB)
         val registerIndices = arrayOf(C, D, E, F, G)
@@ -62,7 +62,7 @@ class FilledNewArray(pc: Int, val code: CodeItem) : Instruction._35c(pc, code) {
 }
 
 class FilledNewArrayRange(pc: Int, val code: CodeItem) : Instruction._3rc(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val length = count
         val typeId = environment.getTypeId(code, BBBB)
         val registerIndices = (CCCC until CCCC + length).toList()
@@ -78,7 +78,7 @@ class FilledNewArrayRange(pc: Int, val code: CodeItem) : Instruction._3rc(pc, co
 }
 
 class FillArrayData(pc: Int, val code: CodeItem) : Instruction._31t(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val arrayRef = memory.registers[vAA]
         if (arrayRef !is RegisterValue.ArrayRef) {
             memory.exception = ExceptionValue("FillArrayData: Not an array reference")
@@ -131,7 +131,7 @@ class FillArrayData(pc: Int, val code: CodeItem) : Instruction._31t(pc, code) {
 
 
 open class Aget(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val index = memory.registers[vCC]
         val arrayRef = memory.registers[vBB]
         if (arrayRef !is RegisterValue.ArrayRef) {
@@ -224,7 +224,7 @@ class AgetShort(pc: Int, code: CodeItem) : Aget(pc, code) {
 
 
 open class Aput(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val arrayRef = memory.registers[vBB]
         val index = memory.registers[vCC]
         if (arrayRef !is RegisterValue.ArrayRef) {

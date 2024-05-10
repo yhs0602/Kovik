@@ -7,7 +7,7 @@ import com.yhs0602.vm.Memory
 import com.yhs0602.vm.RegisterValue
 
 class NegInt(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("NegInt: Register value is not an integer")
@@ -19,7 +19,7 @@ class NegInt(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class NotInt(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("NotInt: Register value is not an integer")
@@ -31,7 +31,7 @@ class NotInt(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class NegLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = memory.registers[vB + 1]
         if (value1 !is RegisterValue.Int || value2 !is RegisterValue.Int) {
@@ -47,7 +47,7 @@ class NegLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class NotLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = memory.registers[vB + 1]
         if (value1 !is RegisterValue.Int || value2 !is RegisterValue.Int) {
@@ -63,7 +63,7 @@ class NotLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class NegFloat(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("NegFloat: Register value is not an integer")
@@ -76,7 +76,7 @@ class NegFloat(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class NegDouble(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = memory.registers[vB + 1]
         if (value1 !is RegisterValue.Int || value2 !is RegisterValue.Int) {
@@ -94,7 +94,7 @@ class NegDouble(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class IntToLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("IntToLong: Register value is not an integer")
@@ -107,7 +107,7 @@ class IntToLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class IntToFloat(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("IntToFloat: Register value is not an integer")
@@ -119,7 +119,7 @@ class IntToFloat(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class IntToDouble(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("IntToDouble: Register value is not an integer")
@@ -134,7 +134,7 @@ class IntToDouble(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class LongToInt(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = memory.registers[vB + 1]
         if (value1 !is RegisterValue.Int || value2 !is RegisterValue.Int) {
@@ -147,7 +147,7 @@ class LongToInt(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class LongToFloat(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = memory.registers[vB + 1]
         if (value1 !is RegisterValue.Int || value2 !is RegisterValue.Int) {
@@ -161,7 +161,7 @@ class LongToFloat(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class LongToDouble(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = memory.registers[vB + 1]
         if (value1 !is RegisterValue.Int || value2 !is RegisterValue.Int) {
@@ -178,7 +178,7 @@ class LongToDouble(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class FloatToInt(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("FloatToInt: Register value is not an integer")
@@ -191,7 +191,7 @@ class FloatToInt(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class FloatToLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("FloatToLong: Register value is not an integer")
@@ -206,7 +206,7 @@ class FloatToLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class FloatToDouble(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("FloatToDouble: Register value is not an integer")
@@ -222,7 +222,7 @@ class FloatToDouble(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class DoubleToInt(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = memory.registers[vB + 1]
         if (value1 !is RegisterValue.Int || value2 !is RegisterValue.Int) {
@@ -237,7 +237,7 @@ class DoubleToInt(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class DoubleToLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = memory.registers[vB + 1]
         if (value1 !is RegisterValue.Int || value2 !is RegisterValue.Int) {
@@ -254,7 +254,7 @@ class DoubleToLong(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class DoubleToFloat(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = memory.registers[vB + 1]
         if (value1 !is RegisterValue.Int || value2 !is RegisterValue.Int) {
@@ -269,7 +269,7 @@ class DoubleToFloat(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class IntToByte(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("IntToByte: Register value is not an integer")
@@ -281,7 +281,7 @@ class IntToByte(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class IntToChar(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("IntToChar: Register value is not an integer")
@@ -293,7 +293,7 @@ class IntToChar(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class IntToShort(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value = memory.registers[vB]
         if (value !is RegisterValue.Int) {
             memory.exception = ExceptionValue("IntToShort: Register value is not an integer")

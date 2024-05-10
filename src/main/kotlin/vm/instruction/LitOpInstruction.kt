@@ -7,7 +7,7 @@ import com.yhs0602.vm.Memory
 import com.yhs0602.vm.RegisterValue
 
 class AddIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = this.LCCCC
         if (value1 !is RegisterValue.Int) {
@@ -20,7 +20,7 @@ class AddIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
 }
 
 class RsubInt(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = this.LCCCC
         if (value1 !is RegisterValue.Int) {
@@ -33,7 +33,7 @@ class RsubInt(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
 }
 
 class MulIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = this.LCCCC
         if (value1 !is RegisterValue.Int) {
@@ -46,7 +46,7 @@ class MulIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
 }
 
 class DivIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = this.LCCCC
         if (value1 !is RegisterValue.Int) {
@@ -63,7 +63,7 @@ class DivIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
 }
 
 class RemIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = this.LCCCC
         if (value1 !is RegisterValue.Int) {
@@ -80,7 +80,7 @@ class RemIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
 }
 
 class AndIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = this.LCCCC
         if (value1 !is RegisterValue.Int) {
@@ -93,7 +93,7 @@ class AndIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
 }
 
 class OrIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = this.LCCCC
         if (value1 !is RegisterValue.Int) {
@@ -106,7 +106,7 @@ class OrIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
 }
 
 class XorIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vB]
         val value2 = this.LCCCC
         if (value1 !is RegisterValue.Int) {
@@ -119,7 +119,7 @@ class XorIntLit16(pc: Int, code: CodeItem) : Instruction._22s(pc, code) {
 }
 
 class AddIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = this.LCC
         if (value1 !is RegisterValue.Int) {
@@ -136,7 +136,7 @@ class AddIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
 }
 
 class RsubIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = this.LCC
         if (value1 !is RegisterValue.Int) {
@@ -149,7 +149,7 @@ class RsubIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
 }
 
 class MulIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = this.LCC
         if (value1 !is RegisterValue.Int) {
@@ -162,7 +162,7 @@ class MulIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
 }
 
 class DivIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = this.LCC
         if (value1 !is RegisterValue.Int) {
@@ -179,7 +179,7 @@ class DivIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
 }
 
 class RemIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = this.LCC
         if (value1 !is RegisterValue.Int) {
@@ -196,7 +196,7 @@ class RemIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
 }
 
 class AndIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = this.LCC
         if (value1 !is RegisterValue.Int) {
@@ -206,10 +206,14 @@ class AndIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
         memory.registers[vAA] = RegisterValue.Int(value1.value and value2)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "AndIntLit8 v$vAA = v$vBB & $LCC"
+    }
 }
 
 class OrIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = this.LCC
         if (value1 !is RegisterValue.Int) {
@@ -222,7 +226,7 @@ class OrIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
 }
 
 class XorIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = this.LCC
         if (value1 !is RegisterValue.Int) {
@@ -235,7 +239,7 @@ class XorIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
 }
 
 class ShlIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = this.LCC
         if (value1 !is RegisterValue.Int) {
@@ -248,7 +252,7 @@ class ShlIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
 }
 
 class ShrIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = this.LCC
         if (value1 !is RegisterValue.Int) {
@@ -261,7 +265,7 @@ class ShrIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
 }
 
 class UshrIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = this.LCC
         if (value1 !is RegisterValue.Int) {

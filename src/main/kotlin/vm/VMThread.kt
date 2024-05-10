@@ -10,10 +10,12 @@ fun executeMethod(
     environment: Environment,
     argument: Array<RegisterValue>,
     argumentSize: Int,
+    depth: Int,
 ): Array<RegisterValue> {
-    println("New function frame start")
-    println("Argument size = $argumentSize Register size = ${code.registersSize} insSize = ${code.insSize} outsSize=${code.outsSize}")
-    println("Argument = ${argument.contentToString()}")
+    val indentation = "    ".repeat(depth)
+    println("${indentation}New function frame start")
+    println("${indentation}Argument size = $argumentSize Register size = ${code.registersSize} insSize = ${code.insSize} outsSize=${code.outsSize}")
+    println("${indentation}Argument = ${argument.contentToString()}")
 
     val memory = Memory(code.registersSize.toInt())
     // Copy the argument registers to the frame registers
@@ -29,9 +31,9 @@ fun executeMethod(
 
     while (pc < code.insns.size) {
         val instruction = Instruction.fromCode(pc, code)
-        environment.beforeInstruction(pc, instruction, memory)
-        pc = instruction.execute(pc, memory, environment)
-        environment.afterInstruction(pc, instruction, memory)
+        environment.beforeInstruction(pc, instruction, memory, depth)
+        pc = instruction.execute(pc, memory, environment, depth)
+        environment.afterInstruction(pc, instruction, memory, depth)
         if (pc < 0) {
             // return instruction
             break

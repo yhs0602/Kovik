@@ -8,7 +8,7 @@ import com.yhs0602.vm.RegisterValue
 
 
 open class CmpFloat(pc: Int, code: CodeItem, val bias: Int) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int || value2 !is RegisterValue.Int) {
@@ -37,7 +37,7 @@ class CmplFloat(pc: Int, code: CodeItem) : CmpFloat(pc, code, -1)
 class CmpgFloat(pc: Int, code: CodeItem) : CmpFloat(pc, code, 1)
 
 open class CmpDouble(pc: Int, code: CodeItem, val bias: Int) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -70,7 +70,7 @@ class CmplDouble(pc: Int, code: CodeItem) : CmpDouble(pc, code, -1)
 class CmpgDouble(pc: Int, code: CodeItem) : CmpDouble(pc, code, 1)
 
 class CmpLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]

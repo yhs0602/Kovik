@@ -7,7 +7,7 @@ import com.yhs0602.vm.Memory
 import com.yhs0602.vm.RegisterValue
 
 class CheckCast(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val objectRef = memory.registers[vAA]
         if (objectRef !is RegisterValue.ObjectRef) {
             memory.exception = ExceptionValue("CheckCast: Not an object reference")
@@ -15,7 +15,7 @@ class CheckCast(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
         }
         val typeId = environment.getTypeId(code, this.KindBBBB)
         val targetTypeDescriptor = typeId.descriptor
-        if (!environment.isInstanceOf(code, objectRef, targetTypeDescriptor)) {
+        if (!environment.isInstanceOf(code, objectRef, targetTypeDescriptor, depth)) {
             memory.exception = ExceptionValue("ClassCastException")
             return pc + insnLength
         }
@@ -24,7 +24,7 @@ class CheckCast(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
 }
 
 class InstanceOf(pc: Int, val code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val objectRef = memory.registers[vB]
         if (objectRef !is RegisterValue.ObjectRef) {
             memory.registers[vA] = RegisterValue.Int(0)
@@ -33,7 +33,7 @@ class InstanceOf(pc: Int, val code: CodeItem) : Instruction._22c(pc, code) {
         val typeId = environment.getTypeId(code, KindCCCC)
         val targetTypeDescriptor = typeId.descriptor
         memory.registers[vA] = RegisterValue.Int(
-            if (environment.isInstanceOf(code, objectRef, targetTypeDescriptor)) 1 else 0
+            if (environment.isInstanceOf(code, objectRef, targetTypeDescriptor, depth)) 1 else 0
         )
         return pc + insnLength
     }

@@ -11,10 +11,14 @@ class Environment(
     val dexFiles: List<DexFile>,
     val mockedMethods: Map<Triple<TypeId, List<TypeId>, String>, MockedMethod> = mapOf(),
     val mockedClasses: Map<TypeId, GeneralMockedClass> = mapOf(),
-    val beforeInstruction: (Int, Instruction, Memory) -> Unit = { pc: Int, instruction: Instruction, memory: Memory -> },
-    val afterInstruction: (Int, Instruction, Memory) -> Unit = { pc: Int, instruction: Instruction, memory: Memory -> }
+    val beforeInstruction: (Int, Instruction, Memory, Int) -> Unit = {
+        pc: Int, instruction: Instruction, memory: Memory, depth: Int ->
+    },
+    val afterInstruction: (Int, Instruction, Memory,  Int) -> Unit = {
+        pc: Int, instruction: Instruction, memory: Memory, depth: Int ->
+    }
 ) {
-    val codeItemToDexFile = dexFiles.flatMap { dexFile ->
+    private val codeItemToDexFile = dexFiles.flatMap { dexFile ->
         dexFile.classDefs.asSequence().flatMap { classDef ->
             classDef.classData?.run {
                 sequenceOf(
@@ -52,7 +56,7 @@ class Environment(
     // If targetType is interface
     // If object is array
     // If object is subclass of targetType
-    fun isInstanceOf(codeItem: CodeItem, objectRef: RegisterValue.ObjectRef, targetTypeDescriptor: String): Boolean {
+    fun isInstanceOf(codeItem: CodeItem, objectRef: RegisterValue.ObjectRef, targetTypeDescriptor: String, depth: Int): Boolean {
         // If the target type is a primitive type, return false
         if (isPrimitiveType(targetTypeDescriptor)) return false
 
@@ -65,7 +69,7 @@ class Environment(
         // Check the interface
 
         // Check the super types of the actual type
-        return checkSuperTypes(codeItem, actualTypeDescriptor, targetTypeDescriptor)
+        return checkSuperTypes(codeItem, actualTypeDescriptor, targetTypeDescriptor, depth)
     }
 
     private fun isPrimitiveType(typeDescriptor: String): Boolean {
@@ -82,11 +86,11 @@ class Environment(
     }
 
     // Check the super types of the given type
-    private fun checkSuperTypes(codeItem: CodeItem, typeDescriptor: String, targetTypeDescriptor: String): Boolean {
+    private fun checkSuperTypes(codeItem: CodeItem, typeDescriptor: String, targetTypeDescriptor: String, depth: Int): Boolean {
         var currentType: TypeId? = TypeId(typeDescriptor)
 
         // Get the class def of the class of typeDescriptor
-        val classDef = getClassDef(codeItem, TypeId(typeDescriptor)) ?: return false
+        val classDef = getClassDef(codeItem, TypeId(typeDescriptor), depth) ?: return false
         // Check interfaces first
         when (classDef) {
             is ClassRepresentation.DexClassRepresentation -> {
@@ -119,14 +123,14 @@ class Environment(
         return false
     }
 
-    fun getClassDef(codeItem: CodeItem, typeId: TypeId): ClassRepresentation {
+    fun getClassDef(codeItem: CodeItem, typeId: TypeId, depth: Int): ClassRepresentation {
         val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
 //        println("Searching for class def with typeId $typeId")
         val classDef = dexFile.classDefs.find {
             it.classDef.typeId == typeId
         }
         if (classDef != null) {
-            checkStaticInit(typeId, classDef)
+            checkStaticInit(typeId, classDef, depth)
             return ClassRepresentation.DexClassRepresentation(classDef.classDef, classDef.classData)
         }
 //        println("Class def not found in dex file ${dexFile.file.name}")
@@ -136,7 +140,7 @@ class Environment(
                 it.classDef.typeId == typeId
             }
             if (classDef != null) {
-                checkStaticInit(typeId, classDef)
+                checkStaticInit(typeId, classDef, depth)
                 return ClassRepresentation.DexClassRepresentation(classDef.classDef, classDef.classData)
             }
         }
@@ -155,7 +159,7 @@ class Environment(
 //        return null
     }
 
-    private fun checkStaticInit(typeId: TypeId, classDef: ParsedClass) {
+    private fun checkStaticInit(typeId: TypeId, classDef: ParsedClass, depth: Int) {
         if (typeId !in initializedClasses) {
             // call clinit
             val classData = classDef.classData ?: error("Class data not found")
@@ -164,7 +168,8 @@ class Environment(
             }
             if (clinit != null) {
                 val clInitCodeItem = clinit.codeItem ?: error("Code item not found")
-                executeMethod(clInitCodeItem, this, arrayOf(), 0)
+                println("Executing clinit for class ${classDef.classDef.typeId.descriptor}")
+                executeMethod(clInitCodeItem, this, arrayOf(), 0, depth + 1)
             } else {
                 println("clinit not found for class ${classDef.classDef.typeId.descriptor}; searched: ${classData.directMethods.joinToString { it.methodId.name }}")
             }
@@ -197,7 +202,7 @@ class Environment(
     }
 
     // TODO: Call clinit first
-    fun getStaticField(code: CodeItem, fieldId: Int): Array<RegisterValue> {
+    fun getStaticField(code: CodeItem, fieldId: Int, depth: Int): Array<RegisterValue> {
         val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
         val fieldIdObj = dexFile.fieldIds[fieldId]
         // Check if the class is mocked or not
@@ -219,9 +224,13 @@ class Environment(
                 return arrayOf()
             } else {
 //                println("Requested: $fieldIdObj, not found")
-                checkStaticInit(fieldIdObj.classId, dexFile.classDefs.find {
-                    it.classDef.typeId == fieldIdObj.classId
-                } ?: error("Cannot find class def for field id $fieldIdObj"))
+                checkStaticInit(
+                    fieldIdObj.classId,
+                    dexFile.classDefs.find {
+                        it.classDef.typeId == fieldIdObj.classId
+                    } ?: error("Cannot find class def for field id $fieldIdObj"),
+                    depth
+                )
                 return staticFields.getOrPut(fieldIdObj.classId to fieldId) {
                     arrayOf(RegisterValue.Int(0)) // Default value of the static field is 0!
                 }

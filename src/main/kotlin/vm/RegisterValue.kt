@@ -29,7 +29,7 @@ sealed class RegisterValue {
 
     open class ObjectRef(val typeId: TypeId, val value: Instance?) : RegisterValue() {
         override fun toString(): String {
-            return "ObjectRef(typeId=$typeId, value=$value)"
+            return "\uD83D\uDFE1 ObjectRef(typeId=$typeId, value=$value) \uD83D\uDFE1"
         }
 
         fun unwrapString(): String {

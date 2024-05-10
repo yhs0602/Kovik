@@ -9,6 +9,7 @@ import java.io.File
 import java.io.PrintStream
 import kotlin.jvm.internal.Intrinsics
 
+
 fun main() {
     // Surprisingly, multidex is default nowadays
     println("Enter the path of the folder of dexes:")
@@ -46,7 +47,8 @@ fun main() {
         }
     }
     println("Enter the class name you are interested in:")
-    val className = "ObjectExampleKt" // readlnOrNull() ?: return TargetMethods StaticExample WideTest CallStatic testObjects
+    val className =
+        "ObjectExampleKt" // readlnOrNull() ?: return TargetMethods StaticExample WideTest CallStatic testObjects
     val classNameStr = "L$packageNameStr/$className;"
     val classDef = classes.find { it.classDef.typeId.descriptor == classNameStr } ?: return
     println("Methods====================")
@@ -98,12 +100,14 @@ fun main() {
         parsedDexes,
         mockedMethods,
         mockedClasses,
-        beforeInstruction = { pc, instruction, memory ->
-            println("Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
+        beforeInstruction = { pc, instruction, memory, depth ->
+            val indentation = "    ".repeat(depth)
+            println("$indentation Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
         },
-        afterInstruction = { pc, instruction, memory ->
-            println("After $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
+        afterInstruction = { pc, instruction, memory, depth ->
+            val indentation = "    ".repeat(depth)
+            println("$indentation After $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
         }
     )
-    executeMethod(codeItem, environment, args, codeItem.insSize.toInt())
+    executeMethod(codeItem, environment, args, codeItem.insSize.toInt(), 0)
 }

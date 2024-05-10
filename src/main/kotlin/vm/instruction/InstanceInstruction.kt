@@ -8,13 +8,9 @@ import com.yhs0602.vm.*
 // The backing field should be filled when the constructor is called.
 // See InvokeDirect implementation
 class NewInstance(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val typeId = environment.getTypeId(code, KindBBBB)
-        val parsedClass = environment.getClassDef(code, typeId)
-        if (parsedClass == null) {
-            memory.exception = ExceptionValue("NewInstance: Class not found")
-            return pc + insnLength
-        }
+        val parsedClass = environment.getClassDef(code, typeId, depth)
         memory.registers[vAA] = environment.createInstance(parsedClass)
         return pc + insnLength
     }
@@ -25,7 +21,7 @@ class NewInstance(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
 }
 
 open class Iget(pc: Int, val code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val obj = memory.registers[vB]
         if (obj !is RegisterValue.ObjectRef) {
             memory.exception = ExceptionValue("Iget: vB is not an object reference")
@@ -171,7 +167,7 @@ class IgetShort(pc: Int, code: CodeItem) : Iget(pc, code) {
 }
 
 open class Iput(pc: Int, code: CodeItem) : Instruction._22c(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val obj = memory.registers[vB]
         if (obj !is RegisterValue.ObjectRef) {
             memory.exception = ExceptionValue("Iput: vB is not an object reference")

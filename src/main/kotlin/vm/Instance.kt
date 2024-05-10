@@ -337,7 +337,9 @@ fun marshalArgument(
                     null -> null to 1
                 }
             }
-
+            is RegisterValue.StringRef -> {
+                environment.getString(code, arg.index) to 1
+            }
             else -> throw IllegalArgumentException("Cannot marshal object reference: $arg")
         }
     }

@@ -7,7 +7,7 @@ import com.yhs0602.vm.Memory
 import com.yhs0602.vm.RegisterValue
 
 class AddInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -28,7 +28,7 @@ class AddInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class SubInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -45,7 +45,7 @@ class SubInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class MulInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -62,7 +62,7 @@ class MulInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class DivInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -83,7 +83,7 @@ class DivInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class RemInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -104,7 +104,7 @@ class RemInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class AndInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -121,7 +121,7 @@ class AndInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class OrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -138,7 +138,7 @@ class OrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class XorInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -155,7 +155,7 @@ class XorInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class ShlInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -172,7 +172,7 @@ class ShlInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class ShrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -189,7 +189,7 @@ class ShrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class UshrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -206,7 +206,7 @@ class UshrInt2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class AddLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -229,7 +229,7 @@ class AddLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class SubLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -252,7 +252,7 @@ class SubLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class MulLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -275,7 +275,7 @@ class MulLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class DivLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -302,7 +302,7 @@ class DivLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class RemLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -329,7 +329,7 @@ class RemLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class AndLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -352,7 +352,7 @@ class AndLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class OrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -375,7 +375,7 @@ class OrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class XorLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -398,7 +398,7 @@ class XorLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class ShlLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val shift = memory.registers[vB]
         if (shift !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vB is not Int")
@@ -419,7 +419,7 @@ class ShlLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class ShrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val shift = memory.registers[vB]
         if (shift !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vB is not Int")
@@ -440,7 +440,7 @@ class ShrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class UshrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val shift = memory.registers[vB]
         if (shift !is RegisterValue.Int) {
             memory.exception = ExceptionValue("v$vB is not Int")
@@ -461,7 +461,7 @@ class UshrLong2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class AddFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -481,7 +481,7 @@ class AddFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class SubFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -501,7 +501,7 @@ class SubFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class MulFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -521,7 +521,7 @@ class MulFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class DivFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -541,7 +541,7 @@ class DivFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class RemFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value2 = memory.registers[vB]
         if (value1 !is RegisterValue.Int) {
@@ -561,7 +561,7 @@ class RemFloat2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class AddDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -585,7 +585,7 @@ class AddDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class SubDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -609,7 +609,7 @@ class SubDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class MulDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -633,7 +633,7 @@ class MulDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class DivDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]
@@ -657,7 +657,7 @@ class DivDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
 }
 
 class RemDouble2Addr(pc: Int, code: CodeItem) : Instruction._12x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vA]
         val value11 = memory.registers[vA + 1]
         val value2 = memory.registers[vB]

@@ -7,7 +7,7 @@ import com.yhs0602.vm.Memory
 import com.yhs0602.vm.RegisterValue
 
 class AddInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -28,7 +28,7 @@ class AddInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class SubInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -45,7 +45,7 @@ class SubInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class MulInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -62,7 +62,7 @@ class MulInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class DivInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -83,7 +83,7 @@ class DivInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class RemInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -104,7 +104,7 @@ class RemInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class AndInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -121,7 +121,7 @@ class AndInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class OrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -138,7 +138,7 @@ class OrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class XorInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -155,7 +155,7 @@ class XorInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class ShlInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -172,7 +172,7 @@ class ShlInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class ShrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -189,7 +189,7 @@ class ShrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class UshrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -206,7 +206,7 @@ class UshrInt(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class AddLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -233,7 +233,7 @@ class AddLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class SubLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -256,7 +256,7 @@ class SubLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class MulLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -279,7 +279,7 @@ class MulLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class DivLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -306,7 +306,7 @@ class DivLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class RemLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -333,7 +333,7 @@ class RemLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class AndLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -356,7 +356,7 @@ class AndLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class OrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -379,7 +379,7 @@ class OrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class XorLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -402,7 +402,7 @@ class XorLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class ShlLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -423,7 +423,7 @@ class ShlLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class ShrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -444,7 +444,7 @@ class ShrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class UshrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -465,7 +465,7 @@ class UshrLong(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class AddFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -485,7 +485,7 @@ class AddFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class SubFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -505,7 +505,7 @@ class SubFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class MulFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -525,7 +525,7 @@ class MulFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class DivFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
         if (value1 !is RegisterValue.Int) {
@@ -545,7 +545,7 @@ class DivFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class RemFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value2 = memory.registers[vCC]
 
@@ -570,7 +570,7 @@ class RemFloat(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class AddDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -594,7 +594,7 @@ class AddDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class SubDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -618,7 +618,7 @@ class SubDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class MulDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -642,7 +642,7 @@ class MulDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class DivDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]
@@ -670,7 +670,7 @@ class DivDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
 }
 
 class RemDouble(pc: Int, code: CodeItem) : Instruction._23x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val value1 = memory.registers[vBB]
         val value11 = memory.registers[vBB + 1]
         val value2 = memory.registers[vCC]

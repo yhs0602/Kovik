@@ -6,7 +6,7 @@ import com.yhs0602.vm.ExceptionValue
 import com.yhs0602.vm.Memory
 
 class Throw(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val exception = memory.registers[vAA]
         if (exception !is ExceptionValue) {
             memory.exception = ExceptionValue("Throw: Not an object reference")
@@ -18,7 +18,7 @@ class Throw(pc: Int, code: CodeItem) : Instruction._11x(pc, code) {
 }
 
 class Goto(val pc: Int, code: CodeItem) : Instruction._10t(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         return pc + offset
     }
 
@@ -28,13 +28,13 @@ class Goto(val pc: Int, code: CodeItem) : Instruction._10t(pc, code) {
 }
 
 class Goto16(pc: Int, code: CodeItem) : Instruction._20t(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         return pc + offset
     }
 }
 
 class Goto32(pc: Int, code: CodeItem) : Instruction._30t(pc, code) {
-    override fun execute(pc: Int, memory: Memory, environment: Environment): Int {
+    override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         return pc + AAAAhi shl 16 or AAAAlo
     }
 }
