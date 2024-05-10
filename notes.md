@@ -62,3 +62,60 @@ Dalvik source codes shows the following comments.
  * to pass in a non-array class and pretend that it's an array.
  */
 ```
+
+# Marshaling
+Cases of instance mocks:
+1. Mocked class uses a mocked class inside emulated code
+    ```java
+    void foo() {
+        Stringbuilder sb = new StringBuilder();
+        sb.append(new StringBuilder("Hello"));    
+    }
+    ```
+
+2. Mocked class uses a class inside emulated code
+    ```java
+    import java.util.Arrays;
+    import java.util.List;
+    
+    class A implements Comparable {
+        public int compareTo(Object o) {
+            return 0;
+        }
+    
+        static void foo() {
+            var As = new A[3];
+            As[0] = new A();
+            As[1] = new A();
+            As[2] = new A();
+            Arrays.sort(As);
+        }
+    }
+    ```
+3. Emulated class uses a mocked class inside emulated code
+    ```java
+    import java.util.Arrays;
+    import java.util.List;
+    
+    class A{
+        static void bar() {
+            System.out.println("Hello"); // uses PrintStream
+        }
+    }
+    ```
+   
+4. Emulated class uses another emulated class inside emulated code
+    ```java
+    class A {
+        static void foo() {
+            B b = new B();
+            b.bar();
+        }
+    }
+    
+    class B {
+           void bar() {
+                System.out.println("Hello");
+            }
+        }
+    ```
