@@ -21,6 +21,10 @@ class CheckCast(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
         }
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "check-cast v$vAA, $KindBBBB"
+    }
 }
 
 class InstanceOf(pc: Int, val code: CodeItem) : Instruction._22c(pc, code) {

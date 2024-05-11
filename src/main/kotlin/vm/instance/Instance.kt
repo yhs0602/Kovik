@@ -13,8 +13,6 @@ sealed class Instance {
     abstract fun getField(idx: Int): Array<RegisterValue>?
 
     abstract fun setField(idx: Int, value: Array<RegisterValue>)
-
-    var superInstance: Instance? = null
 }
 
 
@@ -73,6 +71,8 @@ fun compareProtoType(typeId: TypeId, paramType: Class<*>): Boolean {
             compareProtoType(componentType, paramType.componentType)
         }
 
+        paramType.descriptorString() == typeId.descriptor -> true
+
         else -> false
     }
 }
@@ -126,6 +126,19 @@ fun compareArgumentType(args: List<RegisterValue>, idx: Int, paramType: Class<*>
                 compareArgumentType(listOf(it), 0, componentType).first
             }
             result to 1
+        }
+
+        paramType.isInterface && arg is RegisterValue.ObjectRef -> {
+            when (val instance = arg.value) {
+                null -> false to 1
+                is MockedInstance -> {
+                    paramType.isAssignableFrom(instance.value::class.java) to 1
+                }
+
+                is DictionaryBackedInstance -> {
+                    instance.interfaces.contains(paramType) to 1
+                }
+            }
         }
 
         paramType == Object::class.java -> true to 1

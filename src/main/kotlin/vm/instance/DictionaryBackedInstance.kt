@@ -141,7 +141,7 @@ class DictionaryBackedInstance(
                 arrayOf(methodRequested.returnType)
             )
             println("Marshalled: ${marshalled.joinToString()}")
-            return marshalled[0]
+            return marshalled.firstOrNull()
         } else {
             val result = p3?.invokeSuper(obj, arguments)
             return result
