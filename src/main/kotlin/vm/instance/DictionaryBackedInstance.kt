@@ -30,7 +30,7 @@ class DictionaryBackedInstance(
     init {
         var superClassTypeId = dexClassRepresentation.classDef.superClassTypeId
         while (superClassTypeId != null) {
-            val superClass = environment.getClassDef(code, superClassTypeId, depth = depth)
+            val superClass = environment.getClassRepresentation(superClassTypeId, depth = depth)
             when (superClass) {
                 is ClassRepresentation.MockedClassRepresentation -> {
                     try {
@@ -51,7 +51,7 @@ class DictionaryBackedInstance(
         }
         // search for interfaces
         for (interfaceTypeId in dexClassRepresentation.classDef.flattenedInterfaces) {
-            val interfaceClass = environment.getClassDef(code, interfaceTypeId, depth = depth)
+            val interfaceClass = environment.getClassRepresentation(interfaceTypeId, depth = depth)
             when (interfaceClass) {
                 is ClassRepresentation.MockedClassRepresentation -> {
                     try {

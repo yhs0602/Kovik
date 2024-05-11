@@ -15,8 +15,8 @@ class CheckCast(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
         }
         val typeId = environment.getTypeId(code, this.KindBBBB)
         targetTypeDescriptor = typeId.descriptor
-        if (!environment.isInstanceOf(code, objectRef, targetTypeDescriptor, depth)) {
-            memory.exception = ExceptionValue("ClassCastException")
+        if (!environment.isInstanceOf(objectRef, targetTypeDescriptor, depth)) {
+            memory.exception = ExceptionValue("ClassCastException: ${objectRef.typeId.descriptor} cannot be cast to $targetTypeDescriptor")
             return pc + insnLength
         }
         return pc + insnLength
@@ -38,7 +38,7 @@ class InstanceOf(pc: Int, val code: CodeItem) : Instruction._22c(pc, code) {
         val typeId = environment.getTypeId(code, KindCCCC)
         targetTypeDescriptor = typeId.descriptor
         memory.registers[vA] = RegisterValue.Int(
-            if (environment.isInstanceOf(code, objectRef, targetTypeDescriptor, depth)) 1 else 0
+            if (environment.isInstanceOf(objectRef, targetTypeDescriptor, depth)) 1 else 0
         )
         return pc + insnLength
     }

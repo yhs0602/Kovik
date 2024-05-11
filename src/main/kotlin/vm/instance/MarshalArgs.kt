@@ -162,8 +162,8 @@ fun marshalArgument(
             }
 
             is RegisterValue.ClassRef -> {
-                ClassLoader.getSystemClassLoader().loadClass()
-                Class::class to 1
+                // we might use cglib to create the class
+                environment.loadClass(code, arg.index) to 1
             }
 
             else -> throw IllegalArgumentException("Cannot marshal object reference: $arg")

@@ -11,7 +11,7 @@ import com.yhs0602.vm.instance.Instance
 class NewInstance(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val typeId = environment.getTypeId(code, KindBBBB)
-        val parsedClass = environment.getClassDef(code, typeId, depth)
+        val parsedClass = environment.getClassRepresentation(typeId, depth)
         memory.registers[vAA] = environment.createInstance(parsedClass, code, depth)
         return pc + insnLength
     }

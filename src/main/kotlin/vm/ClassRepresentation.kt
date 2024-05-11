@@ -176,7 +176,7 @@ class GeneralMockedClass(
                     throw IllegalArgumentException("The provided instance $instanceValue does not match the method's declaring class. $declaringClass")
                 }
             }
-            println("2. Invoking $name with args $argArr for object ${instanceValue?.javaClass?.simpleName}")
+            println("2. Invoking $name with args ${argArr.contentToString()} for object ${instanceValue?.javaClass?.simpleName}")
             val result = method.invoke(instanceValue, *argArr)
             val resultType = method.returnType
             val unmarshalledResult = unmarshalArgument(result, resultType)

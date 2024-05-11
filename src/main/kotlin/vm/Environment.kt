@@ -5,6 +5,7 @@ import com.yhs0602.vm.instance.DictionaryBackedInstance
 import com.yhs0602.vm.instance.MockedInstance
 import com.yhs0602.vm.instance.unmarshalArgument
 import com.yhs0602.vm.instruction.Instruction
+import net.sf.cglib.proxy.Enhancer
 
 // Class definitions, typeids, string constants, field ids, method ids, and method prototypes...
 class Environment(
@@ -37,6 +38,7 @@ class Environment(
 
     private val staticFields = mutableMapOf<Pair<TypeId, Int>, Array<RegisterValue>>()
     private val initializedClasses: MutableSet<TypeId> = mutableSetOf()
+    private val typeIdToCustomClass: MutableMap<TypeId, Class<*>> = mutableMapOf()
 
     init {
         dexFiles.forEach { dexFile ->
@@ -64,7 +66,6 @@ class Environment(
     // If object is array
     // If object is subclass of targetType
     fun isInstanceOf(
-        codeItem: CodeItem,
         objectRef: RegisterValue.ObjectRef,
         targetTypeDescriptor: String,
         depth: Int
@@ -76,46 +77,90 @@ class Environment(
         val actualTypeDescriptor = objectRef.typeId.descriptor
 
         // If the actual type is the same as the target type, return true
-        if (actualTypeDescriptor == targetTypeDescriptor) return true
+        if (actualTypeDescriptor == targetTypeDescriptor) {
+            println("Actual type is the same as the target type $actualTypeDescriptor")
+            return true
+        }
 
-        // Check the interface
+        // Check the interface first
+        when (val instance = objectRef.value) {
+            null -> return false
+            is DictionaryBackedInstance -> {
+                val dexClassRepresentation = instance.dexClassRepresentation
+                val interfaces = dexClassRepresentation.classDef.flattenedInterfaces
+                if (interfaces.any {
+                        it.descriptor == targetTypeDescriptor
+                    }) {
+                    println("\uD83D\uDD34 Interface checking success: $instance, ${objectRef.typeId}; $actualTypeDescriptor")
+                    return true
+                }
+            }
+            is MockedInstance -> {
+                val mockedClazz = instance.clazz
+                if (mockedClazz.interfaces.any {
+                        it.descriptorString() == targetTypeDescriptor
+                    }) {
+                    println("\uD83D\uDD34 Interface checking success: $instance, ${objectRef.typeId}; $actualTypeDescriptor")
+                    return true
+                }
+            }
+        }
+        println("\uD83D\uDD34 Failed interface checking: $objectRef, ${objectRef.typeId}; $actualTypeDescriptor")
+
         when (val instance = objectRef.value) {
             null -> return false
             is DictionaryBackedInstance -> {
                 // A instanceof B
                 // A instanceof Mocked
+                println("\uD83D\uDD34 DictionaryBackedInstance: $instance, ${objectRef.typeId}; $actualTypeDescriptor")
                 val dexClassRepresentation = instance.dexClassRepresentation
                 // First go up to the most superclass
                 // Then check the mocked class
                 var currentClassDef = dexClassRepresentation
                 do {
+                    println("\uD83D\uDD34 Looping: $currentClassDef")
                     val currentTypeId = currentClassDef.classDef.superClassTypeId
                     if (currentTypeId == null) {
+                        println("\uD83D\uDD34 Super class not found: $currentClassDef")
                         // We reached the class of mocked instance
                         instance.backingSuperClass?.let { backing ->
                             return Class.forName(
                                 targetTypeDescriptor.replace('/', '.').removePrefix("L").removeSuffix(";")
                             ).isAssignableFrom(backing)
-                        }
+                        } ?: return false
                     } else {
-                        val superClass = getClassDef(codeItem, currentTypeId, depth)
+                        println("\uD83D\uDD34 Currentss class: ${currentClassDef.classDef.typeId.descriptor}, target: $targetTypeDescriptor, super: $currentTypeId")
+                        if (currentTypeId.descriptor == targetTypeDescriptor) {
+                            println("\uD83D\uDD34 Found matching class \uD83D\uDD34")
+                            return true
+                        }
+                        val superClass = getClassRepresentation(currentTypeId, depth)
                         when (superClass) {
                             is ClassRepresentation.MockedClassRepresentation -> {
+                                println("Mocked class \uD83D\uDD34")
                                 val mockedClass = superClass.mockedClass
                                 try {
                                     return Class.forName(
                                         targetTypeDescriptor.replace('/', '.').removePrefix("L").removeSuffix(";")
                                     ).isAssignableFrom(mockedClass.clazz)
                                 } catch (e: ClassNotFoundException) {
+                                    println("\uD83D\uDD34 Class not found: $targetTypeDescriptor")
                                     return false
                                 }
                             }
 
                             is ClassRepresentation.DexClassRepresentation -> {
+                                println("Current class: ${currentClassDef.classDef.typeId.descriptor}, target: $targetTypeDescriptor")
                                 currentClassDef = superClass
+                                if (currentClassDef.classDef.typeId.descriptor == targetTypeDescriptor) {
+                                    return true
+                                } else {
+                                    println("Current class: ${currentClassDef.classDef.typeId.descriptor}, target: $targetTypeDescriptor")
+                                }
                             }
                         }
                     }
+                    println("\uD83D\uDD34 Loop end: $currentClassDef")
                 } while (true)
             }
 
@@ -147,7 +192,7 @@ class Environment(
         ) // Integer, Byte, Char, Double, Float, Long, Short, Boolean
     }
 
-    fun getClassDef(codeItem: CodeItem, typeId: TypeId, depth: Int): ClassRepresentation {
+    fun getClassRepresentation(typeId: TypeId, depth: Int): ClassRepresentation {
         println("Searching for class def with typeId $typeId")
         val classDef = classDefs.find {
             it.classDef.typeId == typeId
@@ -474,5 +519,34 @@ class Environment(
             superClassTypeId = superClassDef.classDef.superClassTypeId
         } while (superClassTypeId != null)
         return null
+    }
+
+    fun loadClass(code: CodeItem, index: Int): Class<*> {
+        val typeId = getTypeId(code, index)
+        if (typeId in typeIdToCustomClass) {
+            return typeIdToCustomClass[typeId]!!
+        }
+        val classRepresentation = getClassRepresentation(typeId, 0)
+        if (classRepresentation is ClassRepresentation.MockedClassRepresentation) {
+            return classRepresentation.mockedClass.clazz
+        }
+        classRepresentation as ClassRepresentation.DexClassRepresentation
+        val classDef = classRepresentation.classDef
+        val interfaces = classDef.flattenedInterfaces
+        val enhancer = Enhancer()
+        enhancer.setSuperclass(Object::class.java)
+        if (interfaces.isNotEmpty())
+            enhancer.setInterfaces(interfaces.mapNotNull {
+                try {
+                    Class.forName(it.descriptor.replace('/', '.').removePrefix("L").removeSuffix(";"))
+                } catch (e: ClassNotFoundException) {
+                    null
+                }
+            }.toTypedArray())
+        // FIXME
+        enhancer.setCallbackType(DictionaryBackedInstance::class.java)
+        val cls = enhancer.createClass() as Class<*>
+        typeIdToCustomClass[typeId] = cls
+        return cls
     }
 }
