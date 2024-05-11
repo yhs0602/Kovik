@@ -25,6 +25,8 @@ class DictionaryBackedInstance(
     var backingSuperClass: Class<*>? = null
         private set
 
+    var interfaces: MutableList<Class<*>> = mutableListOf()
+
     init {
         var superClassTypeId = dexClassRepresentation.classDef.superClassTypeId
         while (superClassTypeId != null) {
@@ -44,6 +46,27 @@ class DictionaryBackedInstance(
 
                 is ClassRepresentation.DexClassRepresentation -> {
                     superClassTypeId = superClass.classDef.superClassTypeId
+                }
+            }
+        }
+        // search for interfaces
+        for (interfaceTypeId in dexClassRepresentation.classDef.flattenedInterfaces) {
+            val interfaceClass = environment.getClassDef(code, interfaceTypeId, depth = depth)
+            when (interfaceClass) {
+                is ClassRepresentation.MockedClassRepresentation -> {
+                    try {
+                        interfaceTypeId.descriptor.let {
+                            interfaces.add(
+                                Class.forName(it.replace('/', '.').removePrefix("L").removeSuffix(";"))
+                            )
+                        }
+                    } catch (e: ClassNotFoundException) {
+                        println("Interface class not found: $interfaceTypeId")
+                    }
+                }
+
+                is ClassRepresentation.DexClassRepresentation -> {
+
                 }
             }
         }
@@ -73,16 +96,55 @@ class DictionaryBackedInstance(
         return "DictionaryBackedInstance(${fieldValues.values.joinToString { it.contentToString() }})"
     }
 
-    override fun intercept(p0: Any?, p1: Method?, p2: Array<out Any>?, p3: MethodProxy?): Any? {
+    override fun intercept(obj: Any?, methodRequested: Method?, arguments: Array<out Any>?, p3: MethodProxy?): Any? {
         // Check if this class overrides the method
         // Else call the super class method
-//        println("obj class=${p0?.javaClass}")
-//        println("proxy class=${p3?.javaClass}")
-//        println("backing class=${backingSuperInstance?.javaClass}")
-//        println("backingbacking class=${backingOriginalSuperInstance?.javaClass}")
-        println("p1: $p1, p2: ${p2?.joinToString()}")
-        val result = p3?.invokeSuper(p0, p2)
-//        println("result=$result")
-        return result
+        val methodName = methodRequested?.name ?: return null
+        println("Requested class: ${methodRequested.declaringClass}")
+        if (methodRequested.declaringClass == backingSuperClass) {
+            val result = p3?.invokeSuper(obj, arguments)
+            return result
+        }
+        val method = environment.getMethodByName(
+            dexClassRepresentation, methodName
+        )
+        if (method != null) {
+            // TODO: We should also check if the super method is requested or this method is a new method
+            // unmarshal the arguments
+            val unmarshalledObject = if (obj == null) {
+                arrayOf(RegisterValue.Int(0))
+            } else {
+                unmarshalArguments(
+                    arrayOf(obj),
+                    arrayOf(obj::class.java)
+                )
+            }
+            val unmarshalledArguments: Array<out RegisterValue> = if (arguments == null) {
+                unmarshalledObject
+            } else {
+                (unmarshalledObject.asSequence() +
+                    unmarshalArguments(
+                        arguments,
+                        methodRequested.parameterTypes
+                    ).asSequence()
+                    ).toList()
+                    .toTypedArray()
+            }
+            println("Invoking method: $methodName ") // with args: ${unmarshalledArguments.joinToString()}
+            val result = method.execute(unmarshalledArguments, environment, code, obj == null, depth + 1)
+            // marshal the result
+            println("Result: ${result.joinToString()}, requested return type: ${methodRequested.returnType}")
+            val marshalled =  marshalArguments(
+                environment,
+                code,
+                result.toList(),
+                arrayOf(methodRequested.returnType)
+            )
+            println("Marshalled: ${marshalled.joinToString()}")
+            return marshalled[0]
+        } else {
+            val result = p3?.invokeSuper(obj, arguments)
+            return result
+        }
     }
 }

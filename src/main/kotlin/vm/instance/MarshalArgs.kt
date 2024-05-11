@@ -3,9 +3,6 @@ package com.yhs0602.vm.instance
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.vm.Environment
 import com.yhs0602.vm.RegisterValue
-import net.sf.cglib.proxy.Enhancer
-import org.objenesis.Objenesis
-import org.objenesis.ObjenesisStd
 
 // to handle wide values correctly, we need to see the whole argument list
 // Convert List of registervalues to array of Any?
@@ -36,7 +33,7 @@ fun marshalArgument(
 ): Pair<Any?, Int> {
     val arg = args[idx]
     return when {
-        paramType == Int::class.java && arg is RegisterValue.Int -> arg.value to 1
+        (paramType == Int::class.java || paramType == Integer.TYPE) && arg is RegisterValue.Int -> arg.value to 1
         paramType == String::class.java && arg is RegisterValue.StringRef -> environment.getString(code, arg.index) to 1
         paramType == String::class.java && arg is RegisterValue.ObjectRef -> {
             if (arg.value is MockedInstance && arg.value.value is String) {
@@ -46,7 +43,7 @@ fun marshalArgument(
             }
         }
 
-        paramType == Long::class.java && arg is RegisterValue.Int -> {
+        (paramType == Long::class.java || paramType == java.lang.Long.TYPE) && arg is RegisterValue.Int -> {
             if (args.size <= idx + 1) {
                 throw IllegalArgumentException("Long argument not found")
             }
@@ -60,11 +57,11 @@ fun marshalArgument(
             }
         }
 
-        paramType == Float::class.java && arg is RegisterValue.Int -> {
+        (paramType == Float::class.java || paramType == java.lang.Float.TYPE) && arg is RegisterValue.Int -> {
             Float.fromBits(arg.value) to 1
         }
 
-        paramType == Double::class.java && arg is RegisterValue.Int -> {
+        (paramType == Double::class.java || paramType == java.lang.Double.TYPE) && arg is RegisterValue.Int -> {
             if (args.size <= idx + 1) {
                 throw IllegalArgumentException("Double argument not found")
             }
@@ -78,18 +75,21 @@ fun marshalArgument(
             }
         }
 
-        paramType == Boolean::class.java && arg is RegisterValue.Int -> (arg.value != 0) to 1
-        paramType == Char::class.java && arg is RegisterValue.Int -> arg.value.toChar() to 1
-        paramType == Byte::class.java && arg is RegisterValue.Int -> arg.value.toByte() to 1
-        paramType == Short::class.java && arg is RegisterValue.Int -> arg.value.toShort() to 1
+        (paramType == Boolean::class.java || paramType == java.lang.Boolean.TYPE) && arg is RegisterValue.Int -> (arg.value != 0) to 1
+        (paramType == Char::class.java || paramType == Character.TYPE) && arg is RegisterValue.Int -> arg.value.toChar() to 1
+        (paramType == Byte::class.java || paramType == java.lang.Byte.TYPE) && arg is RegisterValue.Int -> arg.value.toByte() to 1
+        (paramType == Short::class.java || paramType == java.lang.Short.TYPE) && arg is RegisterValue.Int -> arg.value.toShort() to 1
         paramType.isArray && arg is RegisterValue.ArrayRef -> {
             // TODO: wide array
 //            if (args.size <= idx + 1) {
 //                throw IllegalArgumentException("Array argument not found; second argument is not an array: ${args[idx + 1]}")
 //            }
             val componentType = paramType.componentType
-            val result = arg.values.map { marshalArgument(environment, code, listOf(it), 0, componentType) }
-            result to arg.values.size
+            val result = arg.values.map {
+                // TODO: Wide
+                marshalArgument(environment, code, listOf(it), 0, componentType).first
+            }.toTypedArray()
+            result to 1
         }
 
         // unify the handling of Object and interface using CGLib and Objenesis
@@ -121,10 +121,19 @@ fun marshalArgument(
                         // is either another Dex defined class or Object.
                         println("Marshalling dictionary backed reference: $arg")
                         val backingSuperInstanceClass = theInstance.backingSuperClass
+                        val interfaceClass = theInstance.interfaces.find { paramType.isAssignableFrom(it) }
+
                         when {
-                            backingSuperInstanceClass == null -> {
+                            interfaceClass != null -> {
                                 // super class is Object or Dex defined class
-                                null to 1
+                                println("It implements the required interface: $interfaceClass")
+                                // check if any of the interfaces are assignable
+                                interfaceClass.cast(theInstance.backingSuperInstance) to 1
+                            }
+
+                            backingSuperInstanceClass == null -> {
+                                println("Super class is Object or Dex defined class")
+                                theInstance.backingSuperInstance to 1
                             }
 
                             paramType.isAssignableFrom(backingSuperInstanceClass) -> {

@@ -10,6 +10,6 @@ data class ClassDef(
     val classDataOff: Int,
     val staticValuesOff: Int
 ) {
-    lateinit var flattendInterfaces: List<TypeId>
+    lateinit var flattenedInterfaces: List<TypeId>
     lateinit var interfaces: List<TypeId>
 }

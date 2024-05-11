@@ -45,7 +45,7 @@ class InvokeSuper(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
     override fun toString(): String {
         val argRegList = arrayOf(C, D, E, F, G)
         val args = Array(A) { argRegList[it] }
-        return "InvokeSuper ($A args: ${args.joinToString(",")})"
+        return "InvokeSuper ($A args: ${args.joinToString(","){"v$it"}})"
     }
 }
 

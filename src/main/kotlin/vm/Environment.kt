@@ -31,11 +31,20 @@ class Environment(
         }
     }.toMap()
 
-    val typeIds = mutableMapOf<Pair<DexFile, Int>, TypeId>()
-    val strings = mutableMapOf<Pair<DexFile, Int>, String>()
+    private val typeIds = mutableMapOf<Pair<DexFile, Int>, TypeId>()
+    private val strings = mutableMapOf<Pair<DexFile, Int>, String>()
+    private val classDefs = mutableListOf<ParsedClass>()
 
-    val staticFields = mutableMapOf<Pair<TypeId, Int>, Array<RegisterValue>>()
-    val initializedClasses: MutableSet<TypeId> = mutableSetOf()
+    private val staticFields = mutableMapOf<Pair<TypeId, Int>, Array<RegisterValue>>()
+    private val initializedClasses: MutableSet<TypeId> = mutableSetOf()
+
+    init {
+        dexFiles.forEach { dexFile ->
+            dexFile.classDefs.forEach { parsedClass ->
+                classDefs.add(parsedClass)
+            }
+        }
+    }
 
     fun getTypeId(codeItem: CodeItem, index: Int): TypeId {
         val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
@@ -102,7 +111,7 @@ class Environment(
         // Check interfaces first
         when (classDef) {
             is ClassRepresentation.DexClassRepresentation -> {
-                classDef.classDef.flattendInterfaces.forEach {
+                classDef.classDef.flattenedInterfaces.forEach {
                     if (it.descriptor == targetTypeDescriptor) {
                         return true
                     }
@@ -299,7 +308,7 @@ class Environment(
         // method.codeItem
         if (method == null) {
             // try to find in superclasses
-            return iterateSuperClass(classDef, dexFile) { superClassData ->
+            return iterateSuperClass(classDef.classDef) { superClassData ->
                 val superMethod = superClassData.directMethods.find {
                     it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
                 } ?: superClassData.virtualMethods.find {
@@ -315,23 +324,47 @@ class Environment(
             return MethodWrapper.Encoded(method)
         }
     }
-}
 
-fun <R> iterateSuperClass(
-    classDef: ParsedClass,
-    dexFile: DexFile,
-    iterator: (ClassData) -> R?
-): R? {
-    var superClass = classDef.classDef.superClassTypeId
-    do {
-        val superClassDef = dexFile.classDefs.find {
-            it.classDef.typeId == superClass
-        } ?: break
-        val superClassData = superClassDef.classData ?: break
-        iterator(superClassData)?.let {
-            return@iterateSuperClass it
+    fun getMethodByName(classDef: ClassRepresentation.DexClassRepresentation, methodName: String): MethodWrapper? {
+        val classData = classDef.classData ?: error("Cannot find class data for class def $classDef")
+        val method = classData.directMethods.find {
+            it.methodId.name == methodName
+        } ?: classData.virtualMethods.find {
+            it.methodId.name == methodName
         }
-        superClass = superClassDef.classDef.superClassTypeId
-    } while (superClass != null)
-    return null
+        if (method == null) {
+            return iterateSuperClass(classDef.classDef) { superClassData ->
+                val superMethod = superClassData.directMethods.find {
+                    it.methodId.name == methodName
+                } ?: superClassData.virtualMethods.find {
+                    it.methodId.name == methodName
+                }
+                if (superMethod != null) {
+                    MethodWrapper.Encoded(superMethod)
+                } else {
+                    null
+                }
+            }
+        } else {
+            return MethodWrapper.Encoded(method)
+        }
+    }
+
+    fun <R> iterateSuperClass(
+        classDef: ClassDef,
+        iterator: (ClassData) -> R?
+    ): R? {
+        var superClassTypeId = classDef.superClassTypeId
+        do {
+            val superClassDef = classDefs.find {
+                it.classDef.typeId == superClassTypeId
+            } ?: break
+            val superClassData = superClassDef.classData ?: break
+            iterator(superClassData)?.let {
+                return@iterateSuperClass it
+            }
+            superClassTypeId = superClassDef.classDef.superClassTypeId
+        } while (superClassTypeId != null)
+        return null
+    }
 }

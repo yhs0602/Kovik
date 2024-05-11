@@ -8,14 +8,14 @@ import com.yhs0602.vm.instruction.Instruction
 fun executeMethod(
     code: CodeItem,
     environment: Environment,
-    argument: Array<RegisterValue>,
+    argument: Array<out RegisterValue>,
     argumentSize: Int,
     depth: Int,
 ): Array<RegisterValue> {
     val indentation = "    ".repeat(depth)
     println("${indentation}New function frame start")
     println("${indentation}Argument size = $argumentSize Register size = ${code.registersSize} insSize = ${code.insSize} outsSize=${code.outsSize}")
-    println("${indentation}Argument = ${argument.contentToString()}")
+//    println("${indentation}Argument = ${argument.contentToString()}")
 
     val memory = Memory(code.registersSize.toInt())
     // Copy the argument registers to the frame registers

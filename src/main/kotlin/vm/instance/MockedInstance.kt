@@ -38,6 +38,6 @@ class MockedInstance(val clazz: Class<*>) : Instance() {
     override fun toString(): String {
         if (!this::value.isInitialized)
             return "MockedInstance(NotInitialized)"
-        return "MockedInstance($value)"
+        return "MockedInstance(${value.javaClass.simpleName}"
     }
 }

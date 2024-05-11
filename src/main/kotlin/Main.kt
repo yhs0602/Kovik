@@ -88,6 +88,7 @@ fun main() {
         GeneralMockedClass(Math::class.java),
         GeneralMockedClass(File::class.java),
         GeneralMockedClass(Arrays::class.java),
+        GeneralMockedClass(Comparable::class.java),
     )
     val mockedMethodList = mockedClassesList.flatMap {
         it.getMethods()

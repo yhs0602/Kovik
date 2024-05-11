@@ -3,6 +3,15 @@ package com.yhs0602.vm.instance
 import com.yhs0602.dex.TypeId
 import com.yhs0602.vm.RegisterValue
 
+fun unmarshalArguments(
+    args: Array<out Any?>,
+    paramTypes: Array<Class<*>>,
+): Array<RegisterValue> {
+    return args.zip(paramTypes).flatMap { (value, paramType) ->
+        unmarshalArgument(value, paramType).toList()
+    }.toTypedArray()
+}
+
 fun unmarshalArgument(value: Any?, returnType: Class<*>): Array<RegisterValue> {
     return when (value) {
         null -> arrayOf()

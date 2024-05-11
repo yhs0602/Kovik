@@ -267,7 +267,7 @@ data class DexFile(
                     flattenedInterfaces.addAll(currentClassDef!!.interfaces)
                     currentClassDef = classDefs.find { it.typeId == currentClassDef!!.superClassTypeId }
                 } while (currentClassDef != null)
-                it.flattendInterfaces = flattenedInterfaces
+                it.flattenedInterfaces = flattenedInterfaces
             }
             inputFile.seek(header.mapOff.toLong() and 0xFFFFFFFF)
             val mapListSize = inputFile.readInt()
