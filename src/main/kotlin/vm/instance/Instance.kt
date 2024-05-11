@@ -39,13 +39,13 @@ fun compareMethodProto(
         val paramType = methodParameterTypes[i]
 
         if (!compareProtoType(paramTypes[i], paramType)) {
-//            println("Parameter type not matched: ${paramTypes[i]} != $paramType")
+            println("Parameter type not matched: ${paramTypes[i]} != $paramType")
             return false
         }
         // 파라미터의 타입과 인자의 타입을 비교하여 일치하지 않으면 false를 반환
         val (result, consumed) = compareArgumentType(args, i, paramType)
         if (!result) {
-//            println("Argument type not matched: ${args[i]} != $paramType")
+            println("Argument type not matched: ${args[i]} != $paramType")
             return false
         }
         i += consumed
@@ -139,6 +139,9 @@ fun compareArgumentType(args: List<RegisterValue>, idx: Int, paramType: Class<*>
                     instance.interfaces.contains(paramType) to 1
                 }
             }
+        }
+        paramType == Class::class.java && arg is RegisterValue.ClassRef -> {
+            true to 1
         }
 
         paramType == Object::class.java -> true to 1

@@ -161,6 +161,11 @@ fun marshalArgument(
                 environment.getString(code, arg.index) to 1
             }
 
+            is RegisterValue.ClassRef -> {
+                ClassLoader.getSystemClassLoader().loadClass()
+                Class::class to 1
+            }
+
             else -> throw IllegalArgumentException("Cannot marshal object reference: $arg")
         }
     }
