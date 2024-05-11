@@ -4,29 +4,19 @@ import com.yhs0602.dex.ClassData
 import com.yhs0602.dex.ClassDef
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.TypeId
+import com.yhs0602.vm.instance.*
+import net.sf.cglib.proxy.Enhancer
 import java.lang.reflect.Constructor
+import java.util.*
+import kotlin.NoSuchElementException
 
-interface MockedClass {
-    val classId: TypeId
-
-    fun initializeClass()
-
-    // NewInstance will be effectively a constructor
-}
 
 class GeneralMockedClass(
     val clazz: Class<*>
-) : MockedClass {
-    override val classId: TypeId
+) {
+    val classId: TypeId
         get() = TypeId(clazz.descriptorString())
 
-    override fun initializeClass() {
-        // Invoke <clinit> method
-        clazz.declaredMethods.find { it.name == "<clinit>" }?.invoke(null)
-        // It initializes the static fields
-    }
-
-    // Ultimiate mocked methods which will be called actually.
     fun getMethods(): List<MockedMethod> = clazz.methods.map {
         object : MockedMethod {
             override fun execute(
@@ -75,6 +65,7 @@ class GeneralMockedClass(
 
 
     // Can only be called as a context of mocked class.
+    // including <init>
     fun invokeMethod(
         environment: Environment,
         code: CodeItem,
@@ -109,11 +100,49 @@ class GeneralMockedClass(
                     }
 
                     is DictionaryBackedInstance -> {
-                        // It should
-                    }
-
-                    else -> {
-                        throw IllegalArgumentException("Illegal instance type $registerValue")
+                        // new-instance v0, dexClass
+                        // invoke-super v0, mockedClass-><init>
+                        // In this example:
+                        // class A(s: String): File(s) {}
+                        // class B(s: String): A(s) {}
+                        // class C(s: String): B(s) {}
+                        // new-instance v0, C
+                        // invoke-virtual v0, C-><init>
+                        // New frame start for C-><init>
+                        // Usually it first calls the superclass's constructor
+                        // invoke-super v0, B-><init>
+                        // New frame start for B-><init>
+                        // invoke-super v0, A-><init>
+                        // And the control flows here. we have A's instance,
+                        // And the class information is precalculated in DictionaryBackedInstance's init
+                        val backingSuperClass = registerValue.backingSuperClass
+                        if (backingSuperClass != null) {
+                            try {
+                                val droppedArgs = args.drop(1)
+                                val instance = backingSuperClass.constructors.first {
+                                    compareConstructorProto(it, droppedArgs, paramType)
+                                }.run {
+                                    // Use CGLib to create a proxy instance
+                                    println("Creating proxy object for ${backingSuperClass}")
+                                    val enhancer = Enhancer()
+                                    enhancer.setSuperclass(backingSuperClass)
+                                    enhancer.setCallback(registerValue)
+                                    registerValue.backingSuperInstance = enhancer.create(
+                                        parameterTypes,
+                                        marshalArguments(environment, code, droppedArgs, parameterTypes)
+                                    )
+//                                    registerValue.backingOriginalSuperInstance = this.newInstance(
+//                                        *marshalArguments(environment, code, droppedArgs, parameterTypes)
+//                                    )
+                                }
+                            } catch (e: NoSuchElementException) {
+                                throw IllegalArgumentException("Constructor not found")
+                            }
+                        } else {
+                            // throw IllegalArgumentException("Backing super class not found")
+                            // DO NOTHING
+                            System.err.println("Backing super class not found")
+                        }
                     }
                 }
                 return arrayOf()

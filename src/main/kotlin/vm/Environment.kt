@@ -1,6 +1,9 @@
 package com.yhs0602.vm
 
 import com.yhs0602.dex.*
+import com.yhs0602.vm.instance.DictionaryBackedInstance
+import com.yhs0602.vm.instance.MockedInstance
+import com.yhs0602.vm.instance.unmarshalArgument
 import com.yhs0602.vm.instruction.Instruction
 
 // Class definitions, typeids, string constants, field ids, method ids, and method prototypes...
@@ -95,7 +98,7 @@ class Environment(
         var currentType: TypeId? = TypeId(typeDescriptor)
 
         // Get the class def of the class of typeDescriptor
-        val classDef = getClassDef(codeItem, TypeId(typeDescriptor), depth) ?: return false
+        val classDef = getClassDef(codeItem, TypeId(typeDescriptor), depth)
         // Check interfaces first
         when (classDef) {
             is ClassRepresentation.DexClassRepresentation -> {
@@ -182,7 +185,7 @@ class Environment(
         }
     }
 
-    fun createInstance(clazz: ClassRepresentation): RegisterValue.ObjectRef {
+    fun createInstance(clazz: ClassRepresentation, code: CodeItem, depth: Int): RegisterValue.ObjectRef {
         when (clazz) {
             is ClassRepresentation.DexClassRepresentation -> {
                 val classDef = clazz.classDef
@@ -193,7 +196,10 @@ class Environment(
                     classDef.typeId,
                     DictionaryBackedInstance(
                         fields = classData.instanceFields,
-                        dexClassRepresentation = clazz
+                        dexClassRepresentation = clazz,
+                        environment = this,
+                        code = code,
+                        depth = depth
                     )
                 )
             }
@@ -207,7 +213,6 @@ class Environment(
         }
     }
 
-    // TODO: Call clinit first
     fun getStaticField(code: CodeItem, fieldId: Int, depth: Int): Array<RegisterValue> {
         val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
         val fieldIdObj = dexFile.fieldIds[fieldId]
@@ -310,22 +315,6 @@ class Environment(
             return MethodWrapper.Encoded(method)
         }
     }
-
-
-    fun executeMockedMethod(
-        code: CodeItem,
-        method: MockedMethod,
-        registers: Array<RegisterValue>,
-        c: Int,
-        isStatic: Boolean
-    ): Array<RegisterValue> {
-        // marshal the arguments
-        val args = registers.copyOfRange(0, c)
-        // convert the arguments to the expected types
-//        println("Executing mocked method $method with args ${args.joinToString(",")}")
-        return method.execute(args, this, code, isStatic)
-    }
-
 }
 
 fun <R> iterateSuperClass(

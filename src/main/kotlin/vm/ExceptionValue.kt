@@ -1,6 +1,7 @@
 package com.yhs0602.vm
 
 import com.yhs0602.dex.TypeId
+import com.yhs0602.vm.instance.MockedInstance
 
 data class ExceptionValue(val s: String) :
     RegisterValue.ObjectRef(

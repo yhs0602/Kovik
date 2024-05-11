@@ -37,7 +37,9 @@ class NewArray(pc: Int, val code: CodeItem) : Instruction._22c(pc, code) {
         val arrayRef = RegisterValue.ArrayRef(
             typeId,
             length.value,
-            arrayOf()
+            Array(length.value) {
+                RegisterValue.Int(0)
+            }
         ) // The array should be initialized later.
         memory.registers[vA] = arrayRef
         return pc + insnLength
@@ -263,6 +265,10 @@ class AputObject(pc: Int, code: CodeItem) : Aput(pc, code) {
             return
         }
         arrayRef.values[index.value] = value
+    }
+
+    override fun toString(): String {
+        return "AputObject v$vAA -> v$vBB[v$vCC]"
     }
 }
 

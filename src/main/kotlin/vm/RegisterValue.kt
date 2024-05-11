@@ -2,6 +2,8 @@ package com.yhs0602.vm
 
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.TypeId
+import com.yhs0602.vm.instance.Instance
+import com.yhs0602.vm.instance.MockedInstance
 
 sealed class RegisterValue {
     data class Int(val value: kotlin.Int) : RegisterValue() {

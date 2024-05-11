@@ -7,6 +7,7 @@ import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.executeMethod
 import java.io.File
 import java.io.PrintStream
+import java.util.Arrays
 import kotlin.jvm.internal.Intrinsics
 
 
@@ -86,6 +87,7 @@ fun main() {
         GeneralMockedClass(Object::class.java),
         GeneralMockedClass(Math::class.java),
         GeneralMockedClass(File::class.java),
+        GeneralMockedClass(Arrays::class.java),
     )
     val mockedMethodList = mockedClassesList.flatMap {
         it.getMethods()

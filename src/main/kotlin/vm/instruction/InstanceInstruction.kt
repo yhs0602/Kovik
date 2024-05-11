@@ -2,6 +2,7 @@ package com.yhs0602.vm.instruction
 
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.vm.*
+import com.yhs0602.vm.instance.Instance
 
 // It does not create backing instance actually;
 // It is impossible to do so in simulation
@@ -11,7 +12,7 @@ class NewInstance(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val typeId = environment.getTypeId(code, KindBBBB)
         val parsedClass = environment.getClassDef(code, typeId, depth)
-        memory.registers[vAA] = environment.createInstance(parsedClass)
+        memory.registers[vAA] = environment.createInstance(parsedClass, code, depth)
         return pc + insnLength
     }
 

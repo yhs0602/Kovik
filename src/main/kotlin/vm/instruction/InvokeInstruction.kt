@@ -6,11 +6,16 @@ import com.yhs0602.vm.*
 open class InvokeVirtual(pc: Int, val code: CodeItem) : Instruction._35c(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val method = environment.getMethod(code, BBBB)
+        val argRegList = arrayOf(C, D, E, F, G)
+        val args = Array(A) { memory.registers[argRegList[it]] }
         when (method) {
             is MethodWrapper.Mocked -> {
-                val argRegList = arrayOf(C, D, E, F, G)
-                val args = Array(A) { memory.registers[argRegList[it]] }
-                memory.returnValue = environment.executeMockedMethod(code, method.mockedMethod, args, A, false)
+                memory.returnValue = method.mockedMethod.execute(
+                    args,
+                    environment,
+                    code,
+                    false
+                )
                 return pc + insnLength
             }
 
@@ -22,8 +27,6 @@ open class InvokeVirtual(pc: Int, val code: CodeItem) : Instruction._35c(pc, cod
                     memory.exception = ExceptionValue("InvokeVirtual: Method not found")
                     return pc + insnLength
                 }
-                val argRegList = arrayOf(C, D, E, F, G)
-                val args = Array(A) { memory.registers[argRegList[it]] }
                 memory.returnValue = executeMethod(codeItem, environment, args, A, depth + 1)
                 return pc + insnLength
             }
@@ -58,11 +61,16 @@ class InvokeDirect(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
 class InvokeStatic(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val method = environment.getMethod(code, BBBB)
+        val argRegList = arrayOf(C, D, E, F, G)
+        val args = Array(A) { memory.registers[argRegList[it]] }
         when (method) {
             is MethodWrapper.Mocked -> {
-                val argRegList = arrayOf(C, D, E, F, G)
-                val args = Array(A) { memory.registers[argRegList[it]] }
-                memory.returnValue = environment.executeMockedMethod(code, method.mockedMethod, args, A, true)
+                memory.returnValue = method.mockedMethod.execute(
+                    args,
+                    environment,
+                    code,
+                    true
+                )
                 return pc + insnLength
             }
 
@@ -72,8 +80,6 @@ class InvokeStatic(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
                     memory.exception = ExceptionValue("InvokeVirtual: Method not found")
                     return pc + insnLength
                 }
-                val argRegList = arrayOf(C, D, E, F, G)
-                val args = Array(A) { memory.registers[argRegList[it]] }
                 memory.returnValue = executeMethod(codeItem, environment, args, A, depth + 1)
                 return pc + insnLength
             }
@@ -94,6 +100,8 @@ class InvokeInterface(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
 open class InvokeVirtualRange(pc: Int, val code: CodeItem) : Instruction._3rc(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val method = environment.getMethod(code, BBBB)
+        val registerIndices = (CCCC until CCCC + count).toList()
+        val args = Array(count) { memory.registers[registerIndices[it]] }
         when (method) {
             is MethodWrapper.Encoded -> {
                 val codeItem = method.encodedMethod.codeItem
@@ -101,18 +109,15 @@ open class InvokeVirtualRange(pc: Int, val code: CodeItem) : Instruction._3rc(pc
                     memory.exception = ExceptionValue("InvokeVirtualRange: Method not found")
                     return pc + insnLength
                 }
-                val registerIndices = (CCCC until CCCC + count).toList()
-                val args = Array(count) { memory.registers[registerIndices[it]] }
                 memory.returnValue = executeMethod(codeItem, environment, args, count, depth + 1)
                 return pc + insnLength
             }
 
             is MethodWrapper.Mocked -> {
-                memory.returnValue = environment.executeMockedMethod(
+                memory.returnValue = method.mockedMethod.execute(
+                    args,
+                    environment,
                     code,
-                    method.mockedMethod,
-                    memory.registers,
-                    count,
                     false
                 )
                 return pc + insnLength
@@ -137,6 +142,8 @@ class InvokeDirectRange(pc: Int, code: CodeItem) : InvokeVirtualRange(pc, code) 
 class InvokeStaticRange(pc: Int, code: CodeItem) : InvokeVirtualRange(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val method = environment.getMethod(code, BBBB)
+        val registerIndices = (CCCC until CCCC + count).toList()
+        val args = Array(count) { memory.registers[registerIndices[it]] }
         when (method) {
             is MethodWrapper.Encoded -> {
                 val codeItem = method.encodedMethod.codeItem
@@ -144,18 +151,15 @@ class InvokeStaticRange(pc: Int, code: CodeItem) : InvokeVirtualRange(pc, code) 
                     memory.exception = ExceptionValue("InvokeVirtualRange: Method not found")
                     return pc + insnLength
                 }
-                val registerIndices = (CCCC until CCCC + count).toList()
-                val args = Array(count) { memory.registers[registerIndices[it]] }
                 memory.returnValue = executeMethod(codeItem, environment, args, count, depth + 1)
                 return pc + insnLength
             }
 
             is MethodWrapper.Mocked -> {
-                memory.returnValue = environment.executeMockedMethod(
+                memory.returnValue = method.mockedMethod.execute(
+                    args,
+                    environment,
                     code,
-                    method.mockedMethod,
-                    memory.registers,
-                    count,
                     true
                 )
                 return pc + insnLength
