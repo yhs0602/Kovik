@@ -221,6 +221,10 @@ class IfNez(pc: Int, code: CodeItem) : Instruction._21t(pc, code) {
             }
         }
     }
+
+    override fun toString(): String {
+        return "IfNez v$vAA != 0 -> +$offset"
+    }
 }
 
 class IfLtz(pc: Int, code: CodeItem) : Instruction._21t(pc, code) {

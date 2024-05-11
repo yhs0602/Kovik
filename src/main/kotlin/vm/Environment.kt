@@ -79,9 +79,59 @@ class Environment(
         if (actualTypeDescriptor == targetTypeDescriptor) return true
 
         // Check the interface
+        when (val instance = objectRef.value) {
+            null -> return false
+            is DictionaryBackedInstance -> {
+                // A instanceof B
+                // A instanceof Mocked
+                val dexClassRepresentation = instance.dexClassRepresentation
+                // First go up to the most superclass
+                // Then check the mocked class
+                var currentClassDef = dexClassRepresentation
+                do {
+                    val currentTypeId = currentClassDef.classDef.superClassTypeId
+                    if (currentTypeId == null) {
+                        // We reached the class of mocked instance
+                        instance.backingSuperClass?.let { backing ->
+                            return Class.forName(
+                                targetTypeDescriptor.replace('/', '.').removePrefix("L").removeSuffix(";")
+                            ).isAssignableFrom(backing)
+                        }
+                    } else {
+                        val superClass = getClassDef(codeItem, currentTypeId, depth)
+                        when (superClass) {
+                            is ClassRepresentation.MockedClassRepresentation -> {
+                                val mockedClass = superClass.mockedClass
+                                try {
+                                    return Class.forName(
+                                        targetTypeDescriptor.replace('/', '.').removePrefix("L").removeSuffix(";")
+                                    ).isAssignableFrom(mockedClass.clazz)
+                                } catch (e: ClassNotFoundException) {
+                                    return false
+                                }
+                            }
 
-        // Check the super types of the actual type
-        return checkSuperTypes(codeItem, actualTypeDescriptor, targetTypeDescriptor, depth)
+                            is ClassRepresentation.DexClassRepresentation -> {
+                                currentClassDef = superClass
+                            }
+                        }
+                    }
+                } while (true)
+            }
+
+            is MockedInstance -> {
+                val mockedClazz = instance.clazz
+                // if File instanceof targetTypeDescriptor
+                // The target type descriptor cannot be child class of dex class
+                try {
+                    Class.forName(targetTypeDescriptor.replace('/', '.').removePrefix("L").removeSuffix(";")).let {
+                        return it.isAssignableFrom(mockedClazz)
+                    }
+                } catch (e: ClassNotFoundException) {
+                    return false
+                }
+            }
+        }
     }
 
     private fun isPrimitiveType(typeDescriptor: String): Boolean {
@@ -97,53 +147,9 @@ class Environment(
         ) // Integer, Byte, Char, Double, Float, Long, Short, Boolean
     }
 
-    // Check the super types of the given type
-    private fun checkSuperTypes(
-        codeItem: CodeItem,
-        typeDescriptor: String,
-        targetTypeDescriptor: String,
-        depth: Int
-    ): Boolean {
-        var currentType: TypeId? = TypeId(typeDescriptor)
-
-        // Get the class def of the class of typeDescriptor
-        val classDef = getClassDef(codeItem, TypeId(typeDescriptor), depth)
-        // Check interfaces first
-        when (classDef) {
-            is ClassRepresentation.DexClassRepresentation -> {
-                classDef.classDef.flattenedInterfaces.forEach {
-                    if (it.descriptor == targetTypeDescriptor) {
-                        return true
-                    }
-                }
-            }
-
-            is ClassRepresentation.MockedClassRepresentation -> {
-                TODO()
-            }
-        }
-        do {
-            // Get the super class of the class
-            if (currentType?.descriptor == targetTypeDescriptor) {
-                return true
-            }
-            when (classDef) {
-                is ClassRepresentation.DexClassRepresentation -> {
-                    currentType = classDef.classDef.superClassTypeId
-                }
-
-                is ClassRepresentation.MockedClassRepresentation -> {
-                    currentType = classDef.mockedClass.classId
-                }
-            }
-        } while (currentType != null)
-        return false
-    }
-
     fun getClassDef(codeItem: CodeItem, typeId: TypeId, depth: Int): ClassRepresentation {
-        val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
-//        println("Searching for class def with typeId $typeId")
-        val classDef = dexFile.classDefs.find {
+        println("Searching for class def with typeId $typeId")
+        val classDef = classDefs.find {
             it.classDef.typeId == typeId
         }
         if (classDef != null) {
@@ -179,18 +185,24 @@ class Environment(
     private fun checkStaticInit(typeId: TypeId, classDef: ParsedClass, depth: Int) {
         if (typeId !in initializedClasses) {
             // call clinit
-            val classData = classDef.classData ?: error("Class data not found")
+            val classData = classDef.classData
+            if (classData == null) {
+                // Interface or abstract class
+                initializedClasses.add(typeId)
+                return
+            }
             val clinit = classData.directMethods.find {
                 it.methodId.name == "<clinit>"
             }
             if (clinit != null) {
                 val clInitCodeItem = clinit.codeItem ?: error("Code item not found")
                 println("Executing clinit for class ${classDef.classDef.typeId.descriptor}")
+                initializedClasses.add(typeId)
                 executeMethod(clInitCodeItem, this, arrayOf(), 0, depth + 1)
             } else {
                 println("clinit not found for class ${classDef.classDef.typeId.descriptor}; searched: ${classData.directMethods.joinToString { it.methodId.name }}")
+                initializedClasses.add(typeId)
             }
-            initializedClasses.add(typeId)
         }
     }
 
@@ -246,8 +258,8 @@ class Environment(
 //                println("Requested: $fieldIdObj, not found")
                 checkStaticInit(
                     fieldIdObj.classId,
-                    dexFile.classDefs.find {
-                        it.classDef.typeId == fieldIdObj.classId
+                    classDefs.find {
+                        it.classDef.typeId == fieldIdObj.classId && it.classData != null
                     } ?: error("Cannot find class def for field id $fieldIdObj"),
                     depth
                 )
@@ -265,15 +277,21 @@ class Environment(
         staticFields[fieldIdObj.classId to fieldId] = value
     }
 
-    fun getMethod(code: CodeItem, kindBBBB: Int): MethodWrapper {
+    fun getMethod(
+        code: CodeItem,
+        kindBBBB: Int,
+        instance: RegisterValue.ObjectRef?,
+        direct: Boolean,
+        isSuperCall: Boolean
+    ): MethodWrapper {
         val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
         val methodId = dexFile.methodIds[kindBBBB]
-        val classDef = dexFile.classDefs.find {
+        val classDef = classDefs.find {
             it.classDef.typeId == methodId.classId
         } ?: run {
             // TODO: search in the parent classes
             // TODO: Use mocked class, instead of mocked methods
-            // However, we should cache the mocked method anyway, becuase the methodId is actually used in the code
+            // However, we should cache the mocked method anyway, because the methodId is actually used in the code
             // In case of invoke-direct, just call the method
             // However in case of invoke-interface, we should find the appropriate method id
             // Search in mocked methods
@@ -281,7 +299,52 @@ class Environment(
             val mocked = mockedMethods[triple]
             if (mocked != null) {
                 println("Requested: $methodId, found: $mocked, triple: $triple")
-                return MethodWrapper.Mocked(mocked)
+                // check if the codeitem is not null, handle inheritance
+                // It should find the finest method
+                if (direct) {
+                    return MethodWrapper.Mocked(mocked)
+                }
+                // Find the method in the class hierarchy
+                if (instance == null) {
+                    throw Exception("Instance is null in virtual method call")
+                }
+                val value = instance.value
+                if (value == null) {
+                    throw Exception("Value is null in virtual method call")
+                }
+                when (value) {
+                    is DictionaryBackedInstance -> {
+                        val dexClassRepresentation = value.dexClassRepresentation
+                        if (!isSuperCall) {
+                            dexClassRepresentation.classData?.let {
+                                val method = it.directMethods.find {
+                                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
+                                } ?: it.virtualMethods.find {
+                                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
+                                }
+                                if (method != null && method.codeItem != null) {
+                                    return MethodWrapper.Encoded(method)
+                                }
+                            }
+                        }
+                        return iterateSuperClass(dexClassRepresentation.classDef) { superClassData ->
+                            val superMethod = superClassData.directMethods.find {
+                                it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
+                            } ?: superClassData.virtualMethods.find {
+                                it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
+                            }
+                            if (superMethod != null && superMethod.codeItem != null) {
+                                MethodWrapper.Encoded(superMethod)
+                            } else {
+                                MethodWrapper.Mocked(mocked)
+                            }
+                        } ?: MethodWrapper.Mocked(mocked)
+                    }
+
+                    is MockedInstance -> {
+                        return MethodWrapper.Mocked(mocked)
+                    }
+                }
             } else {
                 // (TypeId(descriptor=Ljava/lang/StringBuilder;), [TypeId(descriptor=Ljava/lang/String;)], append)
                 println("Requested: $methodId, not found, triple: $triple")
@@ -303,9 +366,9 @@ class Environment(
 //            " $classDef,  $methodId:")
 //            " ${classData.directMethods.joinToString { it.methodId.toString() }}" +
 //            " ${classData.virtualMethods.joinToString { it.methodId.toString() }}")
-        // There is in AccessTest, but not in InheritanceTest
-        // TODO: find in super classes
-        // method.codeItem
+        println("Requested: $methodId, found: $method")
+        println(classData.directMethods.joinToString { it.methodId.toString() })
+        println(classData.virtualMethods.joinToString { it.methodId.toString() })
         if (method == null) {
             // try to find in superclasses
             return iterateSuperClass(classDef.classDef) { superClassData ->
@@ -321,7 +384,52 @@ class Environment(
                 }
             } ?: error("Cannot find method for method id $methodId")
         } else {
-            return MethodWrapper.Encoded(method)
+            if (direct) {
+                return MethodWrapper.Encoded(method)
+            } else {
+                // search for the method in the class hierarchy
+                if (instance == null) {
+                    throw Exception("Instance is null in virtual method call")
+                }
+                val value = instance.value
+                if (value == null) {
+                    throw Exception("Value is null in virtual method call")
+                }
+
+                when (value) {
+                    is DictionaryBackedInstance -> {
+                        val dexClassRepresentation = value.dexClassRepresentation
+                        if (!isSuperCall) {
+                            dexClassRepresentation.classData?.let {
+                                val method = it.directMethods.find {
+                                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
+                                } ?: it.virtualMethods.find {
+                                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
+                                }
+                                if (method != null && method.codeItem != null) {
+                                    return MethodWrapper.Encoded(method)
+                                }
+                            }
+                        }
+                        return iterateSuperClass(dexClassRepresentation.classDef) { superClassData ->
+                            val superMethod = superClassData.directMethods.find {
+                                it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
+                            } ?: superClassData.virtualMethods.find {
+                                it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
+                            }
+                            if (superMethod != null && superMethod.codeItem != null) {
+                                MethodWrapper.Encoded(superMethod)
+                            } else {
+                                MethodWrapper.Encoded(method)
+                            }
+                        } ?: MethodWrapper.Encoded(method)
+                    }
+
+                    is MockedInstance -> {
+                        return MethodWrapper.Encoded(method)
+                    }
+                }
+            }
         }
     }
 

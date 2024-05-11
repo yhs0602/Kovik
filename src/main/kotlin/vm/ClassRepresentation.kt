@@ -177,24 +177,10 @@ class GeneralMockedClass(
                 }
             }
             println("2. Invoking $name with args $argArr for object ${instanceValue?.javaClass?.simpleName}")
-            // Check if all are Comparable
-            if (argArr.isNotEmpty()) {
-                val arrarg = argArr[0]
-                if (arrarg is Array<*>) {
-                    for(arrargg in arrarg) {
-                        if (arrargg !is Comparable<*>) {
-                            println("Not comparable: ${arrargg}")
-                        } else {
-                            println("Comparable: ${arrargg}")
-                        }
-                    }
-                } else if (arrarg != null) {
-                    println("Not an array: ${arrarg}; ${arrarg::class.java}")
-                }
-            }
             val result = method.invoke(instanceValue, *argArr)
             val resultType = method.returnType
             val unmarshalledResult = unmarshalArgument(result, resultType)
+            println("Unmarshalling result: $result -> ${unmarshalledResult.joinToString()}")
             unmarshalledResult
         } catch (e: NoSuchElementException) {
             throw IllegalArgumentException("Method $name not found: ${args.contentToString()} $paramType $isStatic", e)

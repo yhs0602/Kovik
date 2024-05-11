@@ -14,7 +14,7 @@ fun unmarshalArguments(
 
 fun unmarshalArgument(value: Any?, returnType: Class<*>): Array<RegisterValue> {
     return when (value) {
-        null -> arrayOf()
+        null -> arrayOf(RegisterValue.Int(0))
         is Int -> arrayOf(RegisterValue.Int(value))
         is Long -> {
             val low = value.toInt()
@@ -45,7 +45,7 @@ fun unmarshalArgument(value: Any?, returnType: Class<*>): Array<RegisterValue> {
 
         else -> arrayOf(
             RegisterValue.ObjectRef(
-                TypeId(value::class.javaObjectType.typeName),
+                TypeId(value::class.java.descriptorString()),
                 MockedInstance(value::class.javaObjectType).apply {
                     this.value = value
                 })

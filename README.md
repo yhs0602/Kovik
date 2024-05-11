@@ -303,6 +303,22 @@ fun main() {
 - Call <clinit> for initialization of static fields
 - Mock non-intrinsic Objects
 
+## Test pass status
+- [x] minimal
+- [x] callstatic
+- [x] object
+- [x] singleton
+- [x] static
+- [x] wide
+- [x] ThreadExample
+- [ ] CoroutineExample
+- [ ] AnnotationTest
+- [ ] ExceptionTest
+- [ ] IOTest
+- [ ] NativeExample
+- [ ] ReflectionTest
+- [ ] SynchronizedTest
+
 ## TODO
 - JNI callback
 - Optimization

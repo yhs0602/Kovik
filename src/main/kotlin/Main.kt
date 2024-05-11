@@ -7,7 +7,9 @@ import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.executeMethod
 import java.io.File
 import java.io.PrintStream
-import java.util.Arrays
+import java.io.Serializable
+import java.util.*
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater
 import kotlin.jvm.internal.Intrinsics
 
 
@@ -27,7 +29,7 @@ fun main() {
     val packageName = "com.example.sample"// readlnOrNull() ?: return
     val packageNameStr = packageName.replace(".", "/")
     val classes = parsedDexes.flatMap { it.classDefs }
-    val className = "ThreadExample"
+    val className = "CoroutineExample"
     // TargetMethods StaticExample WideTest CallStatic testObjects ObjectExampleKt
     val classNameStr = "L$packageNameStr/$className;"
     val classDef = classes.find { it.classDef.typeId.descriptor == classNameStr } ?: return
@@ -59,6 +61,10 @@ fun main() {
         GeneralMockedClass(Comparable::class.java),
         GeneralMockedClass(Thread::class.java),
         GeneralMockedClass(Runnable::class.java),
+        GeneralMockedClass(Serializable::class.java),
+        GeneralMockedClass(ThreadLocal::class.java),
+        GeneralMockedClass(java.lang.Boolean::class.java),
+        GeneralMockedClass(AtomicReferenceFieldUpdater::class.java),
     )
     val mockedMethodList = mockedClassesList.flatMap {
         it.getMethods()
@@ -76,11 +82,11 @@ fun main() {
         mockedClasses,
         beforeInstruction = { pc, instruction, memory, depth ->
             val indentation = "    ".repeat(depth)
-            println("$indentation Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
+            println("$indentation Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}, returnValue = ${memory.returnValue.contentToString()}") // Debug
         },
         afterInstruction = { pc, instruction, memory, depth ->
             val indentation = "    ".repeat(depth)
-            println("$indentation After $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}") // Debug
+            println("$indentation After $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}, returnValue = ${memory.returnValue.contentToString()}") // Debug
         }
     )
     executeMethod(codeItem, environment, args, codeItem.insSize.toInt(), 0)
