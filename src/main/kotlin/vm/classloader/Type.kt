@@ -3,11 +3,16 @@ package com.yhs0602.vm.classloader
 import com.yhs0602.dex.*
 import java.lang.reflect.Method
 
+data class MethodTableEntry(
+    val name: String,
+    val protoId: ProtoId
+)
+
 sealed class Type {
     abstract fun instanceOf(other: Type): Boolean
     abstract val directSuperClass: Type?
-    abstract val interfaceTable: Map<MethodId, MethodId>
-    abstract val virtualTable: Map<MethodId, MethodId>
+    abstract val interfaceTable: Map<MethodTableEntry, MethodTableEntry>
+    abstract val virtualTable: Map<MethodTableEntry, MethodTableEntry>
     abstract val descriptor: String
 
     data object Object : Type() {
@@ -16,18 +21,18 @@ sealed class Type {
         }
 
         override val directSuperClass: Type? = null
-        override val interfaceTable: Map<MethodId, MethodId>
+        override val interfaceTable: Map<MethodTableEntry, MethodTableEntry>
             get() = _interfaceTable
-        private val _interfaceTable: MutableMap<MethodId, MethodId> = mutableMapOf()
-        override val virtualTable: Map<MethodId, MethodId>
+        private val _interfaceTable: MutableMap<MethodTableEntry, MethodTableEntry> = mutableMapOf()
+        override val virtualTable: Map<MethodTableEntry, MethodTableEntry>
             get() = _virtualTable
-        private val _virtualTable: MutableMap<MethodId, MethodId> = mutableMapOf()
+        private val _virtualTable: MutableMap<MethodTableEntry, MethodTableEntry> = mutableMapOf()
         override val descriptor: String = "Ljava/lang/Object;"
 
         init {
             // populate v-table and i-table of Object
             for (method in java.lang.Object::class.java.methods) {
-                val methodId = method.methodId()
+                val methodId = method.methodTableEntry()
                 _virtualTable[methodId] = methodId
             }
             // no i table for Object
@@ -56,10 +61,10 @@ sealed class Type {
         override val directSuperClass: Type = Object
 
         // no i table for primitive types
-        override val interfaceTable: Map<MethodId, MethodId> = emptyMap()
+        override val interfaceTable: Map<MethodTableEntry, MethodTableEntry> = emptyMap()
 
         // no v table for primitive types
-        override val virtualTable: Map<MethodId, MethodId> = emptyMap()
+        override val virtualTable: Map<MethodTableEntry, MethodTableEntry> = emptyMap()
     }
 
     class DexDefinedReference(
@@ -73,12 +78,12 @@ sealed class Type {
         }
 
         override val descriptor: String = classDef.classDef.typeId.descriptor
-        override val interfaceTable: Map<MethodId, MethodId>
+        override val interfaceTable: Map<MethodTableEntry, MethodTableEntry>
             get() = _interfaceTable
-        private val _interfaceTable: MutableMap<MethodId, MethodId> = mutableMapOf()
-        override val virtualTable: Map<MethodId, MethodId>
+        private val _interfaceTable: MutableMap<MethodTableEntry, MethodTableEntry> = mutableMapOf()
+        override val virtualTable: Map<MethodTableEntry, MethodTableEntry>
             get() = _virtualTable
-        private val _virtualTable: MutableMap<MethodId, MethodId> = mutableMapOf()
+        private val _virtualTable: MutableMap<MethodTableEntry, MethodTableEntry> = mutableMapOf()
 
         init {
             // populate v-table and i-table of the class
@@ -91,16 +96,30 @@ sealed class Type {
             classDef.classData?.let {
                 for (method in it.virtualMethods) {
                     val methodId = method.methodId
-                    _virtualTable[methodId] = methodId
+                    val methodTableEntry = MethodTableEntry(
+                        methodId.name,
+                        methodId.protoId
+                    )
+                    _virtualTable[methodTableEntry] = methodTableEntry
                 }
                 for (method in it.directMethods) {
                     val methodId = method.methodId
-                    _virtualTable[methodId] = methodId
+                    val methodTableEntry = MethodTableEntry(
+                        methodId.name,
+                        methodId.protoId
+                    )
+                    _virtualTable[methodTableEntry] = methodTableEntry
                 }
             }
             // update the i-table with the current class's interfaces
             for (interfaceTypeId in interfaces) {
-                // TODO: Handle interfaces
+                for (method in interfaceTypeId.virtualTable) {
+                    val methodID = method.value
+                    // check if my v-table has the same method
+                    if (_virtualTable.containsKey(methodID)) {
+                        _interfaceTable[method.key] = methodID
+                    }
+                }
             }
         }
     }
@@ -111,12 +130,12 @@ sealed class Type {
         interfaces: List<Type>
     ) : Type() {
         override val descriptor: String = clazz.descriptorString()
-        override val interfaceTable: Map<MethodId, MethodId>
+        override val interfaceTable: Map<MethodTableEntry, MethodTableEntry>
             get() = _interfaceTable
-        private val _interfaceTable: MutableMap<MethodId, MethodId> = mutableMapOf()
-        override val virtualTable: Map<MethodId, MethodId>
+        private val _interfaceTable: MutableMap<MethodTableEntry, MethodTableEntry> = mutableMapOf()
+        override val virtualTable: Map<MethodTableEntry, MethodTableEntry>
             get() = _virtualTable
-        private val _virtualTable: MutableMap<MethodId, MethodId> = mutableMapOf()
+        private val _virtualTable: MutableMap<MethodTableEntry, MethodTableEntry> = mutableMapOf()
 
         init {
             // populate v-table and i-table of the class
@@ -128,11 +147,21 @@ sealed class Type {
             // update the v-table with the current class's methods
             for (method in clazz.methods) {
                 val methodId = method.methodId()
-                _virtualTable[methodId] = methodId
+                val methodTableEntry = MethodTableEntry(
+                    methodId.name,
+                    methodId.protoId
+                )
+                _virtualTable[methodTableEntry] = methodTableEntry
             }
             // update the i-table with the current class's interfaces
-            for (interfaceType in interfaces) {
-                // TODO: Handle interfaces
+            for (interfaceTypeId in interfaces) {
+                for (method in interfaceTypeId.virtualTable) {
+                    val methodID = method.value
+                    // check if my v-table has the same method
+                    if (_virtualTable.containsKey(methodID)) {
+                        _interfaceTable[method.key] = methodID
+                    }
+                }
             }
         }
 
@@ -182,5 +211,20 @@ fun Method.methodId(): MethodId {
             }
         },
         this.name
+    )
+}
+
+fun Method.methodTableEntry(): MethodTableEntry {
+    return MethodTableEntry(
+        this.name,
+        ProtoId(
+            ShortyDescriptor(this.shortyDescriptor()),
+            TypeId(this.returnType.descriptorString()),
+            0, // Dummy
+        ).apply {
+            parameters = this@methodTableEntry.parameterTypes.map {
+                TypeId(it.descriptorString())
+            }
+        }
     )
 }
