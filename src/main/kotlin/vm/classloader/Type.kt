@@ -9,18 +9,20 @@ data class MethodTableEntry(
 )
 
 sealed class Type {
-    abstract fun instanceOf(other: Type): Boolean
+    abstract fun isAssignableTo(other: Type): Boolean
     abstract val directSuperClass: Type?
+    abstract val interfaces: List<Type>
     abstract val interfaceTable: Map<MethodTableEntry, MethodTableEntry>
     abstract val virtualTable: Map<MethodTableEntry, MethodTableEntry>
     abstract val descriptor: String
 
     data object Object : Type() {
-        override fun instanceOf(other: Type): Boolean {
+        override fun isAssignableTo(other: Type): Boolean {
             return true
         }
 
         override val directSuperClass: Type? = null
+        override val interfaces: List<Type> = emptyList()
         override val interfaceTable: Map<MethodTableEntry, MethodTableEntry>
             get() = _interfaceTable
         private val _interfaceTable: MutableMap<MethodTableEntry, MethodTableEntry> = mutableMapOf()
@@ -54,11 +56,12 @@ sealed class Type {
             }
         }
 
-        override fun instanceOf(other: Type): Boolean {
+        override fun isAssignableTo(other: Type): Boolean {
             return this == other
         }
 
         override val directSuperClass: Type = Object
+        override val interfaces: List<Type> = emptyList()
 
         // no i table for primitive types
         override val interfaceTable: Map<MethodTableEntry, MethodTableEntry> = emptyMap()
@@ -70,11 +73,34 @@ sealed class Type {
     class DexDefinedReference(
         classDef: ParsedClass,
         override val directSuperClass: Type?,
-        interfaces: List<Type>
+        override val interfaces: List<Type>
     ) : Type() {
-        override fun instanceOf(other: Type): Boolean {
-            // TODO: Handle inheritance
-            return this == other
+        override fun isAssignableTo(other: Type): Boolean {
+            if (this == other)
+                return true
+            // Check if 'other' is a superclass of this class
+            var currentClass: Type? = this
+            while (currentClass != null) {
+                if (currentClass == other) {
+                    return true
+                }
+                currentClass = currentClass.directSuperClass
+            }
+            // Check if 'other' is an interface that this class or any of its superclasses implement
+            currentClass = this
+            while (currentClass != null) {
+                for (interfaceType in currentClass.interfaces) {
+                    if (interfaceType == other) {
+                        return true
+                    }
+                    // Additionally check if 'other' interface is extended by any of the interfaces this class implements
+                    if (interfaceType.isAssignableTo(other)) {
+                        return true
+                    }
+                }
+                currentClass = currentClass.directSuperClass
+            }
+            return false
         }
 
         override val descriptor: String = classDef.classDef.typeId.descriptor
@@ -118,6 +144,11 @@ sealed class Type {
                     // check if my v-table has the same method
                     if (_virtualTable.containsKey(methodID)) {
                         _interfaceTable[method.key] = methodID
+                    } else {
+                        throw IllegalStateException(
+                            "Required interface method ${method.key} not implemented in" +
+                                " ${classDef.classDef.typeId.descriptor}"
+                        )
                     }
                 }
             }
@@ -127,7 +158,7 @@ sealed class Type {
     class MockedReference(
         val clazz: Class<*>,
         override val directSuperClass: Type?,
-        interfaces: List<Type>
+        override val interfaces: List<Type>
     ) : Type() {
         override val descriptor: String = clazz.descriptorString()
         override val interfaceTable: Map<MethodTableEntry, MethodTableEntry>
@@ -160,14 +191,39 @@ sealed class Type {
                     // check if my v-table has the same method
                     if (_virtualTable.containsKey(methodID)) {
                         _interfaceTable[method.key] = methodID
+                    } else {
+                        throw IllegalStateException("Required interface method ${method.key} not implemented in ${clazz.name}")
                     }
                 }
             }
         }
 
-        override fun instanceOf(other: Type): Boolean {
-            // TODO
-            return this == other
+        override fun isAssignableTo(other: Type): Boolean {
+            if (this == other)
+                return true
+            // Check if 'other' is a superclass of this class
+            var currentClass: Type? = this
+            while (currentClass != null) {
+                if (currentClass == other) {
+                    return true
+                }
+                currentClass = currentClass.directSuperClass
+            }
+            // Check if 'other' is an interface that this class or any of its superclasses implement
+            currentClass = this
+            while (currentClass != null) {
+                for (interfaceType in currentClass.interfaces) {
+                    if (interfaceType == other) {
+                        return true
+                    }
+                    // Additionally check if 'other' interface is extended by any of the interfaces this class implements
+                    if (interfaceType.isAssignableTo(other)) {
+                        return true
+                    }
+                }
+                currentClass = currentClass.directSuperClass
+            }
+            return false
         }
     }
 }
