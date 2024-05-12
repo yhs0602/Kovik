@@ -5,6 +5,7 @@ import com.yhs0602.vm.instance.DictionaryBackedInstance
 import com.yhs0602.vm.instance.MockedInstance
 import com.yhs0602.vm.instance.unmarshalArgument
 import com.yhs0602.vm.instruction.Instruction
+import net.bytebuddy.ByteBuddy
 import net.sf.cglib.proxy.Enhancer
 
 // Class definitions, typeids, string constants, field ids, method ids, and method prototypes...
@@ -95,6 +96,7 @@ class Environment(
                     return true
                 }
             }
+
             is MockedInstance -> {
                 val mockedClazz = instance.clazz
                 if (mockedClazz.interfaces.any {
@@ -533,6 +535,29 @@ class Environment(
         classRepresentation as ClassRepresentation.DexClassRepresentation
         val classDef = classRepresentation.classDef
         val interfaces = classDef.flattenedInterfaces
+
+        // First, the classes that the class depends on should be loaded
+        val clsBuilder = ByteBuddy().subclass(Object::class.java)
+        classRepresentation.classData?.staticFields?.forEach {
+            clsBuilder.defineField(
+                it.fieldId.name,
+                Class.forName(it.fieldId.typeId.descriptor), // TODO: Handle non-primitive types
+                it.accessFlags.getFlags()
+            )
+        }
+        classRepresentation.classData?.instanceFields?.forEach {
+            clsBuilder.defineField(
+                it.fieldId.name,
+                Class.forName(it.fieldId.typeId.descriptor), // TODO: Handle non-primitive types
+                it.accessFlags.getFlags()
+            )
+        }
+        // TODO: Handle interfaces in dex file
+        clsBuilder.implement(*interfaces.map {
+            Class.forName(it.descriptor.replace('/', '.').removePrefix("L").removeSuffix(";"))
+        }.toTypedArray())
+
+
         val enhancer = Enhancer()
         enhancer.setSuperclass(Object::class.java)
         if (interfaces.isNotEmpty())

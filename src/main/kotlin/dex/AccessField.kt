@@ -1,6 +1,9 @@
 package com.yhs0602.dex
 
 class AccessFlags(private var flags: Int = 0) {
+    fun getFlags(): Int {
+        return flags
+    }
     fun addFlag(flag: Int) {
         flags = flags or flag
     }

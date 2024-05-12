@@ -320,6 +320,7 @@ fun main() {
 - [ ] SynchronizedTest
 
 ## TODO
+- Handle ClassRef and reflection using ByteBuddy
 - JNI callback
 - Optimization
 

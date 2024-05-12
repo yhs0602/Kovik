@@ -21,6 +21,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.objenesis/objenesis
     implementation("org.objenesis:objenesis:3.4")
     implementation("cglib:cglib:3.3.0")
+    // https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy
+    implementation("net.bytebuddy:byte-buddy:1.14.15")
     testImplementation(kotlin("test"))
 }
 
