@@ -1,10 +1,8 @@
 import com.yhs0602.dex.DexFile
-import com.yhs0602.dex.TypeId
 import com.yhs0602.vm.Environment
 import com.yhs0602.vm.GeneralMockedClass
 import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.executeMethod
-import com.yhs0602.vm.instance.MockedInstance
 import java.io.PrintStream
 import java.nio.file.Paths
 import kotlin.jvm.internal.Intrinsics
@@ -38,13 +36,7 @@ class SimpleOperationTest {
             it.methodId.name == methodName
         } ?: error("No method found")
         val codeItem = method.codeItem ?: error("No code found")
-        val args = Array(codeItem.insSize.toInt()) {
-            RegisterValue.ObjectRef(
-                TypeId("com/example/sample/TargetMethods;"), MockedInstance(
-                    Object::class.java
-                )
-            ) // To simply pass anything
-        }
+        val args = arrayOf<RegisterValue>()
         val mockedClassesList = listOf(
             GeneralMockedClass(StringBuilder::class.java),
             GeneralMockedClass(PrintStream::class.java),

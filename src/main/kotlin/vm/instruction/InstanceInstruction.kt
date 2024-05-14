@@ -11,13 +11,15 @@ import com.yhs0602.vm.instance.Instance
 class NewInstance(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val typeId = environment.getTypeId(code, KindBBBB)
+        typeIdString = typeId.descriptor
         val parsedClass = environment.getClassRepresentation(typeId, depth)
         memory.registers[vAA] = environment.createInstance(parsedClass, code, depth)
         return pc + insnLength
     }
+    private var typeIdString: String = ""
 
     override fun toString(): String {
-        return "NewInstance v$vAA <- new $KindBBBB"
+        return "NewInstance v$vAA <- new $KindBBBB($typeIdString)"
     }
 }
 

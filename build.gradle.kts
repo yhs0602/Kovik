@@ -27,6 +27,7 @@ dependencies {
 }
 
 tasks.test {
+    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
     useJUnitPlatform()
 }
 kotlin {
