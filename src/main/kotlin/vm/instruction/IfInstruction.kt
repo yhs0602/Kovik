@@ -192,6 +192,10 @@ class IfEqz(pc: Int, code: CodeItem) : Instruction._21t(pc, code) {
                 return pc + insnLength // Always false
             }
 
+            is RegisterValue.StringRef -> {
+                return pc + insnLength // Always false
+            }
+
             else -> {
                 memory.exception = ExceptionValue("IfEqz: Not an integer or object reference")
                 return pc + insnLength
@@ -224,6 +228,10 @@ class IfNez(pc: Int, code: CodeItem) : Instruction._21t(pc, code) {
             }
 
             is RegisterValue.ArrayRef -> {
+                return pc + offset
+            }
+
+            is RegisterValue.StringRef -> {
                 return pc + offset
             }
 

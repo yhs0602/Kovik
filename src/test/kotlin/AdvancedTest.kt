@@ -3,6 +3,7 @@ import com.yhs0602.vm.Environment
 import com.yhs0602.vm.GeneralMockedClass
 import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.executeMethod
+import java.io.PrintStream
 import java.nio.file.Paths
 import kotlin.jvm.internal.Intrinsics
 import kotlin.test.BeforeTest
@@ -80,6 +81,7 @@ class AdvancedTest {
                 GeneralMockedClass(System::class.java),
                 GeneralMockedClass(Intrinsics::class.java),
                 GeneralMockedClass(Object::class.java),
+                GeneralMockedClass(PrintStream::class.java)
             )
         )
     }
