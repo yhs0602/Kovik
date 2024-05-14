@@ -7,13 +7,13 @@ import com.yhs0602.vm.GeneralMockedClass
 
 class DexClassLoader(
     dexFiles: List<DexFile>,
-    val mockedClasses: Map<TypeId, GeneralMockedClass> = mapOf(),
+    private val mockedClasses: Map<TypeId, GeneralMockedClass> = mapOf(),
 ) {
     // first load injected classes
     // Caches the Types that have been loaded
     // Load superclasses, instances correctly, then load subclasses
     private val loadedTypes = mutableMapOf<TypeId, Type>(
-        TypeId("Ljava/lang/Object;") to Type.Object
+        TypeId("Ljava/lang/Object;") to ObjectType
     )
 
     private val loadedMockedClasses = mutableSetOf<Class<*>>()
@@ -46,7 +46,7 @@ class DexClassLoader(
             loadClass(it)
         }
 
-        val loadedType = Type.MockedReference(
+        val loadedType = MockedType(
             mockedClass.clazz,
             superClassType,
             interfaceTypes
@@ -70,10 +70,11 @@ class DexClassLoader(
         val interfaceTypes = interfaces.map {
             loadedTypes[it] ?: error("Interface ${it.descriptor} not loaded")
         }
-        val loadedType = Type.DexDefinedReference(
+        val loadedType = DexDefinedType(
             parsedClass,
             superClassType,
-            interfaceTypes
+            interfaceTypes,
+            this
         )
         loadedTypes[typeId] = loadedType
         return loadedType

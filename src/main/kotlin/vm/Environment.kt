@@ -18,6 +18,21 @@ class Environment(
     val afterInstruction: (Int, Instruction, Memory, Int) -> Unit = { pc: Int, instruction: Instruction, memory: Memory, depth: Int ->
     }
 ) {
+    init {
+        if (instance != null)
+            throw Exception("Environment is already initialized")
+        instance = this
+    }
+
+    companion object {
+        @Volatile
+        private var instance: Environment? = null
+
+        fun getInstance(): Environment {
+            return instance ?: throw Exception("Environment is not initialized")
+        }
+    }
+
     private val codeItemToDexFile = dexFiles.flatMap { dexFile ->
         dexFile.classDefs.asSequence().flatMap { classDef ->
             classDef.classData?.run {
