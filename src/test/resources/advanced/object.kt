@@ -107,12 +107,13 @@ class OverloadedTest {
 
 class A : Comparable<A> {
     companion object {
-        fun sortSelf() {
+        fun sortSelf(): Array<A> {
             val As = arrayOfNulls<A>(3)
             As[0] = A()
             As[1] = A()
             As[2] = A()
             Arrays.sort(As)
+            return As as Array<A>
         }
     }
 
@@ -124,10 +125,16 @@ class A : Comparable<A> {
 
 fun testObjects() {
     val point = Point(3, -4)
-    println("L0 Norm: ${point.L0Norm()}") // Output: L0 Norm: -1
-    println("L1 Norm: ${point.L1Norm()}") // Output: L1 Norm: 7
+    val l0Norm = point.L0Norm()
+    assert(l0Norm == -1)
+    println("L0 Norm: $l0Norm") // Output: L0 Norm: -1
+    val l1Norm = point.L1Norm()
+    assert(l1Norm == 7)
+    println("L1 Norm: $l1Norm") // Output: L1 Norm: 7
     val point2 = Point(5)
-    println("L0 Norm: ${point2.L0Norm()}") // Output: L0 Norm: 10
+    val l0Norm2 = point2.L0Norm()
+    assert(l0Norm2 == 10)
+    println("L0 Norm: $l0Norm2") // Output: L0 Norm: 10
 
     val accessTest = AccessTest("John", 25, 123)
     accessTest.printAge() // Output: Age: 25
@@ -154,8 +161,11 @@ fun testObjects() {
     // Output: This is the parent class with message: Hello
 
     val mockedSuperTest = MockedSuperTest("path", 10)
-    println(mockedSuperTest.exists()) // Output: true
-    println(mockedSuperTest.compareTo(File("path"))) // Output: 5
-    println(mockedSuperTest.toString()) // Output: path, 10
-    A.sortSelf()
+    assert(mockedSuperTest.exists())
+    assert(mockedSuperTest.compareTo(File("path")) == 5)
+    assert(mockedSuperTest.toString() == "path, 10")
+    assert(mockedSuperTest.path == "path")
+    val sorted = A.sortSelf()
+    assert(sorted[0].compareTo(sorted[1]) == 0)
+    assert(A().compareTo(A()) == 0)
 }

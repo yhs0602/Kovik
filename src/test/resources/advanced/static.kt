@@ -22,14 +22,18 @@ class StaticExample {
             count++
             incrementCount()
         }
-    }
 
-    fun doTest() {
-        printMessage()
-        printMessage("Hello")
-        incrementCount()
-        incrementCount()
-        println("Count: $count")
-        realStaticMethod()
+        @JvmStatic
+        fun doTest() {
+            printMessage()
+            printMessage("Hello")
+            incrementCount()
+            assert(count == 1)
+            incrementCount()
+            assert(count == 2)
+            println("Count: $count")
+            realStaticMethod()
+            assert(count == 4)
+        }
     }
 }

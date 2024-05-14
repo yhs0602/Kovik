@@ -1,10 +1,13 @@
 package com.example.sample
 
 class ThreadExample {
-    fun doTest() {
-        val thread = Thread(RunnableExample())
-        thread.start()
-        thread.join()
+    companion object {
+        @JvmStatic
+        fun doTest() {
+            val thread = Thread(RunnableExample())
+            thread.start()
+            thread.join()
+        }
     }
 }
 

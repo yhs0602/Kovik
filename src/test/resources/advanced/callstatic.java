@@ -11,8 +11,8 @@ public class CallStatic {
         System.out.println("JavaStaticMethod");
     }
 
-    void test() {
+    static void test() {
         CallStatic.JavaStaticMethod();
-        callStaticMethod();
+        new CallStatic().callStaticMethod();
     }
 }

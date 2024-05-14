@@ -12,6 +12,8 @@ object CoroutineExample {
 
     fun doTest() = runBlocking {
         val result = async { simulateLongRunningTask() }
-        println("Coroutine result: ${result.await()}")
+        val res = result.await()
+        println("Coroutine result: $res")
+        assert(res == 42)
     }
 }

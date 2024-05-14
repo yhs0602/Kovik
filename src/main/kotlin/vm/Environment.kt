@@ -31,6 +31,10 @@ class Environment(
         fun getInstance(): Environment {
             return instance ?: throw Exception("Environment is not initialized")
         }
+
+        fun reset() {
+            instance = null
+        }
     }
 
     private val codeItemToDexFile = dexFiles.flatMap { dexFile ->

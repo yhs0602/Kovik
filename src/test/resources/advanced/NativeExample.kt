@@ -7,9 +7,9 @@ class NativeExample {
         init {
             System.loadLibrary("native-lib")
         }
-    }
 
-    fun doTest() {
-        println(testNative())
+        fun doTest() {
+            println(NativeExample().testNative())
+        }
     }
 }

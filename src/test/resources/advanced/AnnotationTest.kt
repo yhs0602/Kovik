@@ -35,4 +35,3 @@ fun annotationDoTest() {
     example.doSomething()
     processAnnotations()
 }
-
