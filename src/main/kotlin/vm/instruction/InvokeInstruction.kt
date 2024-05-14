@@ -9,7 +9,8 @@ open class InvokeVirtual(pc: Int, val code: CodeItem) : Instruction._35c(pc, cod
         val args = Array(A) { memory.registers[argRegList[it]] }
         val instance = args.firstOrNull()
         if (instance !is RegisterValue.ObjectRef) {
-            memory.exception = ExceptionValue("InvokeVirtual: Not an object reference")
+            memory.exception = ExceptionValue("InvokeVirtual: Not an object reference: $instance")
+//            throw Exception("InvokeVirtual: Not an object reference")
             return pc + insnLength
         }
         val method = environment.getMethod(code, BBBB, instance, direct = false, false)
@@ -53,7 +54,7 @@ class InvokeSuper(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
         val args = Array(A) { memory.registers[argRegList[it]] }
         val instance = args.firstOrNull()
         if (instance !is RegisterValue.ObjectRef) {
-            memory.exception = ExceptionValue("InvokeVirtual: Not an object reference")
+            memory.exception = ExceptionValue("InvokeSuper: Not an object reference")
             return pc + insnLength
         }
         val method = environment.getMethod(code, BBBB, instance, direct = false, true)
