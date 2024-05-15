@@ -89,8 +89,7 @@ class Environment(
     // If object is subclass of targetType
     fun isInstanceOf(
         objectRef: RegisterValue.ObjectRef,
-        targetTypeDescriptor: String,
-        depth: Int
+        targetTypeDescriptor: String
     ): Boolean {
         // If the target type is a primitive type, return false
         if (isPrimitiveType(targetTypeDescriptor)) return false
@@ -107,103 +106,6 @@ class Environment(
         val targetType =  classLoader.getClass(TypeId(targetTypeDescriptor))
         val objectType = classLoader.getClass(objectRef.typeId)
         return objectType.isAssignableTo(targetType)
-
-        // Check the interface first
-        when (val instance = objectRef.value) {
-            null -> return false
-            is DictionaryBackedInstance -> {
-                val dexClassRepresentation = instance.dexClassRepresentation
-                val interfaces = dexClassRepresentation.classDef.flattenedInterfaces
-                if (interfaces.any {
-                        it.descriptor == targetTypeDescriptor
-                    }) {
-                    println("\uD83D\uDD34 Interface checking success: $instance, ${objectRef.typeId}; $actualTypeDescriptor")
-                    return true
-                }
-            }
-
-            is MockedInstance -> {
-                val mockedClazz = instance.clazz
-                if (mockedClazz.interfaces.any {
-                        it.descriptorString() == targetTypeDescriptor
-                    }) {
-                    println("\uD83D\uDD34 Interface checking success: $instance, ${objectRef.typeId}; $actualTypeDescriptor")
-                    return true
-                }
-            }
-        }
-        println("\uD83D\uDD34 Failed interface checking: $objectRef, ${objectRef.typeId}; $actualTypeDescriptor")
-
-        when (val instance = objectRef.value) {
-            null -> return false
-            is DictionaryBackedInstance -> {
-                // A instanceof B
-                // A instanceof Mocked
-                println("\uD83D\uDD34 DictionaryBackedInstance: $instance, ${objectRef.typeId}; $actualTypeDescriptor")
-                val dexClassRepresentation = instance.dexClassRepresentation
-                // First go up to the most superclass
-                // Then check the mocked class
-                var currentClassDef = dexClassRepresentation
-                do {
-                    println("\uD83D\uDD34 Looping: $currentClassDef")
-                    val currentTypeId = currentClassDef.classDef.superClassTypeId
-                    if (currentTypeId == null) {
-                        println("\uD83D\uDD34 Super class not found: $currentClassDef")
-                        // We reached the class of mocked instance
-                        instance.backingSuperClass?.let { backing ->
-                            return Class.forName(
-                                targetTypeDescriptor.replace('/', '.').removePrefix("L").removeSuffix(";")
-                            ).isAssignableFrom(backing)
-                        } ?: return false
-                    } else {
-                        println("\uD83D\uDD34 Currentss class: ${currentClassDef.classDef.typeId.descriptor}, target: $targetTypeDescriptor, super: $currentTypeId")
-                        if (currentTypeId.descriptor == targetTypeDescriptor) {
-                            println("\uD83D\uDD34 Found matching class \uD83D\uDD34")
-                            return true
-                        }
-                        val superClass = getClassRepresentation(currentTypeId, depth)
-                        when (superClass) {
-                            is ClassRepresentation.MockedClassRepresentation -> {
-                                println("Mocked class \uD83D\uDD34")
-                                val mockedClass = superClass.mockedClass
-                                try {
-                                    return Class.forName(
-                                        targetTypeDescriptor.replace('/', '.').removePrefix("L").removeSuffix(";")
-                                    ).isAssignableFrom(mockedClass.clazz)
-                                } catch (e: ClassNotFoundException) {
-                                    println("\uD83D\uDD34 Class not found: $targetTypeDescriptor")
-                                    return false
-                                }
-                            }
-
-                            is ClassRepresentation.DexClassRepresentation -> {
-                                println("Current class: ${currentClassDef.classDef.typeId.descriptor}, target: $targetTypeDescriptor")
-                                currentClassDef = superClass
-                                if (currentClassDef.classDef.typeId.descriptor == targetTypeDescriptor) {
-                                    return true
-                                } else {
-                                    println("Current class: ${currentClassDef.classDef.typeId.descriptor}, target: $targetTypeDescriptor")
-                                }
-                            }
-                        }
-                    }
-                    println("\uD83D\uDD34 Loop end: $currentClassDef")
-                } while (true)
-            }
-
-            is MockedInstance -> {
-                val mockedClazz = instance.clazz
-                // if File instanceof targetTypeDescriptor
-                // The target type descriptor cannot be child class of dex class
-                try {
-                    Class.forName(targetTypeDescriptor.replace('/', '.').removePrefix("L").removeSuffix(";")).let {
-                        return it.isAssignableFrom(mockedClazz)
-                    }
-                } catch (e: ClassNotFoundException) {
-                    return false
-                }
-            }
-        }
     }
 
     private fun isPrimitiveType(typeDescriptor: String): Boolean {
