@@ -62,6 +62,9 @@ sealed class Type {
     open fun isAssignableTo(other: Type): Boolean {
         if (this == other)
             return true
+        if (this is ArrayType && other is ArrayType) {
+            return elementType.isAssignableTo(other.elementType)
+        }
         // Check if 'other' is a superclass of this class
         var currentClass: Type? = this
         while (currentClass != null) {
