@@ -40,6 +40,7 @@ sealed class Type {
     abstract val staticMethods: Map<MethodTableEntry, MethodWrapper>
     abstract val constructors: Map<MethodTableEntry, MethodWrapper>
     abstract val clazz: Class<*>
+    abstract fun callClInit()
 
     // Use this method to get the method entry in the virtual table
     fun getVirtualMethodEntry(givenEntry: MethodTableEntry): MethodTableEntry {

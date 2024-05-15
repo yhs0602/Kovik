@@ -1,6 +1,7 @@
 package com.yhs0602.vm.classloader
 
 import com.yhs0602.dex.ParsedClass
+import com.yhs0602.vm.Environment
 import com.yhs0602.vm.MethodWrapper
 import net.bytebuddy.ByteBuddy
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy
@@ -26,6 +27,8 @@ class DexDefinedType(
     override val clazz by lazy {
         makeClazz()
     }
+    private var clinit: MethodTableEntry? = null
+    private var hasCalledClinit = false
 
     init {
         // populate v-table and i-table of the class
@@ -55,6 +58,9 @@ class DexDefinedType(
                 )
                 if (method.accessFlags.isStatic) {
                     staticMethods[methodTableEntry] = MethodWrapper.Encoded(method)
+                    if (methodId.name == "<clinit>") {
+                        clinit = methodTableEntry
+                    }
                 } else if (method.accessFlags.isConstructor) {
                     constructors[methodTableEntry] = MethodWrapper.Encoded(method)
                 } else {
@@ -78,6 +84,26 @@ class DexDefinedType(
                     )
                 }
             }
+        }
+    }
+
+    override fun callClInit() {
+        if (hasCalledClinit) {
+            return
+        }
+        clinit?.let {
+            val clInitMethod = getMethod(it)
+            if (clInitMethod !is MethodWrapper.Encoded) {
+                throw IllegalStateException("clinit method is not encoded")
+            }
+            hasCalledClinit = true
+            clInitMethod.execute(
+                arrayOf(),
+                Environment.getInstance(),
+                clInitMethod.encodedMethod.codeItem ?: throw IllegalStateException("clinit method has no code"),
+                true,
+                0
+            )
         }
     }
 

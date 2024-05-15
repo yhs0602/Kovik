@@ -54,6 +54,7 @@ class DexClassLoader(
         )
         loadedTypes[typeId] = loadedType
         loadedMockedClasses.add(mockedClass.clazz)
+        loadedType.callClInit()
         return loadedType
     }
 

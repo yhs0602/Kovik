@@ -20,6 +20,7 @@ class MockedType(
     override val methods = mutableMapOf<MethodTableEntry, MethodWrapper>()
     override val constructors = mutableMapOf<MethodTableEntry, MethodWrapper>()
     override val staticMethods = mutableMapOf<MethodTableEntry, MethodWrapper>()
+    override fun callClInit() {} // no clinit for Mocked type, as it is already initialized
 
     init {
         // populate v-table and i-table of the class

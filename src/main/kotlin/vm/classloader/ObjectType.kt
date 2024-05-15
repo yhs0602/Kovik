@@ -23,6 +23,7 @@ data object ObjectType : Type() {
     override val staticMethods = mutableMapOf<MethodTableEntry, MethodWrapper>()
     override val constructors = mutableMapOf<MethodTableEntry, MethodWrapper>()
     override val clazz: Class<*> = java.lang.Object::class.java
+    override fun callClInit() {} // no clinit for Object
 
     init {
         // populate v-table and i-table of Object

@@ -19,6 +19,7 @@ class Primitive(override val descriptor: String) : Type() {
     override val methods = emptyMap<MethodTableEntry, MethodWrapper>()
     override val constructors = emptyMap<MethodTableEntry, MethodWrapper>()
     override val staticMethods = emptyMap<MethodTableEntry, MethodWrapper>()
+    override fun callClInit() {} // no clinit for primitive types
 
     override val clazz: Class<*> by lazy {
         when (descriptor) {
