@@ -63,9 +63,10 @@ class DexClassLoader(
         }
         val superClassTypeId = parsedClass.classDef.superClassTypeId
         val superClassType = if (superClassTypeId != null) {
-            loadedTypes[superClassTypeId] ?: error(
-                "Superclass ${superClassTypeId.descriptor} for ${parsedClass.classDef.typeId} not loaded"
-            )
+            loadedTypes[superClassTypeId] ?: getClass(superClassTypeId)
+//            error(
+//                "Superclass ${superClassTypeId.descriptor} for ${parsedClass.classDef.typeId} not loaded"
+//            )
         } else {
             null
         }

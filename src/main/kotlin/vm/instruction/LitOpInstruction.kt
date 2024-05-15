@@ -223,6 +223,10 @@ class OrIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
         memory.registers[vAA] = RegisterValue.Int(value1.value or value2)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "OrIntLit8 v$vAA = v$vBB | $LCC"
+    }
 }
 
 class XorIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
@@ -236,6 +240,10 @@ class XorIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
         memory.registers[vAA] = RegisterValue.Int(value1.value xor value2)
         return pc + insnLength
     }
+
+    override fun toString(): String {
+        return "XorIntLit8 v$vAA = v$vBB ^ $LCC"
+    }
 }
 
 class ShlIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
@@ -248,6 +256,10 @@ class ShlIntLit8(pc: Int, code: CodeItem) : Instruction._22b(pc, code) {
         }
         memory.registers[vAA] = RegisterValue.Int(value1.value shl value2)
         return pc + insnLength
+    }
+
+    override fun toString(): String {
+        return "ShlIntLit8 v$vAA = v$vBB << $LCC"
     }
 }
 

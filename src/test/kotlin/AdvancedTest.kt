@@ -71,6 +71,23 @@ class AdvancedTest {
     }
 
     @Test
+    fun TestInstanceOf() {
+        testInterpreter(
+            "src/test/resources/advanced/",
+            "com.example.sample",
+            "InstanceOfTestKt",
+            "testInstanceOf",
+            listOf(
+                GeneralMockedClass(StringBuilder::class.java),
+                GeneralMockedClass(System::class.java),
+                GeneralMockedClass(Intrinsics::class.java),
+                GeneralMockedClass(Object::class.java),
+                GeneralMockedClass(PrintStream::class.java),
+            )
+        )
+    }
+
+    @Test
     fun TestStatic() {
         testInterpreter(
             "src/test/resources/advanced/",

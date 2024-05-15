@@ -104,6 +104,10 @@ class Environment(
             return true
         }
 
+        val targetType =  classLoader.getClass(TypeId(targetTypeDescriptor))
+        val objectType = classLoader.getClass(objectRef.typeId)
+        return objectType.isAssignableTo(targetType)
+
         // Check the interface first
         when (val instance = objectRef.value) {
             null -> return false
