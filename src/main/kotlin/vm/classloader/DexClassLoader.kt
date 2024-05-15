@@ -16,6 +16,7 @@ class DexClassLoader(
         TypeId("Ljava/lang/Object;") to ObjectType
     )
 
+    private val typeIdToClassDef = mutableMapOf<TypeId, ParsedClass>()
     private val loadedMockedClasses = mutableSetOf<Class<*>>()
 
     private fun loadClass(clazz: Class<*>): Type {
@@ -87,16 +88,22 @@ class DexClassLoader(
         mockedClasses.forEach { (typeId, mockedClass) ->
             loadClass(typeId, mockedClass)
         }
-        // load dex classes
+        // lazy load dex classes
         dexFiles.forEach { dexFile ->
             dexFile.classDefs.forEach { classDef ->
                 val typeId = classDef.classDef.typeId
-                loadClass(typeId, classDef)
+                typeIdToClassDef[typeId] = classDef
+//                loadClass(typeId, classDef)
             }
         }
     }
 
     fun getClass(typeId: TypeId): Type {
-        return loadedTypes[typeId] ?: error("Class ${typeId.descriptor} not loaded")
+        val loadedClass = loadedTypes[typeId]
+        if (loadedClass != null) {
+            return loadedClass
+        }
+        val classDef = typeIdToClassDef[typeId] ?: error("Class ${typeId.descriptor} not found")
+        return loadClass(typeId, classDef)
     }
 }
