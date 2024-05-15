@@ -2,11 +2,32 @@ package com.yhs0602.vm.classloader
 
 import com.yhs0602.dex.ProtoId
 import com.yhs0602.vm.MethodWrapper
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
 data class MethodTableEntry(
     val name: String,
-    val protoId: ProtoId
-)
+    val protoId: ProtoId,
+    val method: Method?
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MethodTableEntry
+
+        if (name != other.name) return false
+        if (protoId != other.protoId) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + protoId.hashCode()
+        return result
+    }
+}
 
 sealed class Type {
 
@@ -16,6 +37,7 @@ sealed class Type {
     abstract val virtualTable: Map<MethodTableEntry, MethodTableEntry>
     abstract val descriptor: String
     abstract val methods: Map<MethodTableEntry, MethodWrapper>
+    abstract val staticMethods: Map<MethodTableEntry, MethodWrapper>
     abstract val constructors: Map<MethodTableEntry, MethodWrapper>
     abstract val clazz: Class<*>
 
@@ -64,4 +86,10 @@ sealed class Type {
         return false
     }
 
+}
+
+fun MethodTableEntry.isDefault(): Boolean {
+    // Check if the method is a default method in the interface
+    if (method == null) return false
+    return method.declaringClass.isInterface && !Modifier.isAbstract(method.modifiers) && !Modifier.isStatic(method.modifiers)
 }

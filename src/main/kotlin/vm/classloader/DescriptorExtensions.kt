@@ -61,7 +61,8 @@ fun Method.methodTableEntry(): MethodTableEntry {
             parameters = this@methodTableEntry.parameterTypes.map {
                 TypeId(it.descriptorString())
             }
-        }
+        },
+        method = this
     )
 }
 
@@ -85,6 +86,7 @@ fun Constructor<*>.methodTableEntry(): MethodTableEntry {
             parameters = this@methodTableEntry.parameterTypes.map {
                 TypeId(it.descriptorString())
             }
-        }
+        },
+        null
     )
 }

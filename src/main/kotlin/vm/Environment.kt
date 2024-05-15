@@ -1,6 +1,7 @@
 package com.yhs0602.vm
 
 import com.yhs0602.dex.*
+import com.yhs0602.vm.classloader.DexClassLoader
 import com.yhs0602.vm.instance.DictionaryBackedInstance
 import com.yhs0602.vm.instance.MockedInstance
 import com.yhs0602.vm.instance.unmarshalArgument
@@ -59,6 +60,7 @@ class Environment(
     private val staticFields = mutableMapOf<Pair<TypeId, Int>, Array<RegisterValue>>()
     private val initializedClasses: MutableSet<TypeId> = mutableSetOf()
     private val typeIdToCustomClass: MutableMap<TypeId, Class<*>> = mutableMapOf()
+    private val classLoader = DexClassLoader(dexFiles, mockedClasses)
 
     init {
         dexFiles.forEach { dexFile ->

@@ -3,7 +3,6 @@ package com.yhs0602.vm.classloader
 import com.yhs0602.dex.ParsedClass
 import com.yhs0602.vm.MethodWrapper
 import net.bytebuddy.ByteBuddy
-import net.bytebuddy.dynamic.DynamicType
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy
 import net.bytebuddy.implementation.MethodDelegation
 
@@ -23,6 +22,7 @@ class DexDefinedType(
     private val _virtualTable: MutableMap<MethodTableEntry, MethodTableEntry> = mutableMapOf()
     override val methods = mutableMapOf<MethodTableEntry, MethodWrapper>()
     override val constructors = mutableMapOf<MethodTableEntry, MethodWrapper>()
+    override val staticMethods = mutableMapOf<MethodTableEntry, MethodWrapper>()
     override val clazz by lazy {
         makeClazz()
     }
@@ -40,20 +40,26 @@ class DexDefinedType(
                 val methodId = method.methodId
                 val methodTableEntry = MethodTableEntry(
                     methodId.name,
-                    methodId.protoId
+                    methodId.protoId,
+                    null
                 )
                 _virtualTable[methodTableEntry] = methodTableEntry
+                methods[methodTableEntry] = MethodWrapper.Encoded(method)
             }
             for (method in it.directMethods) {
                 val methodId = method.methodId
                 val methodTableEntry = MethodTableEntry(
                     methodId.name,
-                    methodId.protoId
+                    methodId.protoId,
+                    null
                 )
-                if (method.accessFlags.isConstructor) {
+                if (method.accessFlags.isStatic) {
+                    staticMethods[methodTableEntry] = MethodWrapper.Encoded(method)
+                } else if (method.accessFlags.isConstructor) {
                     constructors[methodTableEntry] = MethodWrapper.Encoded(method)
                 } else {
                     _virtualTable[methodTableEntry] = methodTableEntry
+                    methods[methodTableEntry] = MethodWrapper.Encoded(method)
                 }
             }
         }
@@ -65,6 +71,7 @@ class DexDefinedType(
                 if (_virtualTable.containsKey(methodID)) {
                     _interfaceTable[method.key] = methodID
                 } else {
+                    // TODO: Handle default methods
                     throw IllegalStateException(
                         "Required interface method ${method.key} not implemented in" +
                             " ${classDef.classDef.typeId.descriptor}"

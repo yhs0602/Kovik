@@ -8,7 +8,7 @@ data class ShortyDescriptor(val shorty: String) {
         buildString {
             append(names[returnType] ?: returnType)
             append("(")
-            append(parameterTypes.joinToString("") { names[it] ?: it })
+            append(parameterTypes.joinToString(",") { names[it] ?: it })
             append(")")
         }
     }

@@ -82,7 +82,10 @@ class AdvancedTest {
                 GeneralMockedClass(System::class.java),
                 GeneralMockedClass(Intrinsics::class.java),
                 GeneralMockedClass(Object::class.java),
-                GeneralMockedClass(PrintStream::class.java)
+                GeneralMockedClass(PrintStream::class.java),
+                GeneralMockedClass(kotlin.jvm.internal.Lambda::class.java),
+                GeneralMockedClass(kotlin.jvm.functions.Function0::class.java),
+                GeneralMockedClass(kotlin.jvm.functions.Function2::class.java),
             )
         )
     }
@@ -102,7 +105,8 @@ class AdvancedTest {
                 GeneralMockedClass(PrintStream::class.java),
                 GeneralMockedClass(Math::class.java),
                 GeneralMockedClass(File::class.java),
-                GeneralMockedClass(java.lang.Double::class.java)
+                GeneralMockedClass(java.lang.Double::class.java),
+                GeneralMockedClass(kotlin.jvm.internal.Lambda::class.java),
             )
         )
     }

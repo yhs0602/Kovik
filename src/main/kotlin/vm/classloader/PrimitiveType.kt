@@ -14,9 +14,12 @@ class Primitive(override val descriptor: String) : Type() {
     override val interfaceTable: Map<MethodTableEntry, MethodTableEntry> = emptyMap()
 
     // no v table for primitive types
+    // TODO: java.lang.xxx.TYPE
     override val virtualTable: Map<MethodTableEntry, MethodTableEntry> = emptyMap()
     override val methods = emptyMap<MethodTableEntry, MethodWrapper>()
     override val constructors = emptyMap<MethodTableEntry, MethodWrapper>()
+    override val staticMethods = emptyMap<MethodTableEntry, MethodWrapper>()
+
     override val clazz: Class<*> by lazy {
         when (descriptor) {
             "Z" -> java.lang.Boolean.TYPE

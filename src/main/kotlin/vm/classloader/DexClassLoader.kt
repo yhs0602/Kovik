@@ -62,13 +62,15 @@ class DexClassLoader(
         }
         val superClassTypeId = parsedClass.classDef.superClassTypeId
         val superClassType = if (superClassTypeId != null) {
-            loadedTypes[superClassTypeId] ?: error("Superclass ${superClassTypeId.descriptor} not loaded")
+            loadedTypes[superClassTypeId] ?: error(
+                "Superclass ${superClassTypeId.descriptor} for ${parsedClass.classDef.typeId} not loaded"
+            )
         } else {
             null
         }
         val interfaces = parsedClass.classDef.interfaces
         val interfaceTypes = interfaces.map {
-            loadedTypes[it] ?: error("Interface ${it.descriptor} not loaded")
+            loadedTypes[it] ?: error("Interface ${it.descriptor} for ${parsedClass.classDef.typeId} not loaded")
         }
         val loadedType = DexDefinedType(
             parsedClass,

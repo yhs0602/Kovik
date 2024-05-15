@@ -3,6 +3,7 @@ package com.yhs0602.vm.classloader
 import com.yhs0602.vm.MethodWrapper
 import com.yhs0602.vm.makeMockedConstructor
 import com.yhs0602.vm.makeMockedMethod
+import java.lang.reflect.Modifier
 
 data object ObjectType : Type() {
     override fun isAssignableTo(other: Type): Boolean {
@@ -19,6 +20,7 @@ data object ObjectType : Type() {
     private val _virtualTable: MutableMap<MethodTableEntry, MethodTableEntry> = mutableMapOf()
     override val descriptor: String = "Ljava/lang/Object;"
     override val methods = mutableMapOf<MethodTableEntry, MethodWrapper>()
+    override val staticMethods = mutableMapOf<MethodTableEntry, MethodWrapper>()
     override val constructors = mutableMapOf<MethodTableEntry, MethodWrapper>()
     override val clazz: Class<*> = java.lang.Object::class.java
 
@@ -26,10 +28,16 @@ data object ObjectType : Type() {
         // populate v-table and i-table of Object
         for (method in java.lang.Object::class.java.methods) {
             val methodId = method.methodTableEntry()
-            _virtualTable[methodId] = methodId
-            methods[methodId] = MethodWrapper.Mocked(
-                makeMockedMethod(java.lang.Object::class.java, method)
-            )
+            if (Modifier.isStatic(method.modifiers)) {
+                staticMethods[methodId] = MethodWrapper.Mocked(
+                    makeMockedMethod(java.lang.Object::class.java, method)
+                )
+            } else {
+                _virtualTable[methodId] = methodId
+                methods[methodId] = MethodWrapper.Mocked(
+                    makeMockedMethod(java.lang.Object::class.java, method)
+                )
+            }
         }
         for (constructorMethod in java.lang.Object::class.java.constructors) {
             val methodId = constructorMethod.methodTableEntry()
