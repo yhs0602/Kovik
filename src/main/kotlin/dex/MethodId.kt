@@ -23,7 +23,7 @@ data class MethodId(val classId: TypeId, val protoId: ProtoId, val name: String)
     fun toMethodTableEntry(): MethodTableEntry {
         return MethodTableEntry(
             name,
-            protoId,
+            protoId.parameters,
             null
         )
     }

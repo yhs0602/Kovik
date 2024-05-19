@@ -13,7 +13,7 @@ open class InvokeVirtual(pc: Int, val code: CodeItem) : Instruction._35c(pc, cod
 //            throw Exception("InvokeVirtual: Not an object reference")
             return pc + insnLength
         }
-        val method = environment.getMethod(code, BBBB, instance, direct = false, false)
+        val method = environment.getMethod(code, BBBB, instance, direct = false, false, false)
         when (method) {
             is MethodWrapper.Mocked -> {
                 methodName = method.mockedMethod.name
@@ -57,7 +57,7 @@ class InvokeSuper(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
             memory.exception = ExceptionValue("InvokeSuper: Not an object reference")
             return pc + insnLength
         }
-        val method = environment.getMethod(code, BBBB, instance, direct = false, true)
+        val method = environment.getMethod(code, BBBB, instance, direct = false, true, false)
         when (method) {
             is MethodWrapper.Mocked -> {
                 methodName = method.mockedMethod.name
@@ -83,6 +83,7 @@ class InvokeSuper(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
             }
         }
     }
+
     // TODO
     override fun toString(): String {
         val argRegList = arrayOf(C, D, E, F, G)
@@ -100,7 +101,7 @@ class InvokeDirect(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
             memory.exception = ExceptionValue("InvokeVirtual: Not an object reference")
             return pc + insnLength
         }
-        val method = environment.getMethod(code, BBBB, instance, direct = true, false)
+        val method = environment.getMethod(code, BBBB, instance, direct = true, false, false)
         when (method) {
             is MethodWrapper.Mocked -> {
                 methodName = method.mockedMethod.name
@@ -126,6 +127,7 @@ class InvokeDirect(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
             }
         }
     }
+
     // TODO
     override fun toString(): String {
         val argRegList = arrayOf(C, D, E, F, G)
@@ -136,7 +138,7 @@ class InvokeDirect(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
 
 class InvokeStatic(pc: Int, val code: CodeItem) : Instruction._35c(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
-        val method = environment.getMethod(code, BBBB, null, direct = true, false)
+        val method = environment.getMethod(code, BBBB, null, direct = true, false, true)
         val argRegList = arrayOf(C, D, E, F, G)
         val args = Array(A) { memory.registers[argRegList[it]] }
         when (method) {
@@ -190,7 +192,7 @@ open class InvokeVirtualRange(pc: Int, val code: CodeItem) : Instruction._3rc(pc
             memory.exception = ExceptionValue("InvokeVirtual: Not an object reference")
             return pc + insnLength
         }
-        val method = environment.getMethod(code, BBBB, instance, direct = false, false)
+        val method = environment.getMethod(code, BBBB, instance, direct = false, false, false)
         when (method) {
             is MethodWrapper.Encoded -> {
                 val codeItem = method.encodedMethod.codeItem
@@ -235,7 +237,7 @@ class InvokeSuperRange(pc: Int, code: CodeItem) : InvokeVirtualRange(pc, code) {
             memory.exception = ExceptionValue("InvokeVirtual: Not an object reference")
             return pc + insnLength
         }
-        val method = environment.getMethod(code, BBBB, instance, direct = false, true)
+        val method = environment.getMethod(code, BBBB, instance, direct = false, true, false)
         when (method) {
             is MethodWrapper.Encoded -> {
                 val codeItem = method.encodedMethod.codeItem
@@ -260,6 +262,7 @@ class InvokeSuperRange(pc: Int, code: CodeItem) : InvokeVirtualRange(pc, code) {
             }
         }
     }
+
     override fun toString(): String {
         val registerIndices = (CCCC until CCCC + count).toList()
         val args = Array(count) { registerIndices[it] }
@@ -276,7 +279,7 @@ class InvokeDirectRange(pc: Int, code: CodeItem) : InvokeVirtualRange(pc, code) 
             memory.exception = ExceptionValue("InvokeVirtual: Not an object reference")
             return pc + insnLength
         }
-        val method = environment.getMethod(code, BBBB, instance, direct = true, false)
+        val method = environment.getMethod(code, BBBB, instance, direct = true, false, false)
         when (method) {
             is MethodWrapper.Encoded -> {
                 val codeItem = method.encodedMethod.codeItem
@@ -301,6 +304,7 @@ class InvokeDirectRange(pc: Int, code: CodeItem) : InvokeVirtualRange(pc, code) 
             }
         }
     }
+
     // TODO
     override fun toString(): String {
         val registerIndices = (CCCC until CCCC + count).toList()
@@ -311,7 +315,7 @@ class InvokeDirectRange(pc: Int, code: CodeItem) : InvokeVirtualRange(pc, code) 
 
 class InvokeStaticRange(pc: Int, val code: CodeItem) : Instruction._3rc(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
-        val method = environment.getMethod(code, BBBB, null, direct = true, false)
+        val method = environment.getMethod(code, BBBB, null, direct = true, false, true)
         val registerIndices = (CCCC until CCCC + count).toList()
         val args = Array(count) { memory.registers[registerIndices[it]] }
         when (method) {

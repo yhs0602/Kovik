@@ -2,7 +2,6 @@ package com.yhs0602.vm
 
 import com.yhs0602.dex.*
 import com.yhs0602.vm.classloader.DexClassLoader
-import com.yhs0602.vm.instance.ByteBuddyBackedInstance
 import com.yhs0602.vm.instance.DictionaryBackedInstance
 import com.yhs0602.vm.instance.MockedInstance
 import com.yhs0602.vm.instance.unmarshalArgument
@@ -275,164 +274,37 @@ class Environment(
         staticFields[fieldIdObj.classId to fieldId] = value
     }
 
+    // New version of getMethod which uses classLoader
     fun getMethod(
         code: CodeItem,
         kindBBBB: Int,
         instance: RegisterValue.ObjectRef?,
         direct: Boolean,
-        isSuperCall: Boolean
+        isSuperCall: Boolean,
+        isStatic: Boolean,
     ): MethodWrapper {
         val dexFile = codeItemToDexFile[code] ?: error("Cannot find dex file for $code")
         val methodId = dexFile.methodIds[kindBBBB]
-        val classDef = classDefs.find {
-            it.classDef.typeId == methodId.classId
-        } ?: run {
-            // TODO: search in the parent classes
-            // TODO: Use mocked class, instead of mocked methods
-            // However, we should cache the mocked method anyway, because the methodId is actually used in the code
-            // In case of invoke-direct, just call the method
-            // However in case of invoke-interface, we should find the appropriate method id
-            // Search in mocked methods
-            val triple = Triple(methodId.classId, methodId.protoId.parameters, methodId.name)
-            val mocked = mockedMethods[triple]
-            if (mocked != null) {
-                println("Requested: $methodId, found mocked: $mocked, triple: $triple")
-                // check if the codeitem is not null, handle inheritance
-                // It should find the finest method
-                if (direct) {
-                    return MethodWrapper.Mocked(mocked)
-                }
-                // Find the method in the class hierarchy
-                if (instance == null) {
-                    throw Exception("Instance is null in virtual method call")
-                }
-                val value = instance.value
-                if (value == null) {
-                    throw Exception("Value is null in virtual method call")
-                }
-                when (value) {
-                    is DictionaryBackedInstance -> {
-                        val dexClassRepresentation = value.dexClassRepresentation
-                        if (!isSuperCall) {
-                            dexClassRepresentation.classData?.let {
-                                val method = it.directMethods.find {
-                                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
-                                } ?: it.virtualMethods.find {
-                                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
-                                }
-                                if (method != null && method.codeItem != null) {
-                                    return MethodWrapper.Encoded(method)
-                                }
-                            }
-                        }
-                        return iterateSuperClass(dexClassRepresentation.classDef) { superClassData ->
-                            val superMethod = superClassData.directMethods.find {
-                                it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
-                            } ?: superClassData.virtualMethods.find {
-                                it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
-                            }
-                            if (superMethod != null && superMethod.codeItem != null) {
-                                MethodWrapper.Encoded(superMethod)
-                            } else {
-                                MethodWrapper.Mocked(mocked)
-                            }
-                        } ?: MethodWrapper.Mocked(mocked)
-                    }
-
-                    is MockedInstance -> {
-                        return MethodWrapper.Mocked(mocked)
-                    }
-
-                    is ByteBuddyBackedInstance -> TODO()
-                }
-            } else {
-                // (TypeId(descriptor=Ljava/lang/StringBuilder;), [TypeId(descriptor=Ljava/lang/String;)], append)
-                println("Requested: $methodId, not found, triple: $triple")
-                println("Mocked methods: ${mockedMethods.keys.joinToString { it.toString() }}")
-            }
-            // Dump the class def
-            dexFile.classDefs.forEach {
-                println(it)
-            }
-            throw Exception("Cannot find class def for method id $methodId, ${methodId.classId}")
+        if (isStatic) {
+            // Call based on the method id
+            val type = classLoader.getClass(methodId.classId)
+            val method = type.getStaticMethod(methodId.toMethodTableEntry())
+            return method
         }
-        val classData = classDef.classData ?: error("Cannot find class data for class def $classDef")
-        val method = classData.directMethods.find {
-            it.methodId == methodId
-        } ?: classData.virtualMethods.find {
-            it.methodId == methodId
+        // Dispatch method based on invoke-kind
+        if (direct || isSuperCall) {
+            // Call based on the method id
+            val type = classLoader.getClass(methodId.classId)
+            val method = type.getDirectMethod(methodId.toMethodTableEntry())
+            return method
         }
-//        ?: error("Cannot find method for method id from" +
-//            " $classDef,  $methodId:")
-//            " ${classData.directMethods.joinToString { it.methodId.toString() }}" +
-//            " ${classData.virtualMethods.joinToString { it.methodId.toString() }}")
-        println("Requested: $methodId, found encoded: $method; ${method?.methodId}")
-        println(classData.directMethods.joinToString { it.methodId.toString() })
-        println(classData.virtualMethods.joinToString { it.methodId.toString() })
-        if (method == null) {
-            // try to find in superclasses
-            return iterateSuperClass(classDef.classDef) { superClassData ->
-                val superMethod = superClassData.directMethods.find {
-                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
-                } ?: superClassData.virtualMethods.find {
-                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
-                }
-                if (superMethod != null) {
-                    MethodWrapper.Encoded(superMethod)
-                } else {
-                    null
-                }
-            } ?: error("Cannot find method for method id $methodId")
-        } else {
-            if (direct) {
-                return MethodWrapper.Encoded(method)
-            } else {
-                // search for the method in the class hierarchy
-                if (instance == null) {
-                    throw Exception("Instance is null in virtual method call")
-                }
-                val value = instance.value
-                if (value == null) {
-                    throw Exception("Value is null in virtual method call")
-                }
-
-                when (value) {
-                    is DictionaryBackedInstance -> {
-                        val dexClassRepresentation = value.dexClassRepresentation
-                        if (!isSuperCall) {
-                            dexClassRepresentation.classData?.let {
-                                val method = it.directMethods.find {
-                                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
-                                } ?: it.virtualMethods.find {
-                                    it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
-                                }
-                                if (method != null && method.codeItem != null) {
-                                    return MethodWrapper.Encoded(method)
-                                }
-                            }
-                        }
-                        return iterateSuperClass(dexClassRepresentation.classDef) { superClassData ->
-                            val superMethod = superClassData.directMethods.find {
-                                it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
-                            } ?: superClassData.virtualMethods.find {
-                                it.methodId.protoId == methodId.protoId && it.methodId.name == methodId.name
-                            }
-                            if (superMethod != null && superMethod.codeItem != null) {
-                                MethodWrapper.Encoded(superMethod)
-                            } else {
-                                MethodWrapper.Encoded(method)
-                            }
-                        } ?: MethodWrapper.Encoded(method)
-                    }
-
-                    is MockedInstance -> {
-                        return MethodWrapper.Encoded(method)
-                    }
-
-                    is ByteBuddyBackedInstance -> TODO()
-                }
-            }
+        if (instance == null) {
+            throw Exception("Instance is null in virtual method call")
         }
+        // invoke-virtual: Call based on the instance
+        val type = classLoader.getClass(instance.typeId)
+        val method = type.getVirtualMethodEntry(methodId.toMethodTableEntry())
+        return type.getDirectMethod(method)
     }
 
     fun getMethodByName(classDef: ClassRepresentation.DexClassRepresentation, methodName: String): MethodWrapper? {
@@ -483,5 +355,12 @@ class Environment(
     fun loadClass(typeId: TypeId): Class<*> {
         val type = classLoader.getClass(typeId)
         return type.clazz
+    }
+
+    fun getMethod(methodId: MethodId): MethodWrapper {
+        // assume direct
+        val type = classLoader.getClass(methodId.classId)
+        val method = type.getDirectMethod(methodId.toMethodTableEntry())
+        return method
     }
 }

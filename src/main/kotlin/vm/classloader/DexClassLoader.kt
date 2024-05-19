@@ -3,6 +3,7 @@ package com.yhs0602.vm.classloader
 import com.yhs0602.dex.DexFile
 import com.yhs0602.dex.ParsedClass
 import com.yhs0602.dex.TypeId
+import com.yhs0602.dex.toTypeName
 import com.yhs0602.vm.GeneralMockedClass
 import com.yhs0602.vm.type.*
 
@@ -110,7 +111,8 @@ class DexClassLoader(
         if (loadedClass != null) {
             return loadedClass
         }
-        val classDef = typeIdToClassDef[typeId] ?: error("Class ${typeId.descriptor} not found")
+        val classDef = typeIdToClassDef[typeId]
+            ?: return loadClass(Class.forName(typeId.descriptor.toTypeName())) // error("Class ${typeId.descriptor} not found")
         return loadClass(typeId, classDef)
     }
 }

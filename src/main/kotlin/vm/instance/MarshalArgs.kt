@@ -79,17 +79,12 @@ fun marshalArgument(
         (paramType == Char::class.java || paramType == Character.TYPE) && arg is RegisterValue.Int -> arg.value.toChar() to 1
         (paramType == Byte::class.java || paramType == java.lang.Byte.TYPE) && arg is RegisterValue.Int -> arg.value.toByte() to 1
         (paramType == Short::class.java || paramType == java.lang.Short.TYPE) && arg is RegisterValue.Int -> arg.value.toShort() to 1
-        paramType.isArray && arg is RegisterValue.ArrayRef -> {
-            // TODO: wide array
-//            if (args.size <= idx + 1) {
-//                throw IllegalArgumentException("Array argument not found; second argument is not an array: ${args[idx + 1]}")
-//            }
-            val componentType = paramType.componentType
-            val result = arg.values.map {
-                // TODO: Wide
-                marshalArgument(environment, code, listOf(it), 0, componentType).first
-            }.toTypedArray()
-            result to 1
+        (paramType.isArray || paramType == Object::class.java) && arg is RegisterValue.ArrayRef -> {
+            if (paramType == Object::class.java) {
+                val componentType = environment.getType(arg.typeId)
+                return marshalArrayToArray(componentType.clazz, arg, environment, code)
+            }
+            marshalArrayToArray(paramType, arg, environment, code)
         }
 
         // unify the handling of Object and interface using CGLib and Objenesis
@@ -154,7 +149,9 @@ fun marshalArgument(
                     }
 
                     null -> null to 1
-                    is ByteBuddyBackedInstance -> TODO()
+                    is ByteBuddyBackedInstance -> {
+                        theInstance.value to 1
+                    }
                 }
             }
 
@@ -172,4 +169,26 @@ fun marshalArgument(
             else -> throw IllegalArgumentException("Cannot marshal object reference: $arg")
         }
     }
+}
+
+private fun marshalArrayToArray(
+    paramType: Class<*>,
+    arg: RegisterValue.ArrayRef,
+    environment: Environment,
+    code: CodeItem
+): Pair<Array<Any?>, Int> {
+    val componentType = paramType.componentType
+    if (componentType.isPrimitive) {
+        // wide values
+        if (componentType == java.lang.Double.TYPE || componentType == java.lang.Long.TYPE) {
+            val result = arg.values.asList().windowed(2, 2).map {
+                marshalArgument(environment, code, it, 0, componentType).first
+            }.toTypedArray()
+            return result to 1
+        }
+    }
+    val result = arg.values.map {
+        marshalArgument(environment, code, listOf(it), 0, componentType).first
+    }.toTypedArray()
+    return result to 1
 }

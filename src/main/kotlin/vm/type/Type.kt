@@ -20,19 +20,25 @@ sealed class Type {
 
     // Use this method to get the method entry in the virtual table
     fun getVirtualMethodEntry(givenEntry: MethodTableEntry): MethodTableEntry {
-        return virtualTable[givenEntry] ?: error("Method not found in virtual table")
+        return virtualTable[givenEntry] ?: error(
+            "Method $givenEntry not found in virtual table: ${virtualTable.keys.joinToString()}"
+        )
     }
 
     fun getInterfaceMethodEntry(givenEntry: MethodTableEntry): MethodTableEntry {
-        return interfaceTable[givenEntry] ?: error("Method not found in interface table")
+        return interfaceTable[givenEntry] ?: error("Method $givenEntry not found in interface table")
     }
 
-    fun getMethod(methodTableEntry: MethodTableEntry): MethodWrapper {
+    fun getDirectMethod(methodTableEntry: MethodTableEntry): MethodWrapper {
         // check if requested is a constructor
         if (methodTableEntry.name == "<init>") {
-            return constructors[methodTableEntry] ?: error("Constructor not found")
+            return constructors[methodTableEntry    ] ?: error("Constructor not found")
         }
-        return methods[methodTableEntry] ?: error("Method not found")
+        return methods[methodTableEntry] ?: error("Method $methodTableEntry not found")
+    }
+
+    fun getStaticMethod(methodTableEntry: MethodTableEntry): MethodWrapper {
+        return staticMethods[methodTableEntry] ?: error("Static method $methodTableEntry not found")
     }
 
     open fun isAssignableTo(other: Type): Boolean {

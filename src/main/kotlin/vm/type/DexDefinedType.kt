@@ -15,7 +15,6 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy
 import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy
 import net.bytebuddy.implementation.MethodCall
 import net.bytebuddy.implementation.MethodDelegation
-import net.bytebuddy.implementation.SuperMethodCall
 
 
 class DexDefinedType(
@@ -53,7 +52,7 @@ class DexDefinedType(
                 val methodId = method.methodId
                 val methodTableEntry = MethodTableEntry(
                     methodId.name,
-                    methodId.protoId,
+                    methodId.protoId.parameters,
                     null
                 )
                 _virtualTable[methodTableEntry] = methodTableEntry
@@ -63,7 +62,7 @@ class DexDefinedType(
                 val methodId = method.methodId
                 val methodTableEntry = MethodTableEntry(
                     methodId.name,
-                    methodId.protoId,
+                    methodId.protoId.parameters,
                     null
                 )
                 if (method.accessFlags.isStatic) {
@@ -102,7 +101,7 @@ class DexDefinedType(
             return
         }
         clinit?.let {
-            val clInitMethod = getMethod(it)
+            val clInitMethod = getDirectMethod(it)
             if (clInitMethod !is MethodWrapper.Encoded) {
                 throw IllegalStateException("clinit method is not encoded")
             }

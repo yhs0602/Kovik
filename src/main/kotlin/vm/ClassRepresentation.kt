@@ -1,9 +1,7 @@
 package com.yhs0602.vm
 
 import com.yhs0602.dex.*
-import com.yhs0602.vm.classloader.MethodTableEntry
 import com.yhs0602.vm.classloader.methodId
-import com.yhs0602.vm.classloader.methodTableEntry
 import com.yhs0602.vm.instance.*
 import net.sf.cglib.proxy.Enhancer
 import java.lang.reflect.Constructor
@@ -22,7 +20,7 @@ fun makeMockedConstructor(clazz: Class<*>, it: Constructor<*>) = object : Mocked
         code: CodeItem,
         isStatic: Boolean
     ): Array<RegisterValue> {
-        return invokeMethod(clazz, environment, code, "<init>", args, parameters, false, it.methodId())
+        return reallyExecuteMockedMethod(clazz, environment, code, "<init>", args, parameters, false, it.methodId())
     }
 
     override val classId: TypeId
@@ -44,7 +42,7 @@ fun makeMockedMethod(clazz: Class<*>, method: Method) = object : MockedMethod {
         code: CodeItem,
         isStatic: Boolean
     ): Array<RegisterValue> {
-        return invokeMethod(clazz, environment, code, name, args, parameters, isStatic, method.methodId())
+        return reallyExecuteMockedMethod(clazz, environment, code, name, args, parameters, isStatic, method.methodId())
     }
 
     override val classId: TypeId
@@ -61,7 +59,8 @@ fun makeMockedMethod(clazz: Class<*>, method: Method) = object : MockedMethod {
 
 // Can only be called as a context of mocked class.
 // including <init>
-fun invokeMethod(
+// The method should be a direct call, a.k.a finished translation
+fun reallyExecuteMockedMethod(
     clazz: Class<*>,
     environment: Environment,
     code: CodeItem,
@@ -76,24 +75,19 @@ fun invokeMethod(
 //            println("Invoking $name with args $args")
         if (name == "<init>") {
 //                println("Name is <init>")
-            val registerValue = (args[0] as? RegisterValue.ObjectRef)?.value
-                ?: throw IllegalArgumentException("Instance not found")
+            val objRef = args[0] as? RegisterValue.ObjectRef
+                ?: throw IllegalArgumentException("First argument should be an object reference")
+            val registerValue = objRef.value ?: throw IllegalArgumentException("Instance not found")
+            val requestedDeclaringClass = environment.getType(methodId.classId)
             when (registerValue) {
                 is MockedInstance -> {
                     // There is no actual backing instance,
                     // Use the class's createInstance method
                     // create the instance
-                    try {
-                        val droppedArgs = args.drop(1)
-                        val instance = clazz.constructors.first {
-                            compareConstructorProto(it, droppedArgs, paramType)
-                        }.run {
-                            newInstance(*marshalArguments(environment, code, droppedArgs, parameterTypes))
-                        }
-                        registerValue.value = instance
-                    } catch (e: NoSuchElementException) {
-                        throw IllegalArgumentException("Constructor not found")
-                    }
+                    registerValue.value = reallyCallConstructor(args, clazz, paramType, environment, code)
+                }
+                is ByteBuddyBackedInstance -> {
+                    registerValue.value = reallyCallConstructor(args, clazz, paramType, environment, code)
                 }
 
                 is DictionaryBackedInstance -> {
@@ -144,21 +138,6 @@ fun invokeMethod(
                         System.err.println("Backing super class not found")
                     }
                 }
-
-                is ByteBuddyBackedInstance -> {
-                    // Invoke-direct should use exact class's constructor
-                    val type = registerValue.type
-                    val requestedDeclaringClass = environment.getType(methodId.classId)
-                    val constructor = requestedDeclaringClass.getMethod(methodId.toMethodTableEntry())
-                    println("Getting constructor for $type. Requested methodId: $methodId, got $requestedDeclaringClass 's $constructor")
-                    constructor.execute(
-                        args,
-                        environment,
-                        code,
-                        true,
-                        depth = 0,
-                    )
-                }
             }
             return arrayOf()
         }
@@ -191,6 +170,7 @@ fun invokeMethod(
             }
         }
         println("2. Invoking $name with args ${argArr.contentToString()} for object ${instanceValue?.javaClass?.simpleName}")
+        method.isAccessible = true
         val result = method.invoke(instanceValue, *argArr)
         val resultType = method.returnType
         val unmarshalledResult = unmarshalArgument(result, resultType)
@@ -198,6 +178,26 @@ fun invokeMethod(
         unmarshalledResult
     } catch (e: NoSuchElementException) {
         throw IllegalArgumentException("Method $name not found: ${args.contentToString()} $paramType $isStatic", e)
+    }
+}
+
+private fun reallyCallConstructor(
+    args: Array<out RegisterValue>,
+    clazz: Class<*>,
+    paramType: List<TypeId>,
+    environment: Environment,
+    code: CodeItem,
+): Any {
+    try {
+        val droppedArgs = args.drop(1)
+        val instance = clazz.constructors.first {
+            compareConstructorProto(it, droppedArgs, paramType)
+        }.run {
+            newInstance(*marshalArguments(environment, code, droppedArgs, parameterTypes))
+        }
+        return instance!!
+    } catch (e: NoSuchElementException) {
+        throw IllegalArgumentException("Constructor not found")
     }
 }
 

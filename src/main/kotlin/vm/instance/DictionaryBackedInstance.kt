@@ -6,6 +6,8 @@ import com.yhs0602.dex.toTypeName
 import com.yhs0602.vm.ClassRepresentation
 import com.yhs0602.vm.Environment
 import com.yhs0602.vm.RegisterValue
+import com.yhs0602.vm.classloader.methodId
+import com.yhs0602.vm.classloader.methodTableEntry
 import net.sf.cglib.proxy.MethodInterceptor
 import net.sf.cglib.proxy.MethodProxy
 import java.lang.reflect.Method
@@ -106,9 +108,8 @@ class DictionaryBackedInstance(
             val result = p3?.invokeSuper(obj, arguments)
             return result
         }
-        val method = environment.getMethodByName(
-            dexClassRepresentation, methodName
-        )
+        val methodId = methodRequested.methodId()
+        val method = environment.getMethod(methodId)
         if (method != null) {
             // TODO: We should also check if the super method is requested or this method is a new method
             // unmarshal the arguments

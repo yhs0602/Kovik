@@ -53,14 +53,8 @@ fun Method.methodId(): MethodId {
 fun Method.methodTableEntry(): MethodTableEntry {
     return MethodTableEntry(
         this.name,
-        ProtoId(
-            ShortyDescriptor(this.shortyDescriptor()),
-            TypeId(this.returnType.descriptorString()),
-            0, // Dummy
-        ).apply {
-            parameters = this@methodTableEntry.parameterTypes.map {
-                TypeId(it.descriptorString())
-            }
+        parameters = this@methodTableEntry.parameterTypes.map {
+            TypeId(it.descriptorString())
         },
         method = this
     )
@@ -94,14 +88,8 @@ fun Constructor<*>.methodId(): MethodId {
 fun Constructor<*>.methodTableEntry(): MethodTableEntry {
     return MethodTableEntry(
         "<init>",
-        ProtoId(
-            ShortyDescriptor(this.shortyDescriptor()),
-            TypeId("V"),
-            0, // Dummy
-        ).apply {
-            parameters = this@methodTableEntry.parameterTypes.map {
-                TypeId(it.descriptorString())
-            }
+        parameters = this@methodTableEntry.parameterTypes.map {
+            TypeId(it.descriptorString())
         },
         null
     )
