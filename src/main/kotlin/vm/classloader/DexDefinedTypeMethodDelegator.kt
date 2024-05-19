@@ -45,7 +45,7 @@ class DexDefinedTypeMethodDelegator(
             unmarshalledArguments.size,
             0 // TODO: depth
         )
-        val marshalled =  marshalArguments(
+        val marshalled = marshalArguments(
             Environment.getInstance(),
             codeItem,
             result.toList(),
@@ -53,5 +53,9 @@ class DexDefinedTypeMethodDelegator(
         )
         println("Marshalled: ${marshalled.joinToString()}")
         return marshalled.firstOrNull()
+    }
+
+    fun hello() {
+        println("Hello from delegator")
     }
 }

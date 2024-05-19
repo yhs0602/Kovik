@@ -10,8 +10,12 @@ import com.yhs0602.vm.classloader.MethodTableEntry
 import com.yhs0602.vm.instance.ByteBuddyBackedInstance
 import com.yhs0602.vm.instance.Instance
 import net.bytebuddy.ByteBuddy
+import net.bytebuddy.description.modifier.ModifierContributor
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy
+import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy
+import net.bytebuddy.implementation.MethodCall
 import net.bytebuddy.implementation.MethodDelegation
+import net.bytebuddy.implementation.SuperMethodCall
 
 
 class DexDefinedType(
@@ -116,7 +120,7 @@ class DexDefinedType(
     private fun makeClazz(): Class<*> {
         // use bytebuddy to create a class
         var builder = ByteBuddy()
-            .subclass(directSuperClass?.clazz ?: Object::class.java)
+            .subclass(directSuperClass?.clazz ?: Object::class.java, ConstructorStrategy.Default.NO_CONSTRUCTORS)
             .name(classDef.classDef.typeId.descriptor.toTypeName())
         // Declare fields
         val instanceFields = (classDef.classData?.instanceFields ?: emptyList()).asSequence()
@@ -125,23 +129,37 @@ class DexDefinedType(
             val fieldId = it.fieldId
             val fieldType = classLoader.getClass(fieldId.typeId)
             builder = builder.defineField(fieldId.name, fieldType.clazz, it.accessFlags.getFlags())
+            println("Declared field ${fieldId.name} of type ${fieldType.clazz} with flags ${it.accessFlags.getFlags()}")
         }
+        println("Declaring class ${classDef.classDef.typeId.descriptor}")
         // Declare constructors
         val constructors = (classDef.classData?.directMethods ?: emptyList()).asSequence()
             .filter { it.accessFlags.isConstructor }
         constructors.forEach { constructor ->
             val methodId = constructor.methodId
             val parameterTypes = methodId.protoId.parameters.map { classLoader.getClass(it) }
-            val methodBuilder = builder.defineConstructor(constructor.accessFlags.getFlags())
-                .withParameters(parameterTypes.map { it.clazz })
+            // We have to clear constructor flags because ByteBuddy will add them back
+            val methodBuilder = builder.defineConstructor(
+                constructor.accessFlags.getFlags() and ModifierContributor.ForMethod.MASK
+            ).withParameters(parameterTypes.map { it.clazz })
             builder = constructor.codeItem?.let {
-                methodBuilder.intercept(MethodDelegation.to(DexDefinedTypeMethodDelegator(it)))
+                // Note: Call to dummy super constructor (Object) is necessary to avoid VerifyError
+                methodBuilder.intercept(
+                    MethodCall.invoke(Object::class.java.getConstructor()).andThen(
+                        MethodDelegation.to(
+                            DexDefinedTypeMethodDelegator(it)
+                        )
+                    )
+                )
             } ?: methodBuilder.withoutCode()
+            println("Declared constructor $methodId ${methodId.protoId.parameters.joinToString { "," }} with flags ${constructor.accessFlags.getFlags()}")
         }
         // Declare method
         val directMethods = (classDef.classData?.directMethods ?: emptyList()).asSequence()
         val virtualMethods = (classDef.classData?.virtualMethods ?: emptyList()).asSequence()
-        (directMethods + virtualMethods).forEach { method ->
+        (directMethods + virtualMethods).filter {
+            !it.accessFlags.isConstructor
+        }.forEach { method ->
             val methodId = method.methodId
             val protoId = methodId.protoId
             val returnType = classLoader.getClass(protoId.returnType)
@@ -151,15 +169,21 @@ class DexDefinedType(
             builder = method.codeItem?.let {
                 methodBuilder.intercept(MethodDelegation.to(DexDefinedTypeMethodDelegator(it)))
             } ?: methodBuilder.withoutCode()
+            println("Declared method ${methodId.name} with flags ${method.accessFlags.getFlags()}")
         }
+        println("Declared direct methods ${directMethods.joinToString { it.methodId.name }}")
+        println("Declared virtual methods ${virtualMethods.joinToString { it.methodId.name }}")
+
         // Implement interfaces
         builder = builder.implement(
             *interfaces.map { it.clazz }.toTypedArray()
         )
+        println("Declared interfaces ${interfaces.joinToString { it.clazz.name }}")
+        println("Finished declaring class ${classDef.classDef.typeId.descriptor}")
 
         return builder
             .make()
-            .load(ClassLoader.getSystemClassLoader(), ClassLoadingStrategy.Default.INJECTION)
+            .load(ClassLoader.getSystemClassLoader(), ClassLoadingStrategy.Default.CHILD_FIRST)
             .loaded
     }
 
