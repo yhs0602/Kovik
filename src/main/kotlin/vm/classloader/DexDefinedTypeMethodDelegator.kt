@@ -37,7 +37,7 @@ class DexDefinedTypeMethodDelegator(
             ).toList()
             .toTypedArray()
 
-        println("Invoking method: ${method.name} ") // with args: ${unmarshalledArguments.joinToString()}
+//        println("Invoking method: ${method.name} ") // with args: ${unmarshalledArguments.joinToString()}
         val result = executeMethod(
             codeItem,
             Environment.getInstance(),

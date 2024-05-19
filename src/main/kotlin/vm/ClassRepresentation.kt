@@ -161,7 +161,7 @@ fun reallyExecuteMockedMethod(
         }
         // Drop first argument as it is the instance, if it is not static
 //            val args = if (!AccessFlags(method.modifiers).isStatic) args.drop(1) else args
-        println("Invoking $method ${method.parameterTypes.joinToString(" ") { it.name }} with args $adjustedArgs")
+//        println("Invoking $method ${method.parameterTypes.joinToString(" ") { it.name }} with args $adjustedArgs")
         val argArr = marshalArguments(environment, code, adjustedArgs, method.parameterTypes)
         if (instanceValue != null) {
             val declaringClass = method.declaringClass
@@ -169,12 +169,12 @@ fun reallyExecuteMockedMethod(
                 throw IllegalArgumentException("The provided instance $instanceValue does not match the method's declaring class. $declaringClass")
             }
         }
-        println("2. Invoking $name with args ${argArr.contentToString()} for object ${instanceValue?.javaClass?.simpleName}")
+//        println("2. Invoking $name with args ${argArr.contentToString()} for object ${instanceValue?.javaClass?.simpleName}")
         method.isAccessible = true
         val result = method.invoke(instanceValue, *argArr)
         val resultType = method.returnType
         val unmarshalledResult = unmarshalArgument(result, resultType)
-        println("Unmarshalling result: $result -> ${unmarshalledResult.joinToString()}")
+//        println("Unmarshalling result: $result -> ${unmarshalledResult.joinToString()}")
         unmarshalledResult
     } catch (e: NoSuchElementException) {
         throw IllegalArgumentException("Method $name not found: ${args.contentToString()} $paramType $isStatic", e)

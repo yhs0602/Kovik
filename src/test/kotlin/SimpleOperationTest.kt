@@ -59,11 +59,11 @@ class SimpleOperationTest {
             mockedClasses,
             beforeInstruction = { pc, instruction, memory, depth ->
                 val indentation = "    ".repeat(depth)
-                println("$indentation Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}, returnValue = ${memory.returnValue.contentToString()}") // Debug
+//                println("$indentation Before $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}, returnValue = ${memory.returnValue.contentToString()}") // Debug
             },
             afterInstruction = { pc, instruction, memory, depth ->
                 val indentation = "    ".repeat(depth)
-                println("$indentation After $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}, returnValue = ${memory.returnValue.contentToString()}") // Debug
+//                println("$indentation After $instruction: $pc// ${memory.registers.toList()} exception=${memory.exception}, returnValue = ${memory.returnValue.contentToString()}") // Debug
             }
         )
         executeMethod(codeItem, environment, args, args.size, 0)

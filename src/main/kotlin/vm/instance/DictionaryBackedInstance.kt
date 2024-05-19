@@ -132,7 +132,7 @@ class DictionaryBackedInstance(
                     ).toList()
                     .toTypedArray()
             }
-            println("Invoking method: $methodName ") // with args: ${unmarshalledArguments.joinToString()}
+//            println("Invoking method: $methodName ") // with args: ${unmarshalledArguments.joinToString()}
             val result = method.execute(unmarshalledArguments, environment, code, obj == null, depth + 1)
             // marshal the result
             println("Result: ${result.joinToString()}, requested return type: ${methodRequested.returnType}")

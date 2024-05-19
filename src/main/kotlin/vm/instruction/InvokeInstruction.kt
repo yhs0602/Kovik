@@ -29,7 +29,7 @@ open class InvokeVirtual(pc: Int, val code: CodeItem) : Instruction._35c(pc, cod
             is MethodWrapper.Encoded -> {
                 val codeItem = method.encodedMethod.codeItem
                 methodName = method.encodedMethod.methodId.name
-                println("Invoking: $methodName")
+//                println("Invoking: $methodName")
                 if (codeItem == null) {
                     memory.exception = ExceptionValue("InvokeVirtual: Method body not found")
                     return pc + insnLength
@@ -73,7 +73,7 @@ class InvokeSuper(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
             is MethodWrapper.Encoded -> {
                 val codeItem = method.encodedMethod.codeItem
                 methodName = method.encodedMethod.methodId.name
-                println("Invoking: $methodName")
+//                println("Invoking: $methodName")
                 if (codeItem == null) {
                     memory.exception = ExceptionValue("InvokeVirtual: Method body not found")
                     return pc + insnLength
@@ -117,7 +117,7 @@ class InvokeDirect(pc: Int, code: CodeItem) : InvokeVirtual(pc, code) {
             is MethodWrapper.Encoded -> {
                 val codeItem = method.encodedMethod.codeItem
                 methodName = method.encodedMethod.methodId.name
-                println("Invoking: $methodName")
+//                println("Invoking: $methodName")
                 if (codeItem == null) {
                     memory.exception = ExceptionValue("InvokeVirtual: Method body not found")
                     return pc + insnLength
