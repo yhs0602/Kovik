@@ -272,7 +272,7 @@ class Environment(
             val triple = Triple(methodId.classId, methodId.protoId.parameters, methodId.name)
             val mocked = mockedMethods[triple]
             if (mocked != null) {
-                println("Requested: $methodId, found: $mocked, triple: $triple")
+                println("Requested: $methodId, found mocked: $mocked, triple: $triple")
                 // check if the codeitem is not null, handle inheritance
                 // It should find the finest method
                 if (direct) {
@@ -340,7 +340,7 @@ class Environment(
 //            " $classDef,  $methodId:")
 //            " ${classData.directMethods.joinToString { it.methodId.toString() }}" +
 //            " ${classData.virtualMethods.joinToString { it.methodId.toString() }}")
-        println("Requested: $methodId, found: $method")
+        println("Requested: $methodId, found encoded: $method; ${method?.methodId}")
         println(classData.directMethods.joinToString { it.methodId.toString() })
         println(classData.virtualMethods.joinToString { it.methodId.toString() })
         if (method == null) {
@@ -438,6 +438,7 @@ class Environment(
     ): R? {
         var superClassTypeId = classDef.superClassTypeId
         do {
+            // FIXME: This does not check mocked superclasses
             val superClassDef = classDefs.find {
                 it.classDef.typeId == superClassTypeId
             } ?: break

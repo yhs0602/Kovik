@@ -14,6 +14,7 @@ data class ProtoId(
 
         if (shorty != other.shorty) return false
         if (returnType != other.returnType) return false
+        if (parameters != other.parameters) return false
 
         return true
     }
@@ -21,7 +22,7 @@ data class ProtoId(
     override fun hashCode(): Int {
         var result = shorty.hashCode()
         result = 31 * result + returnType.hashCode()
+        result = 31 * result + parameters.hashCode()
         return result
     }
-
 }
