@@ -1,5 +1,8 @@
 package com.example.sample
 
+import java.io.File
+import java.io.Serializable
+
 open class B
 
 open class C: B()
@@ -77,6 +80,49 @@ fun testInstanceOf() {
     assert((f4 as Any) !is I2)
     assert((f5 as Any) !is I1)
     assert(f6 is I1)
+
+    println("All tests passed!")
+}
+
+open class HardA: File("")
+
+open class HardB: Serializable
+
+open class HardC: Comparable<HardC> {
+    override fun compareTo(other: HardC): Int {
+        return 0
+    }
+}
+
+class HardD: HardA()
+
+class HardE: HardB()
+
+class HardF: HardC(), Serializable
+
+fun advancedInstanceOfTest() {
+    val a = HardA()
+    val b = HardB()
+    val c = HardC()
+    val d = HardD()
+    val e = HardE()
+    val f = HardF()
+
+    assert(a is File)
+    assert(b is Serializable)
+    assert(c is Comparable<HardC>)
+
+    assert(d is HardA)
+    assert(d is File)
+    assert(d is Serializable)
+    assert(d is Comparable<*>)
+
+    assert(e is Serializable)
+    assert(e is HardB)
+
+    assert(f is Serializable)
+    assert(f is Comparable<HardC>)
+    assert(f is HardC)
 
     println("All tests passed!")
 }

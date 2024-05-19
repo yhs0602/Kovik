@@ -5,6 +5,7 @@ import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.executeMethod
 import java.io.File
 import java.io.PrintStream
+import java.io.Serializable
 import java.nio.file.Paths
 import kotlin.jvm.internal.Intrinsics
 import kotlin.test.BeforeTest
@@ -83,6 +84,26 @@ class AdvancedTest {
                 GeneralMockedClass(Intrinsics::class.java),
                 GeneralMockedClass(Object::class.java),
                 GeneralMockedClass(PrintStream::class.java),
+            )
+        )
+    }
+
+    @Test
+    fun TestHardInstanceOf() {
+        testInterpreter(
+            "src/test/resources/advanced/",
+            "com.example.sample",
+            "InstanceOfTestKt",
+            "advancedInstanceOfTest",
+            listOf(
+                GeneralMockedClass(StringBuilder::class.java),
+                GeneralMockedClass(System::class.java),
+                GeneralMockedClass(Intrinsics::class.java),
+                GeneralMockedClass(Object::class.java),
+                GeneralMockedClass(PrintStream::class.java),
+                GeneralMockedClass(File::class.java),
+                GeneralMockedClass(Serializable::class.java),
+                GeneralMockedClass(Comparable::class.java),
             )
         )
     }
