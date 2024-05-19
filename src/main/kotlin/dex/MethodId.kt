@@ -1,5 +1,7 @@
 package com.yhs0602.dex
 
+import com.yhs0602.vm.classloader.MethodTableEntry
+
 data class MethodId(val classId: TypeId, val protoId: ProtoId, val name: String) {
     override fun toString(): String {
         // human readable prototype
@@ -16,6 +18,14 @@ data class MethodId(val classId: TypeId, val protoId: ProtoId, val name: String)
             append(")")
         }
         return humanReadableProto
+    }
+
+    fun toMethodTableEntry(): MethodTableEntry {
+        return MethodTableEntry(
+            name,
+            protoId,
+            null
+        )
     }
 }
 // membername = Simplename or <Simplename>

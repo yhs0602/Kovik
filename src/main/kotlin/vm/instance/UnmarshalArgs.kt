@@ -1,6 +1,7 @@
 package com.yhs0602.vm.instance
 
 import com.yhs0602.dex.TypeId
+import com.yhs0602.vm.Environment
 import com.yhs0602.vm.RegisterValue
 
 fun unmarshalArguments(
@@ -24,7 +25,7 @@ fun unmarshalArgument(value: Any?, returnType: Class<*>): Array<RegisterValue> {
 
         is String -> arrayOf(
             RegisterValue.ObjectRef(
-                TypeId("Ljava/lang/String;"),
+                Environment.getInstance().getType(TypeId("Ljava/lang/String;")),
                 MockedInstance(String::class.java).apply {
                     this.value = value
                 })
@@ -45,7 +46,7 @@ fun unmarshalArgument(value: Any?, returnType: Class<*>): Array<RegisterValue> {
 
         else -> arrayOf(
             RegisterValue.ObjectRef(
-                TypeId(value::class.java.descriptorString()),
+                Environment.getInstance().getType(TypeId(returnType.typeName)),
                 MockedInstance(value::class.javaObjectType).apply {
                     this.value = value
                 })

@@ -4,6 +4,7 @@ import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.TypeId
 import com.yhs0602.vm.instance.Instance
 import com.yhs0602.vm.instance.MockedInstance
+import com.yhs0602.vm.type.Type
 
 sealed class RegisterValue {
     data class Int(val value: kotlin.Int) : RegisterValue() {
@@ -16,7 +17,7 @@ sealed class RegisterValue {
         fun toStringObject(code: CodeItem, environment: Environment): ObjectRef {
             val stringValue = environment.getString(code, index)
             return ObjectRef(
-                TypeId("Ljava/lang/String;"),
+                environment.getType(TypeId("Ljava/lang/String;")),
                 MockedInstance(String::class.java).apply { value = stringValue })
         }
     }
@@ -29,7 +30,8 @@ sealed class RegisterValue {
         }
     }
 
-    open class ObjectRef(val typeId: TypeId, val value: Instance?) : RegisterValue() {
+    open class ObjectRef(val type: Type, val value: Instance?) : RegisterValue() {
+        val typeId = TypeId(type.descriptor)
         override fun toString(): String {
             return "\uD83D\uDFE1 ObjectRef(typeId=$typeId, value=$value) \uD83D\uDFE1"
         }

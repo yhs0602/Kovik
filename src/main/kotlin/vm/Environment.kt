@@ -7,6 +7,7 @@ import com.yhs0602.vm.instance.DictionaryBackedInstance
 import com.yhs0602.vm.instance.MockedInstance
 import com.yhs0602.vm.instance.unmarshalArgument
 import com.yhs0602.vm.instruction.Instruction
+import com.yhs0602.vm.type.Type
 
 // Class definitions, typeids, string constants, field ids, method ids, and method prototypes...
 class Environment(
@@ -81,6 +82,10 @@ class Environment(
         return strings.getOrPut(dexFile to index) {
             dexFile.strings[index]
         }
+    }
+
+    fun getType(typeId: TypeId): Type {
+        return classLoader.getClass(typeId)
     }
 
     // If targetType is interface
@@ -191,7 +196,7 @@ class Environment(
         // TODO: Check abstract class and interfaces
         val type = classLoader.getClass(typeId)
         return RegisterValue.ObjectRef(
-            typeId,
+            type,
             type.createInstance()
         )
     }
@@ -205,8 +210,9 @@ class Environment(
                 if (classDef.accessFlags.isAbstract)
                     throw Exception("Cannot create instance of abstract class")
                 val classData = clazz.classData ?: throw Exception("Class data not found")
+                val type = classLoader.getClass(classDef.typeId)
                 return RegisterValue.ObjectRef(
-                    classDef.typeId,
+                    type,
                     DictionaryBackedInstance(
                         fields = classData.instanceFields,
                         dexClassRepresentation = clazz,
@@ -217,8 +223,9 @@ class Environment(
             }
 
             is ClassRepresentation.MockedClassRepresentation -> {
+                val type = classLoader.getClass(clazz.mockedClass.classId)
                 return RegisterValue.ObjectRef(
-                    clazz.mockedClass.classId,
+                    type,
                     MockedInstance(clazz.mockedClass.clazz)
                 )
             }

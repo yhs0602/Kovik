@@ -188,6 +188,10 @@ class DexDefinedType(
     }
 
     override fun createInstance(): Instance {
-        return ByteBuddyBackedInstance(clazz)
+        return ByteBuddyBackedInstance(this)
+    }
+
+    override fun toString(): String {
+        return "DexDefinedType(${classDef.classDef.typeId.descriptor})"
     }
 }

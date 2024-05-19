@@ -1,9 +1,9 @@
 package com.yhs0602.vm
 
-import com.yhs0602.dex.ClassData
-import com.yhs0602.dex.ClassDef
-import com.yhs0602.dex.CodeItem
-import com.yhs0602.dex.TypeId
+import com.yhs0602.dex.*
+import com.yhs0602.vm.classloader.MethodTableEntry
+import com.yhs0602.vm.classloader.methodId
+import com.yhs0602.vm.classloader.methodTableEntry
 import com.yhs0602.vm.instance.*
 import net.sf.cglib.proxy.Enhancer
 import java.lang.reflect.Constructor
@@ -22,7 +22,7 @@ fun makeMockedConstructor(clazz: Class<*>, it: Constructor<*>) = object : Mocked
         code: CodeItem,
         isStatic: Boolean
     ): Array<RegisterValue> {
-        return invokeMethod(clazz, environment, code, "<init>", args, parameters, false)
+        return invokeMethod(clazz, environment, code, "<init>", args, parameters, false, it.methodId())
     }
 
     override val classId: TypeId
@@ -44,7 +44,7 @@ fun makeMockedMethod(clazz: Class<*>, method: Method) = object : MockedMethod {
         code: CodeItem,
         isStatic: Boolean
     ): Array<RegisterValue> {
-        return invokeMethod(clazz, environment, code, name, args, parameters, isStatic)
+        return invokeMethod(clazz, environment, code, name, args, parameters, isStatic, method.methodId())
     }
 
     override val classId: TypeId
@@ -68,7 +68,8 @@ fun invokeMethod(
     name: String,
     args: Array<out RegisterValue>,
     paramType: List<TypeId>,
-    isStatic: Boolean
+    isStatic: Boolean,
+    methodId: MethodId
 ): Array<RegisterValue> {
     return try {
         // Check if the method name is <init>
@@ -144,7 +145,20 @@ fun invokeMethod(
                     }
                 }
 
-                is ByteBuddyBackedInstance -> TODO()
+                is ByteBuddyBackedInstance -> {
+                    // Invoke-direct should use exact class's constructor
+                    val type = registerValue.type
+                    val requestedDeclaringClass = environment.getType(methodId.classId)
+                    val constructor = requestedDeclaringClass.getMethod(methodId.toMethodTableEntry())
+                    println("Getting constructor for $type. Requested methodId: $methodId, got $requestedDeclaringClass 's $constructor")
+                    constructor.execute(
+                        args,
+                        environment,
+                        code,
+                        true,
+                        depth = 0,
+                    )
+                }
             }
             return arrayOf()
         }

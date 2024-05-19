@@ -75,6 +75,22 @@ fun Constructor<*>.shortyDescriptor(): String {
     return sb.toString()
 }
 
+fun Constructor<*>.methodId(): MethodId {
+    return MethodId(
+        TypeId(this.declaringClass.descriptorString()),
+        ProtoId(
+            ShortyDescriptor(this.shortyDescriptor()),
+            TypeId("V"),
+            0, // Dummy
+        ).apply {
+            parameters = this@methodId.parameterTypes.map {
+                TypeId(it.descriptorString())
+            }
+        },
+        "<init>"
+    )
+}
+
 fun Constructor<*>.methodTableEntry(): MethodTableEntry {
     return MethodTableEntry(
         "<init>",

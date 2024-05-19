@@ -45,6 +45,10 @@ sealed class MethodWrapper {
                 depth = depth + 1
             )
         }
+
+        override fun toString(): String {
+            return "Encoded(${encodedMethod.methodId})"
+        }
     }
 
     class Mocked(val mockedMethod: MockedMethod) : MethodWrapper() {
@@ -60,5 +64,9 @@ sealed class MethodWrapper {
             code,
             isStatic,
         )
+
+        override fun toString(): String {
+            return "Mocked(${mockedMethod.name})"
+        }
     }
 }
