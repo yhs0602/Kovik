@@ -1,8 +1,10 @@
-package com.yhs0602.vm.classloader
+package com.yhs0602.vm.type
 
 import com.yhs0602.vm.MethodWrapper
+import com.yhs0602.vm.classloader.MethodTableEntry
+import com.yhs0602.vm.instance.Instance
 
-class Primitive(override val descriptor: String) : Type() {
+class PrimitiveType(override val descriptor: String) : Type() {
     override fun isAssignableTo(other: Type): Boolean {
         return this == other
     }
@@ -20,6 +22,9 @@ class Primitive(override val descriptor: String) : Type() {
     override val constructors = emptyMap<MethodTableEntry, MethodWrapper>()
     override val staticMethods = emptyMap<MethodTableEntry, MethodWrapper>()
     override fun callClInit() {} // no clinit for primitive types
+    override fun createInstance(): Instance? {
+        throw UnsupportedOperationException("Cannot create instance of primitive type. InstantiationException")
+    }
 
     override val clazz: Class<*> by lazy {
         when (descriptor) {
@@ -31,7 +36,14 @@ class Primitive(override val descriptor: String) : Type() {
             "J" -> java.lang.Long.TYPE
             "F" -> java.lang.Float.TYPE
             "D" -> java.lang.Double.TYPE
+            "V" -> java.lang.Void.TYPE
             else -> throw IllegalArgumentException("Invalid primitive type descriptor: $descriptor")
         }
+    }
+
+    companion object {
+        val values = listOf(
+            "Z", "B", "S", "C", "I", "J", "F", "D", "V"
+        )
     }
 }

@@ -4,6 +4,7 @@ import com.yhs0602.dex.DexFile
 import com.yhs0602.dex.ParsedClass
 import com.yhs0602.dex.TypeId
 import com.yhs0602.vm.GeneralMockedClass
+import com.yhs0602.vm.type.*
 
 class DexClassLoader(
     dexFiles: List<DexFile>,
@@ -89,6 +90,10 @@ class DexClassLoader(
         // load mocked classes first
         mockedClasses.forEach { (typeId, mockedClass) ->
             loadClass(typeId, mockedClass)
+        }
+        // load primitve types
+        PrimitiveType.values.forEach {
+            loadedTypes[TypeId(it)] = PrimitiveType(it)
         }
         // lazy load dex classes
         dexFiles.forEach { dexFile ->

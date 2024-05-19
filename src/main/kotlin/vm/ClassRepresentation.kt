@@ -143,6 +143,8 @@ fun invokeMethod(
                         System.err.println("Backing super class not found")
                     }
                 }
+
+                is ByteBuddyBackedInstance -> TODO()
             }
             return arrayOf()
         }

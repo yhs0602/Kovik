@@ -154,6 +154,7 @@ fun marshalArgument(
                     }
 
                     null -> null to 1
+                    is ByteBuddyBackedInstance -> TODO()
                 }
             }
 
@@ -163,7 +164,9 @@ fun marshalArgument(
 
             is RegisterValue.ClassRef -> {
                 // we might use cglib to create the class
-                environment.loadClass(code, arg.index) to 1
+                val typeId = environment.getTypeId(code, arg.index)
+                // Use new version of loadClass
+                environment.loadClass(typeId) to 1
             }
 
             else -> throw IllegalArgumentException("Cannot marshal object reference: $arg")

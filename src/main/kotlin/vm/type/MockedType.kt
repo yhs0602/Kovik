@@ -1,6 +1,10 @@
-package com.yhs0602.vm.classloader
+package com.yhs0602.vm.type
 
 import com.yhs0602.vm.MethodWrapper
+import com.yhs0602.vm.classloader.MethodTableEntry
+import com.yhs0602.vm.classloader.methodTableEntry
+import com.yhs0602.vm.instance.Instance
+import com.yhs0602.vm.instance.MockedInstance
 import com.yhs0602.vm.makeMockedConstructor
 import com.yhs0602.vm.makeMockedMethod
 import java.lang.reflect.Modifier
@@ -67,5 +71,9 @@ class MockedType(
                 }
             }
         }
+    }
+
+    override fun createInstance(): Instance {
+        return MockedInstance(clazz)
     }
 }

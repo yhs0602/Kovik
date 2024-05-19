@@ -1,13 +1,8 @@
 package com.yhs0602.vm.instance
 
-import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.TypeId
-import com.yhs0602.vm.Environment
 import com.yhs0602.vm.RegisterValue
-import net.sf.cglib.proxy.MethodInterceptor
-import net.sf.cglib.proxy.MethodProxy
 import java.lang.reflect.Method
-import java.lang.reflect.Proxy
 
 sealed class Instance {
     abstract fun getField(idx: Int): Array<RegisterValue>?
@@ -138,8 +133,11 @@ fun compareArgumentType(args: List<RegisterValue>, idx: Int, paramType: Class<*>
                 is DictionaryBackedInstance -> {
                     instance.interfaces.contains(paramType) to 1
                 }
+
+                is ByteBuddyBackedInstance -> TODO()
             }
         }
+
         paramType == Class::class.java && arg is RegisterValue.ClassRef -> {
             true to 1
         }
@@ -150,49 +148,5 @@ fun compareArgumentType(args: List<RegisterValue>, idx: Int, paramType: Class<*>
 }
 
 
-private fun handleInterface(
-    arg: RegisterValue,
-    paramType: Class<*>,
-    args: List<RegisterValue>,
-    environment: Environment,
-    code: CodeItem
-) = when (arg) {
-    is RegisterValue.ObjectRef -> {
-        if (arg.value is MockedInstance) {
-            arg.value.value to 1
-        } else {
-            Proxy.newProxyInstance(
-                paramType.classLoader,
-                arrayOf(paramType)
-            ) { obj, method, proxyArgs ->
-                println("Proxy call to method: ${method.name} with args: ${args.joinToString()}")
-                // TODO: emulate the method and return the marshalled result
-                // 1. Unmarshal arguments
-                // 2. Find the method
-                // 3. Execute the method
-                // 4. Marshal the result
-                // 5. Return the result
-                null
-            } to 1
-        }
-    }
-
-    is RegisterValue.StringRef -> environment.getString(code, arg.index) to 1
-    else -> throw IllegalArgumentException("Invalid type for interface proxy creation.")
-}
-
-class MyMethodInterceptor(
-    private val environment: Environment,
-    private val code: CodeItem
-) : MethodInterceptor {
-    override fun intercept(obj: Any?, method: Method?, args: Array<out Any>?, proxy: MethodProxy?): Any {
-        // obj is the proxy object
-        // method is the method
-        // args is the arguments
-        // proxy is the method proxy
-        TODO("Not yet implemented")
-        // check if the method is overridden
-    }
-}
 
 

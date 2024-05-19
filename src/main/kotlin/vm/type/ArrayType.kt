@@ -1,6 +1,8 @@
-package com.yhs0602.vm.classloader
+package com.yhs0602.vm.type
 
 import com.yhs0602.vm.MethodWrapper
+import com.yhs0602.vm.classloader.MethodTableEntry
+import com.yhs0602.vm.instance.Instance
 
 class ArrayType(
     val elementType: Type,
@@ -17,4 +19,7 @@ class ArrayType(
     override val constructors: Map<MethodTableEntry, MethodWrapper> = emptyMap()
     override val clazz: Class<*> = java.lang.reflect.Array.newInstance(elementType.clazz, 0).javaClass
     override fun callClInit() {} // 배열 타입은 clinit이 없음
+    override fun createInstance(): Instance? {
+        throw UnsupportedOperationException("Cannot create instance of array type. InstantiationException")
+    }
 }

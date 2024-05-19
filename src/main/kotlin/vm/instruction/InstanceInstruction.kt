@@ -12,8 +12,7 @@ class NewInstance(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
         val typeId = environment.getTypeId(code, KindBBBB)
         typeIdString = typeId.descriptor
-        val parsedClass = environment.getClassRepresentation(typeId, depth)
-        memory.registers[vAA] = environment.createInstance(parsedClass, code, depth)
+        memory.registers[vAA] = environment.createInstance(typeId, depth)
         return pc + insnLength
     }
     private var typeIdString: String = ""

@@ -2,6 +2,7 @@ package com.yhs0602.vm.instance
 
 import com.yhs0602.dex.CodeItem
 import com.yhs0602.dex.EncodedField
+import com.yhs0602.dex.toTypeName
 import com.yhs0602.vm.ClassRepresentation
 import com.yhs0602.vm.Environment
 import com.yhs0602.vm.RegisterValue
@@ -12,7 +13,6 @@ import java.lang.reflect.Method
 class DictionaryBackedInstance(
     val fields: List<EncodedField>,
     val dexClassRepresentation: ClassRepresentation.DexClassRepresentation,
-    val environment: Environment,
     val code: CodeItem,
     val depth: Int
 ) : Instance(), MethodInterceptor {
@@ -24,6 +24,7 @@ class DictionaryBackedInstance(
     var backingOriginalSuperInstance: Any? = null
     var backingSuperClass: Class<*>? = null
         private set
+    val environment = Environment.getInstance()
 
     var interfaces: MutableList<Class<*>> = mutableListOf()
 
@@ -35,7 +36,7 @@ class DictionaryBackedInstance(
                 is ClassRepresentation.MockedClassRepresentation -> {
                     try {
                         superClassTypeId.descriptor.let {
-                            backingSuperClass = Class.forName(it.replace('/', '.').removePrefix("L").removeSuffix(";"))
+                            backingSuperClass = Class.forName(it.toTypeName())
                         }
                         break
                     } catch (e: ClassNotFoundException) {
@@ -57,7 +58,7 @@ class DictionaryBackedInstance(
                     try {
                         interfaceTypeId.descriptor.let {
                             interfaces.add(
-                                Class.forName(it.replace('/', '.').removePrefix("L").removeSuffix(";"))
+                                Class.forName(it.toTypeName())
                             )
                         }
                     } catch (e: ClassNotFoundException) {
@@ -134,7 +135,7 @@ class DictionaryBackedInstance(
             val result = method.execute(unmarshalledArguments, environment, code, obj == null, depth + 1)
             // marshal the result
             println("Result: ${result.joinToString()}, requested return type: ${methodRequested.returnType}")
-            val marshalled =  marshalArguments(
+            val marshalled = marshalArguments(
                 environment,
                 code,
                 result.toList(),

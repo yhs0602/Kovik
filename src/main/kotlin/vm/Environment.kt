@@ -2,12 +2,11 @@ package com.yhs0602.vm
 
 import com.yhs0602.dex.*
 import com.yhs0602.vm.classloader.DexClassLoader
+import com.yhs0602.vm.instance.ByteBuddyBackedInstance
 import com.yhs0602.vm.instance.DictionaryBackedInstance
 import com.yhs0602.vm.instance.MockedInstance
 import com.yhs0602.vm.instance.unmarshalArgument
 import com.yhs0602.vm.instruction.Instruction
-import net.bytebuddy.ByteBuddy
-import net.sf.cglib.proxy.Enhancer
 
 // Class definitions, typeids, string constants, field ids, method ids, and method prototypes...
 class Environment(
@@ -99,11 +98,10 @@ class Environment(
 
         // If the actual type is the same as the target type, return true
         if (actualTypeDescriptor == targetTypeDescriptor) {
-            println("Actual type is the same as the target type $actualTypeDescriptor")
             return true
         }
 
-        val targetType =  classLoader.getClass(TypeId(targetTypeDescriptor))
+        val targetType = classLoader.getClass(TypeId(targetTypeDescriptor))
         val objectType = classLoader.getClass(objectRef.typeId)
         return objectType.isAssignableTo(targetType)
     }
@@ -121,6 +119,14 @@ class Environment(
         ) // Integer, Byte, Char, Double, Float, Long, Short, Boolean
     }
 
+    // TODO: New version
+    fun getClassRepresentation2(typeId: TypeId, depth: Int): ClassRepresentation {
+        val type = classLoader.getClass(typeId)
+        TODO()
+    }
+
+    // Legacy: Returns ClassRepresentation from typeId, from dex file or mocked classes
+    // Callers: Environment.loadClass, DictionaryBackedInstance.init, NewInstance instruction
     fun getClassRepresentation(typeId: TypeId, depth: Int): ClassRepresentation {
         println("Searching for class def with typeId $typeId")
         val classDef = classDefs.find {
@@ -180,6 +186,18 @@ class Environment(
         }
     }
 
+
+    fun createInstance(typeId: TypeId, depth: Int): RegisterValue.ObjectRef {
+        // TODO: Check abstract class and interfaces
+        val type = classLoader.getClass(typeId)
+        return RegisterValue.ObjectRef(
+            typeId,
+            type.createInstance()
+        )
+    }
+
+    // Old createInstnace version before using classloader; Used by NewInstance
+    @Deprecated("Use new version of createInstance which uses classLoader")
     fun createInstance(clazz: ClassRepresentation, code: CodeItem, depth: Int): RegisterValue.ObjectRef {
         when (clazz) {
             is ClassRepresentation.DexClassRepresentation -> {
@@ -192,7 +210,6 @@ class Environment(
                     DictionaryBackedInstance(
                         fields = classData.instanceFields,
                         dexClassRepresentation = clazz,
-                        environment = this,
                         code = code,
                         depth = depth
                     )
@@ -318,6 +335,8 @@ class Environment(
                     is MockedInstance -> {
                         return MethodWrapper.Mocked(mocked)
                     }
+
+                    is ByteBuddyBackedInstance -> TODO()
                 }
             } else {
                 // (TypeId(descriptor=Ljava/lang/StringBuilder;), [TypeId(descriptor=Ljava/lang/String;)], append)
@@ -402,6 +421,8 @@ class Environment(
                     is MockedInstance -> {
                         return MethodWrapper.Encoded(method)
                     }
+
+                    is ByteBuddyBackedInstance -> TODO()
                 }
             }
         }
@@ -451,55 +472,9 @@ class Environment(
         return null
     }
 
-    fun loadClass(code: CodeItem, index: Int): Class<*> {
-        val typeId = getTypeId(code, index)
-        if (typeId in typeIdToCustomClass) {
-            return typeIdToCustomClass[typeId]!!
-        }
-        val classRepresentation = getClassRepresentation(typeId, 0)
-        if (classRepresentation is ClassRepresentation.MockedClassRepresentation) {
-            return classRepresentation.mockedClass.clazz
-        }
-        classRepresentation as ClassRepresentation.DexClassRepresentation
-        val classDef = classRepresentation.classDef
-        val interfaces = classDef.flattenedInterfaces
-
-        // First, the classes that the class depends on should be loaded
-        val clsBuilder = ByteBuddy().subclass(Object::class.java)
-        classRepresentation.classData?.staticFields?.forEach {
-            clsBuilder.defineField(
-                it.fieldId.name,
-                Class.forName(it.fieldId.typeId.descriptor), // TODO: Handle non-primitive types
-                it.accessFlags.getFlags()
-            )
-        }
-        classRepresentation.classData?.instanceFields?.forEach {
-            clsBuilder.defineField(
-                it.fieldId.name,
-                Class.forName(it.fieldId.typeId.descriptor), // TODO: Handle non-primitive types
-                it.accessFlags.getFlags()
-            )
-        }
-        // TODO: Handle interfaces in dex file
-        clsBuilder.implement(*interfaces.map {
-            Class.forName(it.descriptor.replace('/', '.').removePrefix("L").removeSuffix(";"))
-        }.toTypedArray())
-
-
-        val enhancer = Enhancer()
-        enhancer.setSuperclass(Object::class.java)
-        if (interfaces.isNotEmpty())
-            enhancer.setInterfaces(interfaces.mapNotNull {
-                try {
-                    Class.forName(it.descriptor.replace('/', '.').removePrefix("L").removeSuffix(";"))
-                } catch (e: ClassNotFoundException) {
-                    null
-                }
-            }.toTypedArray())
-        // FIXME
-        enhancer.setCallbackType(DictionaryBackedInstance::class.java)
-        val cls = enhancer.createClass() as Class<*>
-        typeIdToCustomClass[typeId] = cls
-        return cls
+    // New: Use classLoader to load class
+    fun loadClass(typeId: TypeId): Class<*> {
+        val type = classLoader.getClass(typeId)
+        return type.clazz
     }
 }

@@ -6,3 +6,7 @@ value class TypeId(val descriptor: String) {
         return "TypeId($descriptor)"
     }
 }
+
+fun String.toTypeName(): String {
+    return this.replace("/", ".").removePrefix("L").removeSuffix(";")
+}
