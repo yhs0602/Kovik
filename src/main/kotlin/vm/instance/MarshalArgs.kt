@@ -1,6 +1,5 @@
 package com.yhs0602.vm.instance
 
-import com.yhs0602.dex.CodeItem
 import com.yhs0602.vm.Environment
 import com.yhs0602.vm.RegisterValue
 
@@ -8,7 +7,6 @@ import com.yhs0602.vm.RegisterValue
 // Convert List of registervalues to array of Any?
 fun marshalArguments(
     environment: Environment,
-    code: CodeItem,
     args: List<RegisterValue>,
     paramTypes: Array<Class<*>>
 ): Array<Any?> {
@@ -16,7 +14,7 @@ fun marshalArguments(
     var i = 0
     while (i < args.size) {
         val paramType = paramTypes[i]
-        val (result, consumed) = marshalArgument(environment, code, args, i, paramType)
+        val (result, consumed) = marshalArgument(environment, args, i, paramType)
         results.add(result)
         i += consumed
     }
@@ -26,7 +24,6 @@ fun marshalArguments(
 // Returns the marshalled argument and the number of consumed arguments
 fun marshalArgument(
     environment: Environment,
-    code: CodeItem,
     args: List<RegisterValue>,
     idx: Int,
     paramType: Class<*>
@@ -34,7 +31,7 @@ fun marshalArgument(
     val arg = args[idx]
     return when {
         (paramType == Int::class.java || paramType == Integer.TYPE) && arg is RegisterValue.Int -> arg.value to 1
-        paramType == String::class.java && arg is RegisterValue.StringRef -> environment.getString(code, arg.index) to 1
+        paramType == String::class.java && arg is RegisterValue.StringRef -> environment.getString(arg) to 1
         paramType == String::class.java && arg is RegisterValue.ObjectRef -> {
             if (arg.value is MockedInstance && arg.value.value is String) {
                 arg.value.value to 1
@@ -82,9 +79,9 @@ fun marshalArgument(
         (paramType.isArray || paramType == Object::class.java) && arg is RegisterValue.ArrayRef -> {
             if (paramType == Object::class.java) {
                 val componentType = environment.getType(arg.typeId)
-                return marshalArrayToArray(componentType.clazz, arg, environment, code)
+                return marshalArrayToArray(componentType.clazz, arg, environment)
             }
-            marshalArrayToArray(paramType, arg, environment, code)
+            marshalArrayToArray(paramType, arg, environment)
         }
 
         // unify the handling of Object and interface using CGLib and Objenesis
@@ -150,18 +147,18 @@ fun marshalArgument(
 
                     null -> null to 1
                     is ByteBuddyBackedInstance -> {
-                        theInstance.value to 1
+                        theInstance.backingValue to 1
                     }
                 }
             }
 
             is RegisterValue.StringRef -> {
-                environment.getString(code, arg.index) to 1
+                environment.getString(arg) to 1
             }
 
             is RegisterValue.ClassRef -> {
                 // we might use cglib to create the class
-                val typeId = environment.getTypeId(code, arg.index)
+                val typeId = arg.typeId
                 // Use new version of loadClass
                 environment.loadClass(typeId) to 1
             }
@@ -175,20 +172,19 @@ private fun marshalArrayToArray(
     paramType: Class<*>,
     arg: RegisterValue.ArrayRef,
     environment: Environment,
-    code: CodeItem
 ): Pair<Array<Any?>, Int> {
     val componentType = paramType.componentType
     if (componentType.isPrimitive) {
         // wide values
         if (componentType == java.lang.Double.TYPE || componentType == java.lang.Long.TYPE) {
             val result = arg.values.asList().windowed(2, 2).map {
-                marshalArgument(environment, code, it, 0, componentType).first
+                marshalArgument(environment, it, 0, componentType).first
             }.toTypedArray()
             return result to 1
         }
     }
     val result = arg.values.map {
-        marshalArgument(environment, code, listOf(it), 0, componentType).first
+        marshalArgument(environment, listOf(it), 0, componentType).first
     }.toTypedArray()
     return result to 1
 }

@@ -337,20 +337,24 @@ data class DexFile(
                         val lastField = staticFields.first()
                         var lastFieldIdx = lastField.fieldIdxDiff
                         lastField.fieldId = fieldIdItems[lastFieldIdx]
+                        lastField.fieldIdx = lastFieldIdx
                         for (i in 1 until staticFields.size) {
                             val field = staticFields[i]
                             lastFieldIdx += field.fieldIdxDiff
                             field.fieldId = fieldIdItems[lastFieldIdx]
+                            field.fieldIdx = lastFieldIdx
                         }
                     }
                     if (instanceFields.isNotEmpty()) {
                         val lastField = instanceFields.first()
                         var lastFieldIdx = lastField.fieldIdxDiff
                         lastField.fieldId = fieldIdItems[lastFieldIdx]
+                        lastField.fieldIdx = lastFieldIdx
                         for (i in 1 until instanceFields.size) {
                             val field = instanceFields[i]
                             lastFieldIdx += field.fieldIdxDiff
                             field.fieldId = fieldIdItems[lastFieldIdx]
+                            field.fieldIdx = lastFieldIdx
                         }
                     }
                     // Normalize methods

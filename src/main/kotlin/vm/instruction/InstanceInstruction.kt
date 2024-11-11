@@ -211,7 +211,7 @@ class IputObject(pc: Int, val code: CodeItem) : Iput(pc, code) {
             }
 
             is RegisterValue.StringRef -> {
-                instance.setField(KindCCCC, arrayOf(value.toStringObject(code, environment)))
+                instance.setField(KindCCCC, arrayOf(value.toStringObject(environment)))
             }
 
             else -> {

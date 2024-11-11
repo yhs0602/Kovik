@@ -13,16 +13,16 @@ sealed class RegisterValue {
         }
     }
 
-    data class StringRef(val index: kotlin.Int) : RegisterValue() {
-        fun toStringObject(code: CodeItem, environment: Environment): ObjectRef {
-            val stringValue = environment.getString(code, index)
+    data class StringRef(val index: kotlin.Int, val codeItem: CodeItem) : RegisterValue() {
+        fun toStringObject(environment: Environment): ObjectRef {
+            val stringValue = environment.getString(this)
             return ObjectRef(
                 environment.getType(TypeId("Ljava/lang/String;")),
                 MockedInstance(String::class.java).apply { value = stringValue })
         }
     }
 
-    data class ClassRef(val index: kotlin.Int) : RegisterValue()
+    data class ClassRef(val index: kotlin.Int, val typeId: TypeId) : RegisterValue()
     data class ArrayRef(val typeId: TypeId, val length: kotlin.Int, val values: Array<RegisterValue>) :
         RegisterValue() {
         override fun toString(): String {

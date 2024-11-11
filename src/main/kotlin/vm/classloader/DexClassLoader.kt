@@ -75,7 +75,8 @@ class DexClassLoader(
         }
         val interfaces = parsedClass.classDef.interfaces
         val interfaceTypes = interfaces.map {
-            loadedTypes[it] ?: error("Interface ${it.descriptor} for ${parsedClass.classDef.typeId} not loaded")
+            loadedTypes[it] ?: getClass(it)
+            // error("Interface ${it.descriptor} for ${parsedClass.classDef.typeId} not loaded")
         }
         val loadedType = DexDefinedType(
             parsedClass,

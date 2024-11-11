@@ -76,10 +76,10 @@ class Environment(
         }
     }
 
-    fun getString(codeItem: CodeItem, index: Int): String {
-        val dexFile = codeItemToDexFile[codeItem] ?: error("Cannot find dex file for $codeItem")
-        return strings.getOrPut(dexFile to index) {
-            dexFile.strings[index]
+    fun getString(stringRef: RegisterValue.StringRef): String {
+        val dexFile = codeItemToDexFile[stringRef.codeItem] ?: error("Cannot find dex file for ${stringRef.codeItem}")
+        return strings.getOrPut(dexFile to stringRef.index) {
+            dexFile.strings[stringRef.index]
         }
     }
 

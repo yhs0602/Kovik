@@ -7,7 +7,6 @@ import com.yhs0602.vm.ClassRepresentation
 import com.yhs0602.vm.Environment
 import com.yhs0602.vm.RegisterValue
 import com.yhs0602.vm.classloader.methodId
-import com.yhs0602.vm.classloader.methodTableEntry
 import net.sf.cglib.proxy.MethodInterceptor
 import net.sf.cglib.proxy.MethodProxy
 import java.lang.reflect.Method
@@ -138,7 +137,6 @@ class DictionaryBackedInstance(
             println("Result: ${result.joinToString()}, requested return type: ${methodRequested.returnType}")
             val marshalled = marshalArguments(
                 environment,
-                code,
                 result.toList(),
                 arrayOf(methodRequested.returnType)
             )

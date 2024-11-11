@@ -87,7 +87,7 @@ fun reallyExecuteMockedMethod(
                     registerValue.value = reallyCallConstructor(args, clazz, paramType, environment, code)
                 }
                 is ByteBuddyBackedInstance -> {
-                    registerValue.value = reallyCallConstructor(args, clazz, paramType, environment, code)
+                    registerValue.backingValue = reallyCallConstructor(args, clazz, paramType, environment, code)
                 }
 
                 is DictionaryBackedInstance -> {
@@ -123,7 +123,7 @@ fun reallyExecuteMockedMethod(
                                 enhancer.setCallback(registerValue)
                                 registerValue.backingSuperInstance = enhancer.create(
                                     parameterTypes,
-                                    marshalArguments(environment, code, droppedArgs, parameterTypes)
+                                    marshalArguments(environment, droppedArgs, parameterTypes)
                                 )
 //                                    registerValue.backingOriginalSuperInstance = this.newInstance(
 //                                        *marshalArguments(environment, code, droppedArgs, parameterTypes)
@@ -150,7 +150,7 @@ fun reallyExecuteMockedMethod(
             val instance = (args[0] as? RegisterValue.ObjectRef)?.value
             instanceValue = if (instance is MockedInstance) instance.value else {
                 // We have to marshal the instance
-                val (marshalledInstance, _) = marshalArgument(environment, code, args.toList(), 0, clazz)
+                val (marshalledInstance, _) = marshalArgument(environment, args.toList(), 0, clazz)
                 marshalledInstance
 //                    throw IllegalArgumentException("Instance not found: instance: $instance, args: $args")
             }
@@ -162,7 +162,7 @@ fun reallyExecuteMockedMethod(
         // Drop first argument as it is the instance, if it is not static
 //            val args = if (!AccessFlags(method.modifiers).isStatic) args.drop(1) else args
 //        println("Invoking $method ${method.parameterTypes.joinToString(" ") { it.name }} with args $adjustedArgs")
-        val argArr = marshalArguments(environment, code, adjustedArgs, method.parameterTypes)
+        val argArr = marshalArguments(environment, adjustedArgs, method.parameterTypes)
         if (instanceValue != null) {
             val declaringClass = method.declaringClass
             if (!declaringClass.isInstance(instanceValue)) {
@@ -193,7 +193,7 @@ private fun reallyCallConstructor(
         val instance = clazz.constructors.first {
             compareConstructorProto(it, droppedArgs, paramType)
         }.run {
-            newInstance(*marshalArguments(environment, code, droppedArgs, parameterTypes))
+            newInstance(*marshalArguments(environment, droppedArgs, parameterTypes))
         }
         return instance!!
     } catch (e: NoSuchElementException) {

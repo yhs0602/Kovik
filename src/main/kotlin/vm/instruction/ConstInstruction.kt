@@ -85,9 +85,9 @@ class ConstWideHigh16(pc: Int, code: CodeItem) : Instruction._21h(pc, code) {
     }
 }
 
-class ConstString(pc: Int, code: CodeItem) : Instruction._21c(pc, code) {
+class ConstString(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
-        memory.registers[vAA] = RegisterValue.StringRef(KindBBBB)
+        memory.registers[vAA] = RegisterValue.StringRef(KindBBBB, code)
         return pc + insnLength
     }
 
@@ -96,16 +96,16 @@ class ConstString(pc: Int, code: CodeItem) : Instruction._21c(pc, code) {
     }
 }
 
-class ConstStringJumbo(pc: Int, code: CodeItem) : Instruction._31c(pc, code) {
+class ConstStringJumbo(pc: Int, val code: CodeItem) : Instruction._31c(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
-        memory.registers[vAA] = RegisterValue.StringRef(KindBBBBhi shl 16 or KindBBBBlo)
+        memory.registers[vAA] = RegisterValue.StringRef(KindBBBBhi shl 16 or KindBBBBlo, code)
         return pc + insnLength
     }
 }
 
-class ConstClass(pc: Int, code: CodeItem) : Instruction._21c(pc, code) {
+class ConstClass(pc: Int, val code: CodeItem) : Instruction._21c(pc, code) {
     override fun execute(pc: Int, memory: Memory, environment: Environment, depth: Int): Int {
-        memory.registers[vAA] = RegisterValue.ClassRef(KindBBBB)
+        memory.registers[vAA] = RegisterValue.ClassRef(KindBBBB, environment.getTypeId(code, KindBBBB))
         return pc + insnLength
     }
 }

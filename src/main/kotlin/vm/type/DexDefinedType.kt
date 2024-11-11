@@ -15,6 +15,7 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy
 import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy
 import net.bytebuddy.implementation.MethodCall
 import net.bytebuddy.implementation.MethodDelegation
+import net.bytebuddy.jar.asm.Opcodes
 
 
 class DexDefinedType(
@@ -128,7 +129,7 @@ class DexDefinedType(
             val fieldId = it.fieldId
             val fieldType = classLoader.getClass(fieldId.typeId)
             builder = builder.defineField(fieldId.name, fieldType.clazz, it.accessFlags.getFlags())
-            println("Declared field ${fieldId.name} of type ${fieldType.clazz} with flags ${it.accessFlags.getFlags()}")
+            println("Declared field ${it.fieldIdx} ${fieldId.name} of type ${fieldType.clazz} with flags ${it.accessFlags.getFlags()}")
         }
         println("Declaring class ${classDef.classDef.typeId.descriptor}")
         // Declare constructors
@@ -139,7 +140,7 @@ class DexDefinedType(
             val parameterTypes = methodId.protoId.parameters.map { classLoader.getClass(it) }
             // We have to clear constructor flags because ByteBuddy will add them back
             val methodBuilder = builder.defineConstructor(
-                constructor.accessFlags.getFlags() and ModifierContributor.ForMethod.MASK
+                constructor.accessFlags.getFlags() and ModifierContributor.ForMethod.MASK and Opcodes.ACC_STATIC.inv()
             ).withParameters(parameterTypes.map { it.clazz })
             builder = constructor.codeItem?.let {
                 // Note: Call to dummy super constructor (Object) is necessary to avoid VerifyError

@@ -47,7 +47,6 @@ class DexDefinedTypeMethodDelegator(
         )
         val marshalled = marshalArguments(
             Environment.getInstance(),
-            codeItem,
             result.toList(),
             arrayOf(method.returnType)
         )

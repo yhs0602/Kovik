@@ -5,4 +5,5 @@ data class EncodedField(
     val accessFlags: AccessFlags,
 ) {
     lateinit var fieldId: FieldId
+    var fieldIdx: Int = -1
 }
